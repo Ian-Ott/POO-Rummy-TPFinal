@@ -85,8 +85,8 @@ public class Ventana implements ActionListener {
         cartasJugadorDerecha.add(botonDerecha3);
 
         etiqueta2 = new JLabel("jugador 2",SwingConstants.CENTER);
-        menuJugadorDerecha.add(etiqueta2,BorderLayout.CENTER);
-        menuJugadorDerecha.add(cartasJugadorDerecha, BorderLayout.SOUTH);
+        menuJugadorDerecha.add(etiqueta2,BorderLayout.NORTH);
+        menuJugadorDerecha.add(cartasJugadorDerecha, BorderLayout.CENTER);
         panelPrincipal.add(menuJugadorDerecha,BorderLayout.EAST);
 
         //jugador de la izquierda
@@ -117,8 +117,8 @@ public class Ventana implements ActionListener {
         cartasJugadorIzquierda.add(botonIzquierda3);
 
         etiqueta2 = new JLabel("jugador 4",SwingConstants.CENTER);
-        menuJugadorIzquierda.add(etiqueta2,BorderLayout.CENTER);
-        menuJugadorIzquierda.add(cartasJugadorIzquierda, BorderLayout.SOUTH);
+        menuJugadorIzquierda.add(etiqueta2,BorderLayout.NORTH);
+        menuJugadorIzquierda.add(cartasJugadorIzquierda, BorderLayout.CENTER);
         panelPrincipal.add(menuJugadorIzquierda,BorderLayout.WEST);
 
         //jugador de arriba
@@ -202,6 +202,27 @@ public class Ventana implements ActionListener {
         menuTablero.add(mazoYbocaArriba, BorderLayout.EAST);
         menuTablero.add(cartasJugadas,BorderLayout.CENTER);
         panelPrincipal.add(menuTablero,BorderLayout.CENTER);
+
+        //botones adicionales
+        JPanel panelBotonesIzquierda = new JPanel();
+        panelBotonesIzquierda.setLayout(new FlowLayout(FlowLayout.LEADING));
+        //ponerlo sino hacia arriba el layout
+        JButton botonJugada = new JButton("Crear Jugada");
+        JButton botonFinTurno = new JButton("Terminar Turno");
+        panelBotonesIzquierda.add(botonJugada);
+        panelBotonesIzquierda.add(botonFinTurno);
+
+        menuJugadorIzquierda.add(panelBotonesIzquierda, BorderLayout.SOUTH);
+
+        JPanel panelBotonesDerecha = new JPanel();
+        panelBotonesDerecha.setLayout(new FlowLayout(FlowLayout.LEADING));
+        //ponerlo sino hacia arriba el layout
+        JButton botonListo = new JButton("Listo");
+        JButton botonCancelar = new JButton("Cancelar");
+        panelBotonesDerecha.add(botonListo);
+        panelBotonesDerecha.add(botonCancelar);
+
+        menuJugadorDerecha.add(panelBotonesDerecha, BorderLayout.SOUTH);
 
         frame.setVisible(true);
     }
