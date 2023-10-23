@@ -42,6 +42,10 @@ public class Jugador {
         return puntosTotales;
     }
 
+    public ArrayList<Carta> getCartasEnMano() {
+        return cartasEnMano;
+    }
+
     public void agregarCartasEnMano(Carta nuevaCarta) {
         this.cartasEnMano.add(nuevaCarta);
     }

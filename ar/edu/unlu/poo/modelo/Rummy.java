@@ -111,23 +111,9 @@ public class Rummy extends ObservableRemoto {
 
     private ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3) {
         ArrayList<Carta> posibleJugada = new ArrayList<>();
-        boolean carta3Agregada = false;
         posibleJugada.add(carta1);
-        if (posibleJugada.get(0).numero < carta2.numero){
-            posibleJugada.add(carta2);
-        } else if (posibleJugada.get(0).numero > carta2.numero) {
-            posibleJugada.add(0,carta2);
-        }
-        for (int i = 0; i < posibleJugada.size();i++){
-            if (posibleJugada.get(i).numero > carta3.numero){
-                posibleJugada.add(i, carta3);
-                carta3Agregada = true;
-                break;
-            }
-        }
-        if (!carta3Agregada){
-            posibleJugada.add(carta3);
-        }
+        agregarCartaOrdenada(posibleJugada, carta2);
+        agregarCartaOrdenada(posibleJugada, carta3);
         return posibleJugada;
     }
 
@@ -183,6 +169,7 @@ public class Rummy extends ObservableRemoto {
         boolean mismoNumero = true;
         ArrayList<Carta> jugada = buscarJugada(cartaDeLaJugada);
         if (jugada != null) {
+            //primero se comprueba si se quiere agregar la carta a una jugada del mismo numero o del mismo palo
             for (int i = 0; i < jugada.size(); i++) {
                     if (cartaElegida.numero != jugada.get(i).numero){
                         mismoNumero = false;
@@ -194,16 +181,29 @@ public class Rummy extends ObservableRemoto {
             if (mismoNumero){
                 jugada.add(cartaElegida);
             } else if (mismoPalo) {
-                jugada.add(cartaElegida);
-                ordenarCartas(jugada);
+                agregarCartaOrdenada(jugada, cartaElegida);
                 if (cartaElegida.numero == 13 || cartaElegida.numero == 1){
-                    
+                    acomodarValoresExtremos(jugada);
+                    //sino poner dos condiciones que acomoden la cartaElegida
+                }
+                if (!esEscalera(jugada)){
+                    jugada.remove(cartaElegida);
+                    //mensaje de error o señal
                 }
             }
         }
     }
 
-    private void ordenarCartas(ArrayList<Carta> jugada) {
+    private void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida) {
+        boolean agregada = false;
+        for (int i = 0; i < jugada.size(); i++){
+            if (cartaElegida.numero < jugada.get(i).numero){
+                jugada.add(i, cartaElegida);
+            }
+        }
+        if (!agregada){
+            jugada.add(cartaElegida);
+        }
     }
 
     private ArrayList<Carta> buscarJugada(Carta cartaDeLaJugada) {
@@ -302,42 +302,30 @@ public class Rummy extends ObservableRemoto {
 
     private ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
         ArrayList<Carta> posibleJugada = new ArrayList<>();
-        boolean carta3Agregada = false;
-        boolean carta4Agregada = false;
         posibleJugada.add(carta1);
-        if (posibleJugada.get(0).numero < carta2.numero){
-            posibleJugada.add(carta2);
-        } else if (posibleJugada.get(0).numero > carta2.numero) {
-            posibleJugada.add(0,carta2);
-        }
-        for (int i = 0; i < posibleJugada.size();i++){
-            if (posibleJugada.get(i).numero > carta3.numero){
-                posibleJugada.add(i, carta3);
-                carta3Agregada = true;
-            }
-            if (posibleJugada.get(i).numero > carta4.numero){
-                posibleJugada.add(i, carta4);
-                carta4Agregada = true;
-            }
-            if (carta3Agregada && carta4Agregada){
-                break;
-            }
-        }
-        if (!carta3Agregada && !carta4Agregada){
-            if (carta3.numero < carta4.numero){
-                posibleJugada.add(carta3);
-                posibleJugada.add(carta4);
-            }else {
-                posibleJugada.add(carta4);
-                posibleJugada.add(carta3);
-            }
-        } else if (!carta3Agregada) {
-            posibleJugada.add(carta3);
-        }
-        else if (!carta4Agregada){
-            posibleJugada.add(carta4);
-        }
+        agregarCartaOrdenada(posibleJugada,carta2);
+        agregarCartaOrdenada(posibleJugada, carta3);
+        agregarCartaOrdenada(posibleJugada, carta4);
         return posibleJugada;
+    }
+
+    public void finalizarPartida(Jugador jugador){
+        if (jugador.getCartasEnMano().isEmpty()){
+            //dialogo de mensaje que avise que la partida fue finalizada y tal vez algun boton de nueva partida
+            //mostrar clasificacion y sumar los puntos del jugador a la clasificacion
+        }
+    }
+
+    public void sumarPuntos(){
+
+    }
+
+    public void agregarPuntosClasificacion(){
+
+    }
+
+    public void siguienteTurno(Jugador jugadorIzquierda){
+
     }
 
 
