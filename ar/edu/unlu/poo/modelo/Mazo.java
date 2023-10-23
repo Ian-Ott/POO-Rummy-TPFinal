@@ -71,4 +71,8 @@ public class Mazo {
             mazoDeCartas.add(cartaAux);
         }
     }
+
+    public void agregarCartaBocaArriba(Carta carta){
+        cartasEnMesa.add(carta);
+    }
 }
