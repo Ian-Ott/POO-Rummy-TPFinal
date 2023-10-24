@@ -1,0 +1,76 @@
+package ar.edu.unlu.poo.modelo;
+
+import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
+
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+public interface IRummy extends IObservableRemoto {
+    void agregarJugador(Jugador nuevoJugador) throws RemoteException;
+    boolean isJuegoIniciado() throws RemoteException;
+    void repartirCartasJugadores(int cantidadCartas) throws RemoteException;
+
+    void iniciarJuego() throws RemoteException;
+
+    void sacarCartaMazo(Jugador jugador) throws RemoteException;
+
+    void agarrarCartaBocaArriba(Jugador jugador) throws RemoteException;
+
+    void mezclarMazo() throws RemoteException;
+
+    void crearTapeteConJugada(ArrayList<Carta> jugada)throws RemoteException;
+
+    boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3) throws RemoteException;
+
+    boolean esEscalera(ArrayList<Carta> nuevaJugada)throws RemoteException;
+
+    void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada)throws RemoteException;
+
+    ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3)throws RemoteException;
+
+    boolean crearJugada(Carta carta1, Carta carta2, Carta carta3) throws RemoteException;
+
+    boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3) throws RemoteException;
+
+    boolean comprobarValores(Carta carta1, Carta carta2, Carta carta3, Carta carta4) throws RemoteException;
+
+    /*private void agregarJugadaATapete(ArrayList<Carta> jugada){
+
+        }*/
+    void agregarCartaAJugada(Carta cartaElegida, Carta cartaDeLaJugada)throws RemoteException;
+
+    void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida)throws RemoteException;
+
+    ArrayList<Carta> buscarJugada(Carta cartaDeLaJugada)throws RemoteException;
+
+    void terminarTurno(Carta carta1, Jugador jugadorActual) throws RemoteException;
+
+    Jugador buscarJugadorIzquierda(Jugador jugadorActual)throws RemoteException;
+
+    void cancelarAccion() throws RemoteException;
+
+    void accionLista(Carta carta1, Carta carta2, Carta carta3, Carta carta4) throws RemoteException;
+
+    boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
+
+    boolean crearJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
+
+    boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
+
+    ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
+
+    void finalizarPartida(Jugador jugador)throws RemoteException;
+
+    void sumarPuntos() throws RemoteException;
+
+    void agregarPuntosClasificacion()throws RemoteException;
+
+    void siguienteTurno(Jugador jugadorIzquierda)throws RemoteException;
+
+    static Rummy getInstancia() throws RemoteException {
+        return Rummy.getInstancia();
+    }
+    ArrayList<Jugador> getJugadores()throws RemoteException;
+
+    //IRummy getInstancia();
+}
