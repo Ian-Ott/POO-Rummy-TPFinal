@@ -5,46 +5,85 @@ import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public class Rummy extends ObservableRemoto {
+public class Rummy extends ObservableRemoto implements IRummy {
     private Mazo mazoDeJuego;
     private ArrayList<Jugador> jugadores;
     private ArrayList<Tapete> tapeteJugadas;
+    private static Rummy instancia;
+    private boolean juegoIniciado;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
         jugadores = new ArrayList<>();
+        /*jugadores.add(jugador1);
+        jugadores.add(jugador2);
+        if (jugador3 != null){
+            jugadores.add(jugador3);
+        }
+        if (jugador4 != null){
+            jugadores.add(jugador4);
+        }*/
         mazoDeJuego = new Mazo();
+        tapeteJugadas = new ArrayList<>();
+        juegoIniciado = false;
+    }
+
+    public void agregarJugador(Jugador nuevoJugador) throws RemoteException{
+        if (!juegoIniciado){
+            jugadores.add(nuevoJugador);
+        }
+    }
+
+    public boolean isJuegoIniciado() throws RemoteException{
+        return juegoIniciado;
+    }
+
+    public void iniciarJuego() throws RemoteException {
         if (jugadores.size() == 2){
-        repartirCartasJugadores(10);
+            repartirCartasJugadores(10);
         } else if (jugadores.size() >= 3) {
             repartirCartasJugadores(7);
         }
-        tapeteJugadas = new ArrayList<>();
+        juegoIniciado = true;
+        siguienteTurno(jugadores.get(0));
     }
 
-    private void repartirCartasJugadores(int cantidadCartas) throws RemoteException {
+    public static Rummy getInstancia() throws RemoteException {
+        if (instancia == null){
+            instancia = new Rummy();
+        }
+        return instancia;
+    }
+
+    @Override
+    public void repartirCartasJugadores(int cantidadCartas) throws RemoteException {
         for (int i = 0; i < jugadores.size(); i++){
             mazoDeJuego.repartir(cantidadCartas, jugadores.get(i));
         }
     }
 
-    private void sacarCartaMazo(Jugador jugador) throws RemoteException{
+    @Override
+    public void sacarCartaMazo(Jugador jugador) throws RemoteException{
         mazoDeJuego.sacarCartaMazo(jugador);
     }
 
-    private void agarrarCartaBocaArriba(Jugador jugador) throws RemoteException{
+    @Override
+    public void agarrarCartaBocaArriba(Jugador jugador) throws RemoteException{
         mazoDeJuego.sacarCartaBocaArriba(jugador);
     }
 
-    private void mezclarMazo() throws RemoteException{
+    @Override
+    public void mezclarMazo() throws RemoteException{
         //cuando el mazo se quede sin cartas se van a agregar de manera random al mazo las cartas que quedaron boca arriba
         mazoDeJuego.mezclarMazo();
     }
-    private void crearTapeteConJugada(ArrayList<Carta> jugada){
+    @Override
+    public void crearTapeteConJugada(ArrayList<Carta> jugada){
         Tapete nuevoTapeteConJugada = new Tapete(jugada);
         tapeteJugadas.add(nuevoTapeteConJugada);
     }
 
+    @Override
     public boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3) throws RemoteException{
         boolean resultado = false;
         ArrayList<Carta> nuevaJugada;
@@ -67,7 +106,8 @@ public class Rummy extends ObservableRemoto {
         return resultado;
     }
 
-    private boolean esEscalera(ArrayList<Carta> nuevaJugada) {
+    @Override
+    public boolean esEscalera(ArrayList<Carta> nuevaJugada) {
         boolean resultado = true;
         for (int i = 0; i < nuevaJugada.size(); i++) {
             if (nuevaJugada.get(i + 1) != null) {
@@ -83,7 +123,8 @@ public class Rummy extends ObservableRemoto {
         }
         return resultado;
     }
-    private void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada) {
+    @Override
+    public void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada) {
         Carta cartaAux;
         int posUltimaCarta = nuevaJugada.size() - 1;
         //AVISO: este metodo acomoda tanto para 3 como para 4 cartas
@@ -109,7 +150,8 @@ public class Rummy extends ObservableRemoto {
     }
 
 
-    private ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3) {
+    @Override
+    public ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3) {
         ArrayList<Carta> posibleJugada = new ArrayList<>();
         posibleJugada.add(carta1);
         agregarCartaOrdenada(posibleJugada, carta2);
@@ -117,7 +159,8 @@ public class Rummy extends ObservableRemoto {
         return posibleJugada;
     }
 
-    private void crearJugada(Carta carta1, Carta carta2, Carta carta3) {
+    @Override
+    public boolean crearJugada(Carta carta1, Carta carta2, Carta carta3) {
         ArrayList<Carta> nuevaJugada;
         if (carta1.numero == carta2.numero && carta2.numero == carta3.numero) {
             nuevaJugada = new ArrayList<>();
@@ -137,9 +180,11 @@ public class Rummy extends ObservableRemoto {
                 crearTapeteConJugada(nuevaJugada);
             }
         }
+        return false;
     }
 
-    private boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3) {
+    @Override
+    public boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3) {
         boolean resultado = false;
         if (carta1.numero == 1 || carta2.numero == 1 || carta3.numero == 1) {
             if (carta1.numero == 13 || carta2.numero == 13 || carta3.numero == 13) {
@@ -149,6 +194,7 @@ public class Rummy extends ObservableRemoto {
         return resultado;
     }
 
+    @Override
     public boolean comprobarValores(Carta carta1, Carta carta2, Carta carta3, Carta carta4) throws RemoteException{
         //comprueba que no sean nulas las cartas antes de acceder a la accion de listo
         boolean resultado = false;
@@ -164,6 +210,7 @@ public class Rummy extends ObservableRemoto {
     /*private void agregarJugadaATapete(ArrayList<Carta> jugada){
 
     }*/
+    @Override
     public void agregarCartaAJugada(Carta cartaElegida, Carta cartaDeLaJugada){
         boolean mismoPalo = true;
         boolean mismoNumero = true;
@@ -194,7 +241,8 @@ public class Rummy extends ObservableRemoto {
         }
     }
 
-    private void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida) {
+    @Override
+    public void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida) {
         boolean agregada = false;
         for (int i = 0; i < jugada.size(); i++){
             if (cartaElegida.numero < jugada.get(i).numero){
@@ -206,7 +254,8 @@ public class Rummy extends ObservableRemoto {
         }
     }
 
-    private ArrayList<Carta> buscarJugada(Carta cartaDeLaJugada) {
+    @Override
+    public ArrayList<Carta> buscarJugada(Carta cartaDeLaJugada) {
         Tapete tapeteAux;
         Carta cartaAux;
         for (int i = 0; i < tapeteJugadas.size(); i++){
@@ -221,15 +270,39 @@ public class Rummy extends ObservableRemoto {
         return null;
     }
 
-    public void terminarTurno(Carta carta1)throws RemoteException{
+    @Override
+    public void terminarTurno(Carta carta1, Jugador jugadorActual)throws RemoteException{
+        if (jugadorActual.getCartasEnMano().isEmpty()){
+            finalizarPartida(jugadorActual);
+        }else {
         mazoDeJuego.agregarCartaBocaArriba(carta1);
+        Jugador jugadorAux = buscarJugadorIzquierda(jugadorActual);
+        siguienteTurno(jugadorAux);
         //deberia de avisar al controlador?
+        }
     }
 
+    @Override
+    public Jugador buscarJugadorIzquierda(Jugador jugadorActual) {
+        Jugador jugadorAux  = null;
+        for (int i = 0; i < jugadores.size(); i++){
+            if (jugadorActual.equals(jugadores.get(i))){
+                if (i == 0){
+                    jugadorAux = jugadores.get(jugadores.size() - 1);
+                }else {
+                    jugadorAux = jugadores.get(i - 1);
+                }
+            }
+        }
+        return jugadorAux;
+    }
+
+    @Override
     public void cancelarAccion()throws RemoteException{
         //deberia de avisar al controlador?
     }
 
+    @Override
     public void accionLista(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException{
         boolean es_escalera;
         if (carta4 == null){
@@ -246,7 +319,8 @@ public class Rummy extends ObservableRemoto {
         }
     }
 
-    private boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
+    @Override
+    public boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
         boolean resultado = false;
         ArrayList<Carta> nuevaJugada;
         if (carta1.numero == carta2.numero && carta2.numero == carta3.numero && carta3.numero == carta4.numero){
@@ -266,7 +340,8 @@ public class Rummy extends ObservableRemoto {
         return resultado;
     }
 
-    private void crearJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
+    @Override
+    public boolean crearJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
         ArrayList<Carta> nuevaJugada;
         if (carta1.numero == carta2.numero && carta2.numero == carta3.numero && carta3.numero == carta4.numero) {
             nuevaJugada = new ArrayList<>();
@@ -287,8 +362,10 @@ public class Rummy extends ObservableRemoto {
                 crearTapeteConJugada(nuevaJugada);
             }
         }
+        return false;
     }
-    private boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
+    @Override
+    public boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
         boolean resultado = false;
         if (carta1.numero == 1 || carta2.numero == 1 || carta3.numero == 1 || carta4.numero == 1){
             if (carta1.numero == 13 || carta2.numero == 13 || carta3.numero == 13 || carta4.numero == 13){
@@ -300,7 +377,8 @@ public class Rummy extends ObservableRemoto {
 
 
 
-    private ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
+    @Override
+    public ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
         ArrayList<Carta> posibleJugada = new ArrayList<>();
         posibleJugada.add(carta1);
         agregarCartaOrdenada(posibleJugada,carta2);
@@ -309,6 +387,7 @@ public class Rummy extends ObservableRemoto {
         return posibleJugada;
     }
 
+    @Override
     public void finalizarPartida(Jugador jugador){
         if (jugador.getCartasEnMano().isEmpty()){
             //dialogo de mensaje que avise que la partida fue finalizada y tal vez algun boton de nueva partida
@@ -316,19 +395,24 @@ public class Rummy extends ObservableRemoto {
         }
     }
 
+    @Override
     public void sumarPuntos(){
 
     }
 
-    public void agregarPuntosClasificacion(){
+    @Override
+    public void agregarPuntosClasificacion()throws RemoteException {
 
     }
 
-    public void siguienteTurno(Jugador jugadorIzquierda){
+    @Override
+    public void siguienteTurno(Jugador jugadorIzquierda)throws RemoteException{
 
     }
 
-
+    public ArrayList<Jugador> getJugadores() {
+        return jugadores;
+    }
 
     /*public void addObserver(Observer o){
         observadores.add(o);

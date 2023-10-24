@@ -1,6 +1,8 @@
 package ar.edu.unlu.poo.modelo;
 
-public class Carta {
+import java.io.Serializable;
+
+public class Carta implements Serializable {
     protected int puntos;
     protected Palo palo;
     protected  boolean esta_enMazo;

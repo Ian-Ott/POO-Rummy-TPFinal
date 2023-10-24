@@ -1,18 +1,24 @@
 package ar.edu.unlu.poo.ventana;
 
+import ar.edu.unlu.poo.controlador.Controlador;
+import ar.edu.unlu.poo.modelo.Carta;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 
-public class Ventana implements ActionListener {
+public class Ventana implements ActionListener, IVista {
     JFrame frame;
     JLabel etiqueta2;
+    Controlador controlador;
     public Ventana(){
-        iniciarVentana();
+
     }
 
-    private void iniciarVentana() {
+    @Override
+    public void iniciarVentana() {
         frame = new JFrame("Rummy Beta - Version 0.0");
         frame.setSize(1500,1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -228,16 +234,53 @@ public class Ventana implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        /*String comando = e.getActionCommand();
-        if (comando.equals("pulsame")){
-            etiqueta2.setText("Pulsaste un boton");
-        } else if (comando.equals("pulsame a mi")){
-            etiqueta2.setText("Pulsaste otro boton");
-        } else if (comando.equals("pulsa aqui")){
-            etiqueta2.setText("Pulsaste un boton especial");
+    public void actualizarCarta(Carta cambio) {
+
+    }
+
+    @Override
+    public void pantallaEspera(boolean anfitrion, int cantJugadores) {
+        if (anfitrion){
+            iniciarVentanaEsperaAnfitrion(cantJugadores);
         }else {
-            etiqueta2.setText("ERROR");
-        }*/
+            iniciarVentanaEspera(cantJugadores);
+            //esta ventana deberia de terminar cuando el anfitrion comience el juego
+        }
+    }
+
+    private void iniciarVentanaEsperaAnfitrion(int cantJugadores) {
+        frame = new JFrame("Rummy Beta - Version 0.0");
+        frame.setSize(1500,1000);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JLabel etiqueta1 = new JLabel("Esperando a que el se unan jugadores..." + "\nCantidad de jugadores Actual: " + cantJugadores);
+        JPanel panelPrincipal = (JPanel) frame.getContentPane();
+        panelPrincipal.setLayout(new BorderLayout());
+        panelPrincipal.add(etiqueta1,BorderLayout.CENTER);
+    }
+
+    private void iniciarVentanaEspera(int cantJugadores) {
+        frame = new JFrame("Rummy Beta - Version 0.0");
+        frame.setSize(1500,1000);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JLabel etiqueta1 = new JLabel("Esperando a que el anfitrion comience el juego..." + "\nCantidad de jugadores Actual: " + cantJugadores);
+        JPanel panelPrincipal = (JPanel) frame.getContentPane();
+        panelPrincipal.setLayout(new BorderLayout());
+        panelPrincipal.add(etiqueta1,BorderLayout.CENTER);
+    }
+
+    public void setControlador(Controlador controlador) {
+        this.controlador = controlador;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String comando = e.getActionCommand();
+        if (comando.equals("Iniciar Partida")){
+            try {
+                controlador.iniciarJuego();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }

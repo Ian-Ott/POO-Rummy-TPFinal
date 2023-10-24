@@ -3,11 +3,30 @@ package ar.edu.unlu.poo.modelo;
 import java.util.ArrayList;
 
 public class Jugador {
+    private String nombre;
+    private  int nro;
     private ArrayList<Carta> cartasEnMano;
     private int puntosTotales;
     private boolean jefeMesa;
     private int cantApostada;
     private int bote;
+
+    public Jugador(String nombreJugador) {
+        cartasEnMano = new ArrayList<>();
+        nombre = nombreJugador;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNro(int nro) {
+        this.nro = nro;
+    }
+
+    public int getNro() {
+        return nro;
+    }
 
     public void setBote(int bote) {
         this.bote = bote;
@@ -59,5 +78,9 @@ public class Jugador {
             }
         }
         return cartaATirar;
+    }
+
+    public void usarCarta(Carta cartaUsada) {
+        cartasEnMano.remove(cartaUsada);
     }
 }
