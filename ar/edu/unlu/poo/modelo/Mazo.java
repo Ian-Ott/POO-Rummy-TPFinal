@@ -11,6 +11,10 @@ public class Mazo {
     public Mazo(){
         cartasEnMesa = new ArrayList<>();
         mazoDeCartas = new ArrayList<>();
+        crear_cartas();
+    }
+
+    private void crear_cartas() {
         for (int i = 1; i <= 13; i++){
             nueva_carta(Palo.PICAS, i);
         }
