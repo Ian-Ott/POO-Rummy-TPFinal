@@ -2,60 +2,67 @@ package ar.edu.unlu.poo.ventana;
 
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.Carta;
+import ar.edu.unlu.poo.modelo.Observer;
+import ar.edu.unlu.poo.modelo.Palo;
+import org.w3c.dom.Text;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
-public class Ventana implements ActionListener, IVista {
-    JFrame frame;
-    JLabel etiqueta2;
-    Controlador controlador;
-    public Ventana(){
+public class Ventana extends JFrame implements ActionListener, IVista, Observer{
+    private JFrame frame;
+    private JFrame frameEspera;
+    private JLabel etiqueta2;
+    private Controlador controlador;
+    private JLabel cantJugadores;
+    private JPanel panelPrincipal;
+    private JButton mazo;
+    private JPanel menuJugadorAbajo;
+    private JPanel cartasJugadorAbajo;
+    private JPanel menuJugadorDerecha;
+    private JPanel cartasJugadorDerecha;
+    private JPanel menuJugadorIzquierda;
+    private JPanel cartasJugadorIzquierda;
+
+    private JPanel menuJugadorArriba;
+    private JPanel cartasJugadorArriba;
+    private Integer cantidadJugadores = 0;
+    private Integer jugadoresEnVentana = 0;
+
+
+    public Ventana() throws RemoteException {
 
     }
 
     @Override
-    public void iniciarVentana() {
+    public void iniciarVentana(String nombreJugador, boolean esAnfitrion) throws RemoteException {
         frame = new JFrame("Rummy Beta - Version 0.0");
         frame.setSize(1500,1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel etiqueta1 = new JLabel("Seleccione una opcion");
-        JPanel panelPrincipal = (JPanel) frame.getContentPane();
+        panelPrincipal = new JPanel();
+        //JLabel etiqueta1 = new JLabel("Seleccione una opcion");
+        panelPrincipal = (JPanel) frame.getContentPane();
         panelPrincipal.setLayout(new BorderLayout());
-        panelPrincipal.add(etiqueta1,BorderLayout.NORTH);
+        //panelPrincipal.add(etiqueta1,BorderLayout.NORTH);
 
         //jugador de abajo
-        JPanel menuJugadorAbajo = new JPanel();
+        menuJugadorAbajo = new JPanel();
         menuJugadorAbajo.setLayout(new BorderLayout());
 
-        JButton boton1 = new JButton("carta1");
-        boton1.addActionListener(this);
-        boton1.setMinimumSize(new Dimension(20,20));
-        boton1.setMaximumSize(new Dimension(240,240));
-        boton1.setPreferredSize(new Dimension(120,200));
-
-        JButton boton2 = new JButton("carta2");
-        boton2.addActionListener(this);
-        boton2.setMinimumSize(new Dimension(20,20));
-        boton2.setMaximumSize(new Dimension(240,240));
-        boton2.setPreferredSize(new Dimension(120,200));
-        JButton boton3 = new JButton("carta3");
-        boton3.addActionListener(this);
-        boton3.setMinimumSize(new Dimension(20,20));
-        boton3.setMaximumSize(new Dimension(240,240));
-        boton3.setPreferredSize(new Dimension(120,200));
-        JPanel cartasJugadorAbajo = new JPanel();
+        cartasJugadorAbajo = new JPanel();
         cartasJugadorAbajo.setLayout(new FlowLayout());
 
-        cartasJugadorAbajo.add(boton1);
-        cartasJugadorAbajo.add(boton2);
-        cartasJugadorAbajo.add(boton3);
-
-
-        etiqueta2 = new JLabel("jugador 1", SwingConstants.CENTER);
+        String anfitrion = " ";
+        if (esAnfitrion){
+            anfitrion = "|Estrella|";
+            //agregar boton de opciones de mesa
+        }
+        etiqueta2 = new JLabel(" "+ nombreJugador + " " + anfitrion, SwingConstants.CENTER);
+        cantidadJugadores++;
 
         menuJugadorAbajo.add(etiqueta2,BorderLayout.NORTH);
 
@@ -64,98 +71,41 @@ public class Ventana implements ActionListener, IVista {
         panelPrincipal.add(menuJugadorAbajo,BorderLayout.SOUTH);
 
         //jugador de la derecha
-        JPanel menuJugadorDerecha = new JPanel();
+        menuJugadorDerecha = new JPanel();
         menuJugadorDerecha.setLayout(new BorderLayout());
 
-        JButton botonDerecha1 = new JButton("carta1");
-        botonDerecha1.addActionListener(this);
-        botonDerecha1.setMinimumSize(new Dimension(20,20));
-        botonDerecha1.setMaximumSize(new Dimension(40,60));
-        botonDerecha1.setPreferredSize(new Dimension(40,60));
 
-        JButton botonDerecha2 = new JButton("carta2");
-        botonDerecha2.addActionListener(this);
-        botonDerecha2.setMinimumSize(new Dimension(20,20));
-        botonDerecha2.setMaximumSize(new Dimension(40,60));
-        botonDerecha2.setPreferredSize(new Dimension(40,60));
-        JButton botonDerecha3 = new JButton("carta3");
-        botonDerecha3.addActionListener(this);
-        botonDerecha3.setMinimumSize(new Dimension(20,20));
-        botonDerecha3.setMaximumSize(new Dimension(40,60));
-        botonDerecha3.setPreferredSize(new Dimension(40,60));
-        JPanel cartasJugadorDerecha = new JPanel();
+        cartasJugadorDerecha = new JPanel();
         cartasJugadorDerecha.setLayout(new FlowLayout());
 
-        cartasJugadorDerecha.add(botonDerecha1);
-        cartasJugadorDerecha.add(botonDerecha2);
-        cartasJugadorDerecha.add(botonDerecha3);
 
-        etiqueta2 = new JLabel("jugador 2",SwingConstants.CENTER);
+
         menuJugadorDerecha.add(etiqueta2,BorderLayout.NORTH);
         menuJugadorDerecha.add(cartasJugadorDerecha, BorderLayout.CENTER);
         panelPrincipal.add(menuJugadorDerecha,BorderLayout.EAST);
 
         //jugador de la izquierda
-        JPanel menuJugadorIzquierda = new JPanel();
+        menuJugadorIzquierda = new JPanel();
         menuJugadorIzquierda.setLayout(new BorderLayout());
 
-        JButton botonIzquierda1 = new JButton("carta1");
-        botonIzquierda1.addActionListener(this);
-        botonIzquierda1.setMinimumSize(new Dimension(20,20));
-        botonIzquierda1.setMaximumSize(new Dimension(40,60));
-        botonIzquierda1.setPreferredSize(new Dimension(40,60));
 
-        JButton botonIzquierda2 = new JButton("carta2");
-        botonIzquierda2.addActionListener(this);
-        botonIzquierda2.setMinimumSize(new Dimension(20,20));
-        botonIzquierda2.setMaximumSize(new Dimension(40,60));
-        botonIzquierda2.setPreferredSize(new Dimension(40,60));
-        JButton botonIzquierda3 = new JButton("carta3");
-        botonIzquierda3.addActionListener(this);
-        botonIzquierda3.setMinimumSize(new Dimension(20,20));
-        botonIzquierda3.setMaximumSize(new Dimension(40,60));
-        botonIzquierda3.setPreferredSize(new Dimension(40,60));
-        JPanel cartasJugadorIzquierda = new JPanel();
+        cartasJugadorIzquierda = new JPanel();
         cartasJugadorIzquierda.setLayout(new FlowLayout());
 
-        cartasJugadorIzquierda.add(botonIzquierda1);
-        cartasJugadorIzquierda.add(botonIzquierda2);
-        cartasJugadorIzquierda.add(botonIzquierda3);
 
-        etiqueta2 = new JLabel("jugador 4",SwingConstants.CENTER);
         menuJugadorIzquierda.add(etiqueta2,BorderLayout.NORTH);
         menuJugadorIzquierda.add(cartasJugadorIzquierda, BorderLayout.CENTER);
         panelPrincipal.add(menuJugadorIzquierda,BorderLayout.WEST);
 
         //jugador de arriba
-        JPanel menuJugadorArriba = new JPanel();
+        menuJugadorArriba = new JPanel();
         menuJugadorArriba.setLayout(new BorderLayout());
 
-        JButton botonArriba1 = new JButton("carta1");
-        botonArriba1.addActionListener(this);
-        botonArriba1.setMinimumSize(new Dimension(20,20));
-        botonArriba1.setMaximumSize(new Dimension(40,60));
-        botonArriba1.setPreferredSize(new Dimension(40,60));
 
-        JButton botonArriba2 = new JButton("carta2");
-        botonArriba2.addActionListener(this);
-        botonArriba2.setMinimumSize(new Dimension(20,20));
-        botonArriba2.setMaximumSize(new Dimension(40,60));
-        botonArriba2.setPreferredSize(new Dimension(40,60));
-        JButton botonArriba3 = new JButton("carta3");
-        botonArriba3.addActionListener(this);
-        botonArriba3.setMinimumSize(new Dimension(20,20));
-        botonArriba3.setMaximumSize(new Dimension(40,60));
-        botonArriba3.setPreferredSize(new Dimension(40,60));
-        JPanel cartasJugadorArriba = new JPanel();
+        cartasJugadorArriba = new JPanel();
         cartasJugadorArriba.setLayout(new FlowLayout());
 
-        cartasJugadorArriba.add(botonArriba1);
-        cartasJugadorArriba.add(botonArriba2);
-        cartasJugadorArriba.add(botonArriba3);
 
-        etiqueta2 = new JLabel("jugador 3",SwingConstants.CENTER);
-        menuJugadorArriba.add(etiqueta2,BorderLayout.NORTH);
         menuJugadorArriba.add(cartasJugadorArriba, BorderLayout.CENTER);
         panelPrincipal.add(menuJugadorArriba,BorderLayout.NORTH);
 
@@ -163,7 +113,7 @@ public class Ventana implements ActionListener, IVista {
         JPanel menuTablero = new JPanel();
         menuTablero.setLayout(new BorderLayout());
 
-        JButton mazo = new JButton("mazo");
+        mazo = new JButton("mazo");
         mazo.addActionListener(this);
         mazo.setMinimumSize(new Dimension(20,20));
         mazo.setMaximumSize(new Dimension(80,120));
@@ -227,10 +177,17 @@ public class Ventana implements ActionListener, IVista {
         JButton botonCancelar = new JButton("Cancelar");
         panelBotonesDerecha.add(botonListo);
         panelBotonesDerecha.add(botonCancelar);
-
+        jugadoresEnVentana++;
         menuJugadorDerecha.add(panelBotonesDerecha, BorderLayout.SOUTH);
-
+        if (cantidadJugadores >= 2){
+            ArrayList<String> oponentes = controlador.nombreOponentes(nombreJugador);
+            for (int i = 0; i < oponentes.size();i++){
+                agregarOponente(oponentes.get(i));
+                jugadoresEnVentana++;
+            }
+        }
         frame.setVisible(true);
+        frameEspera.setVisible(false);
     }
 
     @Override
@@ -239,33 +196,124 @@ public class Ventana implements ActionListener, IVista {
     }
 
     @Override
-    public void pantallaEspera(boolean anfitrion, int cantJugadores) {
+    public void pantallaEspera(boolean anfitrion) throws InterruptedException, RemoteException {
         if (anfitrion){
-            iniciarVentanaEsperaAnfitrion(cantJugadores);
+            iniciarVentanaEsperaAnfitrion();
         }else {
-            iniciarVentanaEspera(cantJugadores);
+            iniciarVentanaEspera();
             //esta ventana deberia de terminar cuando el anfitrion comience el juego
         }
     }
 
-    private void iniciarVentanaEsperaAnfitrion(int cantJugadores) {
-        frame = new JFrame("Rummy Beta - Version 0.0");
-        frame.setSize(1500,1000);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel etiqueta1 = new JLabel("Esperando a que el se unan jugadores..." + "\nCantidad de jugadores Actual: " + cantJugadores);
-        JPanel panelPrincipal = (JPanel) frame.getContentPane();
-        panelPrincipal.setLayout(new BorderLayout());
-        panelPrincipal.add(etiqueta1,BorderLayout.CENTER);
+    @Override
+    public void actualizarCantJugadores() throws RemoteException {
+        //cantidadJugadores++;
+        String jugadores = String.valueOf(controlador.cantJugadores());
+        cantJugadores.setText(jugadores);
     }
 
-    private void iniciarVentanaEspera(int cantJugadores) {
-        frame = new JFrame("Rummy Beta - Version 0.0");
-        frame.setSize(1500,1000);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel etiqueta1 = new JLabel("Esperando a que el anfitrion comience el juego..." + "\nCantidad de jugadores Actual: " + cantJugadores);
-        JPanel panelPrincipal = (JPanel) frame.getContentPane();
+    @Override
+    public void cerrarPantallaEspera() {
+
+    }
+
+    @Override
+    public void agregarCarta(int numero, Palo palo) {
+        JButton nuevoBotonCarta = new JButton("N:" + numero + "P:" + palo);
+        nuevoBotonCarta.addActionListener(this);
+        nuevoBotonCarta.setMinimumSize(new Dimension(20,20));
+        nuevoBotonCarta.setMaximumSize(new Dimension(240,240));
+        nuevoBotonCarta.setPreferredSize(new Dimension(120,200));
+        cartasJugadorAbajo.add(nuevoBotonCarta);
+    }
+
+    public void agregarOponente(String nombreOponente){
+        etiqueta2 = new JLabel(" " + nombreOponente,SwingConstants.CENTER);
+        etiqueta2.setName(nombreOponente);
+        if (jugadoresEnVentana == 1){
+            menuJugadorDerecha.add(etiqueta2,BorderLayout.NORTH);
+        } else if (jugadoresEnVentana == 2) {
+            menuJugadorArriba.add(etiqueta2,BorderLayout.NORTH);
+        } else if (jugadoresEnVentana == 3) {
+            menuJugadorIzquierda.add(etiqueta2,BorderLayout.NORTH);
+        }
+        //cantidadJugadores++;
+    }
+
+    @Override
+    public void agregarCartaOtroJugador(String nombreJugador) {
+        JButton nuevoBotonCarta = new JButton("reverso");
+        nuevoBotonCarta.addActionListener(this);
+        nuevoBotonCarta.setMinimumSize(new Dimension(20,20));
+        nuevoBotonCarta.setMaximumSize(new Dimension(40,60));
+        nuevoBotonCarta.setPreferredSize(new Dimension(40,60));
+        for (int i = 0;i < menuJugadorDerecha.getComponentCount();i++){
+            if (menuJugadorDerecha.getComponent(i).getName() != null){
+                if (menuJugadorDerecha.getComponent(i).getName().equals(nombreJugador)){
+                    cartasJugadorDerecha.add(nuevoBotonCarta);
+                }
+            }
+        }
+        for (int i = 0;i < menuJugadorIzquierda.getComponentCount();i++) {
+            if (menuJugadorIzquierda.getComponent(i).getName() != null){
+                if (menuJugadorIzquierda.getComponent(i).getName().equals(nombreJugador)) {
+                    cartasJugadorIzquierda.add(nuevoBotonCarta);
+                }
+            }
+        }
+        for (int i = 0;i < menuJugadorArriba.getComponentCount();i++){
+            if (menuJugadorArriba.getComponent(i).getName() != null){
+                if (menuJugadorArriba.getComponent(i).getName().equals(nombreJugador)){
+                    cartasJugadorArriba.add(nuevoBotonCarta);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void nuevoTurno() throws RemoteException {
+
+    }
+
+    private void iniciarVentanaEsperaAnfitrion() throws InterruptedException, RemoteException {
+        frameEspera = new JFrame("Rummy Beta - Version 0.0");
+        frameEspera.setSize(1500,1000);
+        frameEspera.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        cantJugadores = new JLabel();
+        String jugadores = String.valueOf(controlador.cantJugadores());
+        JLabel etiqueta1 = new JLabel("Esperando a que se unan jugadores...\nCantidad de jugadores Actual: ");
+        cantJugadores.setText(jugadores);
+        controlador.nuevoJugador(true);
+        JPanel panelPrincipal = (JPanel) frameEspera.getContentPane();
         panelPrincipal.setLayout(new BorderLayout());
-        panelPrincipal.add(etiqueta1,BorderLayout.CENTER);
+        panelPrincipal.add(cantJugadores,BorderLayout.CENTER);
+        panelPrincipal.add(etiqueta1, BorderLayout.WEST);
+
+        JButton iniciarPartida = new JButton("Iniciar Partida");
+        iniciarPartida.addActionListener(this);
+        iniciarPartida.setMinimumSize(new Dimension(20,20));
+        iniciarPartida.setMaximumSize(new Dimension(50,70));
+        iniciarPartida.setPreferredSize(new Dimension(50,70));
+
+        panelPrincipal.add(iniciarPartida,BorderLayout.SOUTH);
+        frameEspera.setVisible(true);
+    }
+
+    private void iniciarVentanaEspera() throws InterruptedException, RemoteException {
+        frameEspera = new JFrame("Rummy Beta - Version 0.0");
+        frameEspera.setSize(1500,1000);
+        frameEspera.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        String jugadores = String.valueOf(controlador.cantJugadores());
+        JLabel etiqueta1 = new JLabel("Esperando a que el anfitrion comience el juego...\nCantidad de jugadores Actual: ");
+        cantJugadores = new JLabel();
+        cantJugadores.setText(jugadores);
+        controlador.nuevoJugador(false);
+        JPanel panelPrincipal = (JPanel) frameEspera.getContentPane();
+        panelPrincipal.setLayout(new BorderLayout());
+        panelPrincipal.add(cantJugadores,BorderLayout.CENTER);
+        panelPrincipal.add(etiqueta1, BorderLayout.WEST);
+        frameEspera.setVisible(true);
+
     }
 
     public void setControlador(Controlador controlador) {
@@ -278,9 +326,16 @@ public class Ventana implements ActionListener, IVista {
         if (comando.equals("Iniciar Partida")){
             try {
                 controlador.iniciarJuego();
+                //cierro la ventana actual para iniciar el juego
             } catch (RemoteException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
+
+    @Override
+    public void notificarCambio(Object o) throws RemoteException {
+
+    }
+
 }
