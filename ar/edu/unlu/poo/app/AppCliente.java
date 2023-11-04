@@ -10,6 +10,7 @@ import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.IRummy;
 import ar.edu.unlu.poo.modelo.Jugador;
 import ar.edu.unlu.poo.modelo.Rummy;
+import ar.edu.unlu.poo.ventana.Consola;
 import ar.edu.unlu.poo.ventana.IVista;
 import ar.edu.unlu.poo.ventana.Ventana;
 import ar.edu.unlu.rmimvc.RMIMVCException;
@@ -17,7 +18,8 @@ import ar.edu.unlu.rmimvc.Util;
 import ar.edu.unlu.rmimvc.cliente.Cliente;
 
 public class AppCliente {
-    public static void main(String[] args) throws RemoteException {
+    AppServidor server;
+    public static void main(String[] args) throws RemoteException, InterruptedException, RMIMVCException {
         ArrayList<String> ips = Util.getIpDisponibles();
         String ip = (String) JOptionPane.showInputDialog(
                 null,
@@ -51,24 +53,48 @@ public class AppCliente {
                 null,
                 8888
         );
-        IRummy modelo = Rummy.getInstancia();
-        IVista vista = new Ventana();
-        Controlador controlador = new Controlador(vista, modelo);
-        vista.setControlador(controlador);
-        String nombreJugador = (String) JOptionPane.showInputDialog("Seleccione su nombre de usuario");
-        if (!controlador.juegoIniciado()){
-            //crear nuevo jugador
-            Jugador nuevoJugador = new Jugador(nombreJugador);
-            //agregar jugador al rummy
-            modelo.agregarJugador(nuevoJugador);
-            Cliente c = new Cliente(ip, Integer.parseInt(port), ipServidor, Integer.parseInt(portServidor));
-            //tal vez no deberia ser un while
-            while (!controlador.juegoIniciado()){
-                vista.pantallaEspera(false, modelo.getJugadores().size());
+        ArrayList<String> vistasDisponibles = new ArrayList<>();
+        vistasDisponibles.add("Ventana Grafica");
+        vistasDisponibles.add("Consola");
+        String visualizacion = (String) JOptionPane.showInputDialog(
+                null,
+                "Seleccione la vista que quiere para ver el juego", "Visualizacion del juego",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                vistasDisponibles.toArray(),
+                null
+        );
+        try {
+            IVista vista = null;
+            Controlador controlador;
+            if (visualizacion.equals("Ventana Grafica")){
+                 vista = new Ventana();
+            } else if (visualizacion.equals("Consola")) {
+                vista = new Consola();
             }
-            vista.iniciarVentana();
-            try {
+            controlador = new Controlador(vista);
+            vista.setControlador(controlador);
+            //agregar jugador al rummy
+            Cliente c = new Cliente(ip, Integer.parseInt(port), ipServidor, Integer.parseInt(portServidor));
+            //vista.iniciarVentana();
+
                 c.iniciar(controlador);
+            if (!controlador.juegoIniciado()){
+                //controlador.nuevoJugador(nuevoJugador);
+                if(!controlador.juegoIniciado() && controlador.cantJugadores() < 4){
+                    if (controlador.primerJugador()){
+                        vista.pantallaEspera(true);
+                    }else {
+                        vista.pantallaEspera(false);
+                    }
+                }else {
+                    System.out.println("ERROR: maximo de jugadores alcanzado");
+                    System.exit(0);
+                }
+            }else {
+                System.out.println("ERROR: El juego ya fue iniciado");
+            }
+
             } catch (RemoteException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -76,8 +102,7 @@ public class AppCliente {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-        }else {
-            System.out.println("ERROR: El juego ya fue iniciado");
-        }
+
+
     }
 }

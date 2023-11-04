@@ -12,6 +12,10 @@ import ar.edu.unlu.rmimvc.Util;
 import ar.edu.unlu.rmimvc.servidor.Servidor;
 
 public class AppServidor {
+
+    public AppServidor() throws RemoteException {
+    }
+
     public static void main(String[] args) throws RemoteException {
         ArrayList<String> ips = Util.getIpDisponibles();
         String ip = (String) JOptionPane.showInputDialog(
@@ -30,7 +34,9 @@ public class AppServidor {
                 null,
                 8888
         );
-        Rummy modelo = Rummy.getInstancia();
+        IRummy modelo = (IRummy) Rummy.getInstancia();
+
+
         Servidor servidor = new Servidor(ip, Integer.parseInt(port));
         try {
             servidor.iniciar(modelo);
