@@ -1,10 +1,11 @@
 package ar.edu.unlu.poo.modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import static java.lang.Math.random;
 
-public class Mazo {
+public class Mazo implements Serializable {
     private ArrayList<Carta> cartasEnMesa;
     private ArrayList<Carta> mazoDeCartas;
 
@@ -51,21 +52,34 @@ public class Mazo {
             mezclarMazo();
         }
         for (int i = 0; i < cantidadXJugador; i++){
-            cartaAux = mazoDeCartas.remove((int) (random() * (mazoDeCartas.size() - 1)));
+            cartaAux = quitarCartaDeMazo();
             jugador.agregarCartasEnMano(cartaAux);
         }
+        cartasEnMesa.add(quitarCartaDeMazo());
+    }
+
+    private Carta quitarCartaDeMazo(){
+        return mazoDeCartas.remove((int) (random() * (mazoDeCartas.size() - 1)));
     }
     public void sacarCartaMazo(Jugador jugadorQueSolicita){
         if (mazoDeCartas.isEmpty() && !cartasEnMesa.isEmpty()){
             mezclarMazo();
         }
-        Carta cartaAux = mazoDeCartas.remove((int) (random() * (mazoDeCartas.size() - 1)));
+        Carta cartaAux = quitarCartaDeMazo();
         jugadorQueSolicita.agregarCartasEnMano(cartaAux);
     }
 
-    public void sacarCartaBocaArriba(Jugador jugador){
-        Carta cartaAux = cartasEnMesa.remove(cartasEnMesa.size() - 1);
-        jugador.agregarCartasEnMano(cartaAux);
+    public boolean sacarCartaBocaArriba(Jugador jugador){
+        boolean resultado = false;
+        if (!cartasEnMesa.isEmpty()){
+            Carta cartaAux = cartasEnMesa.remove(cartasEnMesa.size() - 1);
+            jugador.agregarCartasEnMano(cartaAux);
+            resultado = true;
+        }else {
+            //agregar excepcion
+            System.out.println("no hay cartas"); //esto es provisional
+        }
+        return resultado;
     }
 
     public void mezclarMazo(){
@@ -78,5 +92,9 @@ public class Mazo {
 
     public void agregarCartaBocaArriba(Carta carta){
         cartasEnMesa.add(carta);
+    }
+
+    public Carta cartaBocaArribaActual() {
+        return cartasEnMesa.get(cartasEnMesa.size() - 1);
     }
 }

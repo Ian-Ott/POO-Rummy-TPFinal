@@ -5,10 +5,12 @@ import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import static java.lang.Math.random;
+
 public class Rummy extends ObservableRemoto implements IRummy {
     private Mazo mazoDeJuego;
     private ArrayList<Jugador> jugadores;
-    private ArrayList<Tapete> tapeteJugadas;
+    private Tapete mesaDeJuego;
     private static Rummy instancia;
     private boolean juegoIniciado;
     private int posicionTurnoActual;
@@ -17,8 +19,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
     public Rummy() throws RemoteException {
         jugadores = new ArrayList<>();
         mazoDeJuego = new Mazo();
-        tapeteJugadas = new ArrayList<>();
+        mesaDeJuego = new Tapete();
         juegoIniciado = false;
+        Tapete nuevoTapete = new Tapete();
         /*jugadores.add(jugador1);
         jugadores.add(jugador2);
         if (jugador3 != null){
@@ -51,11 +54,16 @@ public class Rummy extends ObservableRemoto implements IRummy {
             }
             notificarObservadores("juego iniciado");
             notificarObservadores("cartas repartidas");
-            siguienteTurno(jugadores.get(0));
+            elegirJugadorMano();
         }catch (RemoteException e){
             e.printStackTrace();
         }
 
+    }
+
+    private void elegirJugadorMano() throws RemoteException {
+        //aca se elige cual jugador va a ser mano y se comienza el nuevo turno
+        siguienteTurno(jugadores.get((int) (random() * (jugadores.size() - 1))));
     }
 
     public static IRummy getInstancia() throws RemoteException {
@@ -76,7 +84,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
             for (int i = 0; i < jugadores.size(); i++){
                 mazoDeJuego.repartir(cantidadCartas, jugadores.get(i));
                 for (int j = 0; j < jugadores.get(i).getCartasEnMano().size(); j++){
-                    cartaAux = jugadores.get(i).getCartasEnMano().get(j);
+                    cartaAux = (Carta) jugadores.get(i).getCartasEnMano().get(j);
                     notificarObservadores("jugador"+ i + " "+ cartaAux);
                 }
             }
@@ -87,13 +95,28 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     @Override
-    public void sacarCartaMazo(Jugador jugador) throws RemoteException{
-        mazoDeJuego.sacarCartaMazo(jugador);
+    public void sacarCartaMazo(String jugador) throws RemoteException{
+        Jugador jugadorAux = buscarJugador(jugador);
+        mazoDeJuego.sacarCartaMazo(jugadorAux);
+        notificarObservadores("continuar turno jugador");
     }
 
     @Override
-    public void agarrarCartaBocaArriba(Jugador jugador) throws RemoteException{
-        mazoDeJuego.sacarCartaBocaArriba(jugador);
+    public void agarrarCartaBocaArriba(String nombreJugador) throws RemoteException{
+        Jugador jugadorAux = buscarJugador(nombreJugador);
+        if (mazoDeJuego.sacarCartaBocaArriba(jugadorAux)){
+            //si pudo sacar la carta notifica el cambio a los observadores
+            notificarObservadores("continuar turno jugador");
+        }
+    }
+
+    public Carta getCartaBocaArriba() {
+        return mazoDeJuego.cartaBocaArribaActual();
+    }
+
+    @Override
+    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas) {
+
     }
 
     @Override
@@ -103,8 +126,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
     @Override
     public void crearTapeteConJugada(ArrayList<Carta> jugada){
-        Tapete nuevoTapeteConJugada = new Tapete(jugada);
-        tapeteJugadas.add(nuevoTapeteConJugada);
+        //borrar
     }
 
     @Override
@@ -283,7 +305,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     public ArrayList<Carta> buscarJugada(Carta cartaDeLaJugada) {
         Tapete tapeteAux;
         Carta cartaAux;
-        for (int i = 0; i < tapeteJugadas.size(); i++){
+        /*for (int i = 0; i < tapeteJugadas.size(); i++){
             tapeteAux = tapeteJugadas.get(i);
             for (int j = 0; j < tapeteAux.getJugada().size(); j++){
                 cartaAux = tapeteAux.getJugada().get(j);
@@ -291,7 +313,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
                     return tapeteAux.getJugada();
                 }
             }
-        }
+        }*/ //este metodo sera cambiado y las jugadas seran buscadas por posicion
         return null;
     }
 
@@ -478,7 +500,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public ArrayList<Carta> getCartasJugador(String nombreJugador) throws RemoteException {
         ArrayList<Carta> listaCartas = null;
-
+        //poner una excepcion para no devolver null
         Jugador jugadorAux;
         for (int i = 0; i < jugadores.size(); i++){
             jugadorAux = jugadores.get(i);
@@ -492,6 +514,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
     public String getNombreTurnoActual(){
         return jugadores.get(posicionTurnoActual).getNombre();
     }
+
+
 
 
     /*public boolean esAnfitrion(String nombreJugador) {
