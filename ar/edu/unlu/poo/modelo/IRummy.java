@@ -12,9 +12,9 @@ public interface IRummy extends IObservableRemoto {
 
     void iniciarJuego() throws RemoteException;
 
-    void sacarCartaMazo(Jugador jugador) throws RemoteException;
+    void sacarCartaMazo(String jugador) throws RemoteException;
 
-    void agarrarCartaBocaArriba(Jugador jugador) throws RemoteException;
+    void agarrarCartaBocaArriba(String jugador) throws RemoteException;
 
     void mezclarMazo() throws RemoteException;
 
@@ -79,6 +79,9 @@ public interface IRummy extends IObservableRemoto {
 
     ArrayList<Jugador> getJugadores()throws RemoteException;
     String getNombreTurnoActual()throws RemoteException;
+    public Carta getCartaBocaArriba()throws RemoteException;
+
+    void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException;
 
     //boolean esAnfitrion(String nombreJugador);
 
