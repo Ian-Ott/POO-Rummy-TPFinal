@@ -15,6 +15,14 @@ public class Carta implements Serializable {
         esta_enMazo = true;
     }
 
+    public int getNumero() {
+        return numero;
+    }
+
+    public Palo getPalo() {
+        return palo;
+    }
+
     public void setEsta_enMazo(boolean esta_enMazo) {
         this.esta_enMazo = esta_enMazo;
     }
@@ -24,5 +32,9 @@ public class Carta implements Serializable {
     }
     public int getPuntos() {
         return puntos;
+    }
+
+    public String toString(){
+        return "N:" + numero + "P:" + palo;
     }
 }
