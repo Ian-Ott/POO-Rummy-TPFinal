@@ -1,19 +1,21 @@
 package ar.edu.unlu.poo.modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Tapete {
-    private ArrayList<Carta> jugada;
+public class Tapete implements Serializable {
+    private ArrayList<Jugada> jugada;
 
-    public Tapete(ArrayList<Carta> nuevaJugada){
-        jugada = nuevaJugada;
+    public Tapete(){
+        jugada = new ArrayList<>();
     }
 
-    public ArrayList<Carta> getJugada() {
+    public void agregarJugada(Jugada jugada) {
+        this.jugada.add(jugada);
+    }
+
+    public ArrayList<Jugada> getJugada() {
         return jugada;
     }
 
-    public void agregarCartaAJugada(Carta nuevaCarta) {
-        this.jugada.add(nuevaCarta);
-    }
 }

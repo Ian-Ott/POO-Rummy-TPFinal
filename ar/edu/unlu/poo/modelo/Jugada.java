@@ -6,6 +6,10 @@ public class Jugada {
     private ArrayList<Carta> cartasJugada;
     private String nombreCreadorJugada;
 
+    public void setCartasJugada(ArrayList<Carta> cartasJugada) {
+        this.cartasJugada = cartasJugada;
+    }
+
     public void agregarCartaAJugada(Carta nuevaCarta) {
         this.cartasJugada.add(nuevaCarta);
     }
