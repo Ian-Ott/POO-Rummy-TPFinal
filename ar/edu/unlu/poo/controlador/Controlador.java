@@ -68,6 +68,9 @@ public class Controlador implements IControladorRemoto {
                 vista.nuevoTurno();
             } else if (cambio.equals("continuar turno jugador")) {
                 vista.continuarTurnoActual();
+            } else if (cambio.equals("jugada agregada")) {
+                vista.continuarTurnoActual();
+                //continua el turno por si el jugador quiere hacer otra jugada
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -178,6 +181,10 @@ public class Controlador implements IControladorRemoto {
     }
 
     public void armarRummy(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        rummy.comprobarRummy(posicionesSeleccionadas);
+        rummy.comprobarRummy(posicionesSeleccionadas, nombreJugador);
+    }
+
+    public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
+        rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
     }
 }
