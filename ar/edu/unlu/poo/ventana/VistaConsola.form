@@ -19,7 +19,7 @@
         </constraints>
         <properties>
           <background color="-16777216"/>
-          <foreground color="-16777216"/>
+          <foreground color="-262145"/>
         </properties>
         <border type="none"/>
         <children>

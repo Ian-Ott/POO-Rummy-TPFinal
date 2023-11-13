@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VistaConsola implements IVista{
-    private final JFrame frame;
+    private JFrame frame;
     private JPanel panelConsola;
     private JTextArea txtAreaMuestra;
     private JTextField txtConsola;
@@ -31,22 +31,28 @@ public class VistaConsola implements IVista{
 
 
     public VistaConsola() {
-        this.frame = new JFrame("Rummy Beta - Version 0.0");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setContentPane(panelConsola);
-        frame.pack();
-        frame.setVisible(true);
-        txtAreaMuestra.setEditable(false);
-        enterButton.addActionListener(new ActionListener() {
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    procesarTexto();
-                } catch (RemoteException ex) {
-                    throw new RuntimeException(ex);
-                }
+            public void run() {
+                frame = new JFrame("Rummy Beta - Version 0.0");
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                frame.setContentPane(panelConsola);
+                frame.pack();
+                frame.setVisible(true);
+                txtAreaMuestra.setEditable(false);
+                enterButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            procesarTexto();
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                });
             }
         });
+
     }
 
     private void procesarTexto() throws RemoteException { //achicar metodo
@@ -68,7 +74,9 @@ public class VistaConsola implements IVista{
                     if (posibleRummy){
                         controlador.armarRummy(posicionesSeleccionadas);
                     } else if (posibleEscalera) {
-
+                        controlador.armarEscalera(posicionesSeleccionadas);
+                        posibleEscalera = false;
+                        posicionesSeleccionadas.clear();
                     } else if (posibleCombinacion) {
                     } else if (finTurno) {
 
