@@ -115,8 +115,64 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     @Override
-    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas) {
+    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, Jugador jugador) throws RemoteException {
 
+    }
+
+
+    @Override
+    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        if (!tieneJugada(jugadorActual)) {
+            if (posicionesSeleccionadas.size() == jugadorActual.getCartasEnMano().size()) {
+                ArrayList<Carta> cartasAux = new ArrayList<>();
+                obtenerCartasOrdenadas(cartasAux, jugadorActual);
+                if (EsRummy(cartasAux)) {
+                    agregarJugada(nombreJugador, cartasAux);
+                }
+            } else {
+                //excepcion de que no selecciono todas las cartas
+            }
+        }
+    }
+
+    private void agregarJugada(String nombreJugador, ArrayList<Carta> cartasJugada) {
+        Jugada nuevaJugada = new Jugada();
+        nuevaJugada.setNombreCreadorJugada(nombreJugador);
+        nuevaJugada.setCartasJugada(cartasJugada);
+        mesaDeJuego.agregarJugada(nuevaJugada);
+    }
+
+    private boolean tieneJugada(Jugador jugadorActual) {
+        boolean resultado = false;
+        for (Jugada jugada: mesaDeJuego.getJugada()) {
+            if (jugada.getNombreCreadorJugada().equals(jugadorActual.getNombre())){
+                resultado = true;
+            }
+        }
+        return resultado;
+    }
+
+    private boolean EsRummy(ArrayList<Carta> cartasAux) {
+        //comprobar que el jugador no haya hecho una jugada antes y luego verificar si hace escalera con todas las cartas
+        //parece que pueden ser escaleras o combinaciones
+        return false;
+    }
+
+    private void obtenerCartasOrdenadas(ArrayList<Carta> cartasAux, Jugador jugadorActual) {
+        for (int i = 0; i < jugadorActual.getCartasEnMano().size();i++) {
+            //le saca todas las cartas al jugador para que no queden duplicadas y si ocurre un error luego se devuelven
+            agregarCartaOrdenada(cartasAux,jugadorActual.getCartasEnMano().remove(i));
+        }
+    }
+
+    private ArrayList<Carta> obtenerCartasPorPosicion(ArrayList<Integer> posicionesSeleccionadas, Jugador jugadorActual) {
+        ArrayList<Carta> cartas = new ArrayList<>();
+        for (Integer posicion:posicionesSeleccionadas) {
+            //le saco la carta al jugador para que no quede duplicada
+            agregarCartaOrdenada(cartas,jugadorActual.getCartasEnMano().remove((int)posicion));
+        }
+        return cartas;
     }
 
     @Override
@@ -129,13 +185,29 @@ public class Rummy extends ObservableRemoto implements IRummy {
         //borrar
     }
 
+
     @Override
-    public boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3) throws RemoteException{
+    public boolean comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException{
         boolean resultado = false;
-        ArrayList<Carta> nuevaJugada;
-        if (carta1.numero == carta2.numero && carta2.numero == carta3.numero){
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        if (posicionesSeleccionadas.size() <= jugadorActual.getCartasEnMano().size() && posicionesSeleccionadas.size() >= 3) {
+            ArrayList<Carta> cartasAux = obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual);
+            acomodarValoresExtremos(cartasAux);
+            if (esEscalera(cartasAux)){
+                resultado = true;
+                agregarJugada(nombreJugador, cartasAux);
+                notificarObservadores("jugada agregada");
+            }else {
+                devolverCartas(jugadorActual, cartasAux);
+                //excepcion?
+            }
+            //solo acomoda los valores en el caso de que esten el as al principio y la k al final
+        }else {
+            //excepcion de que no selecciono todas las cartas
+        }
+        /*if (carta1.numero == carta2.numero && carta2.numero == carta3.numero){
             resultado = true;
-        } else if (carta1.palo.equals(carta2.palo) && carta2.palo.equals(carta3.palo)){
+        } else */    /*if (carta1.palo.equals(carta2.palo) && carta2.palo.equals(carta3.palo)){
             nuevaJugada = generarPosibleEscalera(carta1, carta2, carta3);
             if (carta1.numero == 1 || carta2.numero == 1 || carta3.numero == 1){
                 if (carta1.numero == 13 || carta2.numero == 13 || carta3.numero == 13){
@@ -147,10 +219,15 @@ public class Rummy extends ObservableRemoto implements IRummy {
             boolean es_escalera = esEscalera(nuevaJugada);
             if (es_escalera){
                 resultado = true;
-            }
-        }
+            }*/
 
         return resultado;
+    }
+
+    private void devolverCartas(Jugador jugadorActual, ArrayList<Carta> cartasAux) {
+        while (!cartasAux.isEmpty()){
+            jugadorActual.devolverCarta(cartasAux.remove(0));
+        }
     }
 
     @Override
@@ -173,27 +250,26 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada) {
         Carta cartaAux;
+        int posAgregada = 0;
+        int siguiente;
+        int anterior;
         int posUltimaCarta = nuevaJugada.size() - 1;
-        //AVISO: este metodo acomoda tanto para 3 como para 4 cartas
         if (nuevaJugada.get(0).numero == 1){
-            if (nuevaJugada.get(posUltimaCarta).numero == 13){
-                cartaAux = nuevaJugada.remove(posUltimaCarta);
-                nuevaJugada.add(0,cartaAux);
-            }
-            if (nuevaJugada.get(nuevaJugada.size() - 1).numero == 12){
-                cartaAux = nuevaJugada.remove(posUltimaCarta);
-                nuevaJugada.add(0,cartaAux);
-            }
-            if (nuevaJugada.get(nuevaJugada.size() - 1).numero == 11){
-                cartaAux = nuevaJugada.remove(posUltimaCarta);
-                nuevaJugada.add(0,cartaAux);
+            if (nuevaJugada.get(posUltimaCarta).numero == 13) {
+                for (int i = 0; i < nuevaJugada.size(); i++) {
+                    //si el numero anterior sumado 1 no es igual al siguiente
+                    // es posible que sea el inicio de la escalera
+                    siguiente = nuevaJugada.get(i + 1).numero;
+                    anterior = (nuevaJugada.get(i).numero + 1);
+                    if (siguiente > anterior) {
+                        cartaAux = nuevaJugada.remove(i + 1);
+                        nuevaJugada.add(posAgregada, cartaAux);
+                        posAgregada++;
+                        //posAgregada sirve para saber en que posicion mover la carta mal ordenada
+                    }
+                }
             }
         }
-        //CASO 3 CARTAS: al estar ordenado de menor a mayor solo hay dos estados posibles con 3 cartas en los que puede quedar desordenada la escalera
-        // y este metodo lo acomoda (escalera desordenada caso 1: 1-2-13) (escalera desordenada caso 2: 1-12-13)
-
-        //CASO 4 CARTAS: al estar ordenado de menor a mayor solo hay tres estados posibles con 4 cartas en los que puede quedar desordenada la escaler
-        // y este metodo lo acomoda (escalera desordenada caso 1: 1-2-12-13) (escalera desordenada caso 2: 1-2-3-13) (escalera desordenada caso 3: 1-11-12-13)
     }
 
 
@@ -362,23 +438,23 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     @Override
     public void accionLista(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException{
-        boolean es_escalera;
+        /*boolean es_escalera;
         if (carta4 == null){
-            es_escalera = comprobarJugada(carta1, carta2, carta3);
+            es_escalera = comprobarEscalera(carta1, carta2, carta3);
             if (es_escalera){
                 crearJugada(carta1, carta2, carta3);
             }
         } else if (carta1 != null && carta2 != null && carta3 != null) {
             //este if sirve para confirmar que se esten agregando de 3 a 4 cartas
-            es_escalera = comprobarJugada(carta1, carta2, carta3, carta4);
+            es_escalera = comprobarEscalera(carta1, carta2, carta3, carta4);
             if (es_escalera){
                 crearJugada(carta1, carta2, carta3,  carta4);
             }
-        }
+        }*/
     }
 
-    @Override
-    public boolean comprobarJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
+
+    /*public boolean comprobarEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
         boolean resultado = false;
         ArrayList<Carta> nuevaJugada;
         if (carta1.numero == carta2.numero && carta2.numero == carta3.numero && carta3.numero == carta4.numero){
@@ -396,7 +472,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
             }
         }
         return resultado;
-    }
+    }*/
 
     @Override
     public boolean crearJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4) {
