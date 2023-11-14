@@ -197,7 +197,7 @@ public class Controlador implements IControladorRemoto {
     }
 
     public void agregarCartasAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada) throws RemoteException {
-        rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada);
+        rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada, nombreJugador);
     }
 
     public ITapete obtenerJugadas() {
