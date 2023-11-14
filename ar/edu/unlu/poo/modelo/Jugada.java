@@ -25,4 +25,13 @@ public class Jugada {
     public String getNombreCreadorJugada() {
         return nombreCreadorJugada;
     }
+
+    @Override
+    public String toString() {
+        String acumulador = "\n";
+        for (int i = 0; i < cartasJugada.size(); i++) {
+            acumulador += cartasJugada.get(i);
+        }
+        return acumulador;
+    }
 }
