@@ -33,4 +33,9 @@ public interface IVista {
     void nuevoTurno() throws RemoteException;
 
     void continuarTurnoActual() throws RemoteException;
+
+    void finalizarPartida();
+
+
+    void actualizarJugadas();
 }

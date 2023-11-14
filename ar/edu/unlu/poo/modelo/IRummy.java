@@ -18,6 +18,8 @@ public interface IRummy extends IObservableRemoto {
 
     void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException;
 
+    void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException;
+
     void mezclarMazo() throws RemoteException;
 
     void crearTapeteConJugada(ArrayList<Carta> jugada)throws RemoteException;
@@ -38,13 +40,13 @@ public interface IRummy extends IObservableRemoto {
     /*private void agregarJugadaATapete(ArrayList<Carta> jugada){
 
         }*/
-    void agregarCartaAJugada(Carta cartaElegida, Carta cartaDeLaJugada)throws RemoteException;
+    void agregarCartaAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada, String nombreJugador)throws RemoteException;
 
     void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida)throws RemoteException;
 
-    ArrayList<Carta> buscarJugada(Carta cartaDeLaJugada)throws RemoteException;
+    ArrayList<Carta> buscarJugada(int posicionDeLaJugada) throws RemoteException;
 
-    void terminarTurno(Carta carta1, String jugadorActual) throws RemoteException;
+    void terminarTurno(ArrayList<Integer> carta1, String jugadorActual) throws RemoteException;
 
     Jugador buscarJugadorIzquierda(Jugador jugadorActual)throws RemoteException;
 
@@ -60,7 +62,7 @@ public interface IRummy extends IObservableRemoto {
 
     ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
 
-    void finalizarPartida(Jugador jugador)throws RemoteException;
+    void finalizarPartida(String jugador)throws RemoteException;
 
     void sumarPuntos() throws RemoteException;
 
@@ -82,7 +84,8 @@ public interface IRummy extends IObservableRemoto {
     String getNombreTurnoActual()throws RemoteException;
     public Carta getCartaBocaArriba()throws RemoteException;
 
-    void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, Jugador jugador) throws RemoteException;
+    ITapete getJugadas();
+
 
     //boolean esAnfitrion(String nombreJugador);
 
