@@ -1,7 +1,6 @@
 package ar.edu.unlu.poo.controlador;
 
 import ar.edu.unlu.poo.modelo.*;
-import ar.edu.unlu.poo.ventana.Consola;
 import ar.edu.unlu.poo.ventana.IVista;
 import ar.edu.unlu.poo.ventana.VistaConsola;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
@@ -69,8 +68,9 @@ public class Controlador implements IControladorRemoto {
             } else if (cambio.equals("continuar turno jugador")) {
                 vista.continuarTurnoActual();
             } else if (cambio.equals("jugada agregada")) {
-                vista.continuarTurnoActual();
-                //continua el turno por si el jugador quiere hacer otra jugada
+                vista.actualizarJugadas();
+            } else if (cambio.equals("fin de partida")) {
+                vista.finalizarPartida();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -155,8 +155,12 @@ public class Controlador implements IControladorRemoto {
         return null;
     }
 
-    public void terminarTurno(String nombreJugador, Carta carta) throws RemoteException {
-        rummy.terminarTurno(carta,nombreJugador);
+    public void terminarTurno(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
+        if (posicionesSeleccionadas.size() == 1){
+            rummy.terminarTurno(posicionesSeleccionadas,nombreJugador);
+        } else if (posicionesSeleccionadas.isEmpty()) {
+            rummy.finalizarPartida(nombreJugador);
+        }
     }
 
     public boolean esTurnoJugador() throws RemoteException {
@@ -186,5 +190,17 @@ public class Controlador implements IControladorRemoto {
 
     public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
         rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+    }
+
+    public void armarCombinacionIguales(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
+        rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
+    }
+
+    public void agregarCartasAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada) throws RemoteException {
+        rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada);
+    }
+
+    public ITapete obtenerJugadas() {
+        return rummy.getJugadas();
     }
 }

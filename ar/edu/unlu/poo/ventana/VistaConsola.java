@@ -3,13 +3,13 @@ package ar.edu.unlu.poo.ventana;
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.Carta;
 import ar.edu.unlu.poo.modelo.ICarta;
+import ar.edu.unlu.poo.modelo.ITapete;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class VistaConsola implements IVista{
     private JFrame frame;
@@ -26,8 +26,16 @@ public class VistaConsola implements IVista{
     private boolean posibleRummy = false;
     private boolean posibleEscalera = false;
     private boolean posibleCombinacion = false;
+
+    private boolean posibleCartaParaJugada = false;
     private boolean finTurno = false;
     private ArrayList<Integer> posicionesSeleccionadas = new ArrayList<>();
+
+    private boolean seleccionJugada = false;
+
+    private boolean jugadasSinVer = false;
+
+    private int posicionJugada;
 
 
     public VistaConsola() {
@@ -73,31 +81,61 @@ public class VistaConsola implements IVista{
                 } else if (numero == 0) {
                     if (posibleRummy){
                         controlador.armarRummy(posicionesSeleccionadas);
+                        posicionesSeleccionadas.clear();
                     } else if (posibleEscalera) {
                         controlador.armarEscalera(posicionesSeleccionadas);
                         posibleEscalera = false;
                         posicionesSeleccionadas.clear();
                     } else if (posibleCombinacion) {
+                        controlador.armarCombinacionIguales(posicionesSeleccionadas);
+                        posicionesSeleccionadas.clear();
+                    } else if (posibleCartaParaJugada) {
+                        if (posicionesSeleccionadas.isEmpty()){
+                            continuarTurnoActual();
+                        }else {
+                            posibleCartaParaJugada = false;
+                            controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
+                        }
                     } else if (finTurno) {
-
+                        controlador.terminarTurno(posicionesSeleccionadas);
+                        posicionesSeleccionadas.clear();
+                    }else {
+                        //excepcion
                     }
                 } else {
-
+                    //excepcion
                 }
+            } else if (seleccionJugada) {
+                int numero = textoIngresado.indexOf(controlador.getCartasSize());
+                if (numero <= controlador.getCartasSize() && numero > 0){
+                    posicionJugada = numero;
+                    mostrarSeleccionCartas();
+                    posibleCartaParaJugada = true;
+                } else if (numero == 0) {
+                    continuarTurnoActual();
+                }
+                seleccionJugada = false;
             } else {
                 if (textoIngresado.equals("1")){
-                    seleccionarCartasRummy();
+                    mostrarSeleccionCartas();
+                    posibleRummy = true;
                 } else if (textoIngresado.equals("2")) {
-
+                    mostrarSeleccionCartas();
+                    posibleEscalera = true;
                 }
                 else if (textoIngresado.equals("3")) {
-
+                    mostrarSeleccionCartas();
+                    posibleCombinacion = true;
                 } else if (textoIngresado.equals("4")) {
-
+                    jugadasSinVer = false;
+                    mostrarJugadasEnMesa();
                 } else if (textoIngresado.equals("5")) {
+                    mostrarCantidadCartas();
+                } else if (textoIngresado.equals("6")) {
 
-                }else if (textoIngresado.equals("0")) {
-
+                } else if (textoIngresado.equals("0")) {
+                    finTurno = true;
+                    terminarTurno();
                 }else {
                     opcionIncorrecta();
                 }
@@ -116,6 +154,9 @@ public class VistaConsola implements IVista{
         }
     }
 
+    private void mostrarCantidadCartas() {
+    }
+
     private void agregarPosicion(int numero) {
         if (!posicionesSeleccionadas.contains(numero)){
             posicionesSeleccionadas.add(numero);
@@ -124,11 +165,11 @@ public class VistaConsola implements IVista{
         }
     }
 
-    private void seleccionarCartasRummy() throws RemoteException {
-        posibleRummy = true;
+    private void mostrarSeleccionCartas() throws RemoteException {
+
         mostrarCartas();
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                "\n seleccione las cartas segun su posicion (empezando por la 1)");
+                "\n seleccione las cartas segun su posicion (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
     }
 
     public void opcionIncorrecta(){
@@ -208,6 +249,18 @@ public class VistaConsola implements IVista{
 
     }
 
+    private void mostrarJugadasEnMesa() {
+        ITapete jugadasEnMesa = controlador.obtenerJugadas();
+        txtAreaMuestra.setText("\n");
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada que quiera con un numero (empezando con el de arriba que es la 1) y sino presione 0 para cancelar");
+        seleccionJugada = true;
+    }
+    private void terminarTurno() throws RemoteException {
+        txtAreaMuestra.setText("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
+        mostrarSeleccionCartas();
+    }
+
 
 
 
@@ -226,6 +279,10 @@ public class VistaConsola implements IVista{
                 "\nCarta disponible en la pila de descartes:" + controlador.getCartaDescarte()+
                 "\nTus cartas:\n");
         mostrarCartas();
+        if (jugadasSinVer){
+            txtAreaMuestra.setText(txtAreaMuestra.getText() +
+                    "Hay nuevas jugadas disponibles en la mesa!!!");
+        }
     }
 
 
@@ -280,5 +337,23 @@ public class VistaConsola implements IVista{
             mostrarMenu();
             mostrarCartas();
         }
+    }
+
+    @Override
+    public void finalizarPartida() {
+        limpiarPantalla();
+        txtAreaMuestra.setText("La partida ha finalizado!!! El ganador es..." +
+                " con x puntos");
+        mostrarTablaPosiciones();
+    }
+
+    @Override
+    public void actualizarJugadas() {
+        jugadasSinVer = true;
+    }
+
+    private void mostrarTablaPosiciones() {
+        txtAreaMuestra.setText(txtAreaMuestra.getText() +
+                "\nTabla de posiciones:");
     }
 }
