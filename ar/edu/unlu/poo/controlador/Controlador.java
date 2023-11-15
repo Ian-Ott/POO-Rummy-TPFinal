@@ -127,11 +127,38 @@ public class Controlador implements IControladorRemoto {
     }
 
     public void nuevoJugador(boolean anfitrion) throws RemoteException {
-        String nombreJugador = (String) JOptionPane.showInputDialog("Seleccione su nombre de usuario");
+        String nombreJugador = obtenerNombre();
         Jugador nuevoJugador = new Jugador(nombreJugador);
         this.nombreJugador = nombreJugador;
         nuevoJugador.setJefeMesa(anfitrion);
         rummy.agregarJugador(nuevoJugador);
+    }
+
+    private String obtenerNombre() throws RemoteException {
+        boolean nombreRepetido = true;
+        String nombre = "";
+        while(nombreRepetido){
+            nombre = (String) JOptionPane.showInputDialog("Seleccione su nombre de usuario");
+            if (estaEnElJuego(nombre)){
+                JOptionPane.showMessageDialog(null, "Error: hay alguien con ese nombre en la partida!!!");
+            }else {
+                nombreRepetido = false;
+            }
+        }
+        return nombre;
+    }
+
+    private boolean estaEnElJuego(String nombreJugador) throws RemoteException {
+        boolean resultado = false;
+        ArrayList<String> nombres = rummy.getNombreJugadores();
+        if (!nombres.isEmpty()){
+            for (int i = 0; i < nombres.size(); i++) {
+                if (nombres.get(i).equals(nombreJugador)){
+                    resultado = true;
+                }
+            }
+        }
+        return resultado;
     }
 
     public boolean primerJugador() throws RemoteException {
@@ -189,18 +216,24 @@ public class Controlador implements IControladorRemoto {
     }
 
     public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+        if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
+            rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+        }
     }
 
     public void armarCombinacionIguales(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
+        if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
+            rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
+        }else {
+            System.out.println("error cantidad incorrecta de posiciones");
+        }
     }
 
     public void agregarCartasAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada) throws RemoteException {
         rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada, nombreJugador);
     }
 
-    public ITapete obtenerJugadas() {
+    public ITapete obtenerJugadas() throws RemoteException {
         return rummy.getJugadas();
     }
 }

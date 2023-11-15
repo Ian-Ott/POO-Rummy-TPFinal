@@ -75,33 +75,41 @@ public class VistaConsola implements IVista{
                     opcionIncorrecta();
                 }
             } else if (seleccionCartas) {
-                int numero = textoIngresado.indexOf(controlador.getCartasSize());
-                if (numero <= controlador.getCartasSize() && numero > 0){
-                    agregarPosicion(numero);
-                } else if (numero == 0) {
+                int numero;
+                numero = Integer.parseInt(textoIngresado);
+                if (numero == 0){
+                    seleccionCartas = false;
                     if (posibleRummy){
+                        posibleRummy = false;
                         controlador.armarRummy(posicionesSeleccionadas);
                         posicionesSeleccionadas.clear();
                     } else if (posibleEscalera) {
-                        controlador.armarEscalera(posicionesSeleccionadas);
                         posibleEscalera = false;
+                        controlador.armarEscalera(posicionesSeleccionadas);
                         posicionesSeleccionadas.clear();
                     } else if (posibleCombinacion) {
+                        posibleCombinacion = false;
                         controlador.armarCombinacionIguales(posicionesSeleccionadas);
                         posicionesSeleccionadas.clear();
                     } else if (posibleCartaParaJugada) {
+                        posibleCartaParaJugada = false;
                         if (posicionesSeleccionadas.isEmpty()){
                             continuarTurnoActual();
                         }else {
-                            posibleCartaParaJugada = false;
                             controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
                         }
+                        posicionesSeleccionadas.clear();
                     } else if (finTurno) {
+                        finTurno = false;
                         controlador.terminarTurno(posicionesSeleccionadas);
                         posicionesSeleccionadas.clear();
                     }else {
                         //excepcion
                     }
+                } else if (numero <= controlador.getCartasSize() && numero > 0) {
+                    agregarPosicion(numero - 1);
+                    txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
+
                 } else {
                     //excepcion
                 }
@@ -124,8 +132,8 @@ public class VistaConsola implements IVista{
                     posibleEscalera = true;
                 }
                 else if (textoIngresado.equals("3")) {
-                    mostrarSeleccionCartas();
                     posibleCombinacion = true;
+                    mostrarSeleccionCartas();
                 } else if (textoIngresado.equals("4")) {
                     jugadasSinVer = false;
                     mostrarJugadasEnMesa();
@@ -166,10 +174,10 @@ public class VistaConsola implements IVista{
     }
 
     private void mostrarSeleccionCartas() throws RemoteException {
-
         mostrarCartas();
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
                 "\n seleccione las cartas segun su posicion (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
+        seleccionCartas = true;
     }
 
     public void opcionIncorrecta(){
@@ -236,7 +244,7 @@ public class VistaConsola implements IVista{
     }
 
     private void limpiarPantalla(){
-        txtAreaMuestra.setText("");
+        txtAreaMuestra.setText(" ");
     }
 
     @Override
@@ -249,7 +257,7 @@ public class VistaConsola implements IVista{
 
     }
 
-    private void mostrarJugadasEnMesa() {
+    private void mostrarJugadasEnMesa() throws RemoteException {
         ITapete jugadasEnMesa = controlador.obtenerJugadas();
         txtAreaMuestra.setText("\n");
         txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
@@ -334,6 +342,7 @@ public class VistaConsola implements IVista{
     public void continuarTurnoActual() throws RemoteException {
         if (controlador.esTurnoJugador()){
             primerasOpciones = false;
+            limpiarPantalla();
             mostrarMenu();
             mostrarCartas();
         }
@@ -348,8 +357,9 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void actualizarJugadas() {
+    public void actualizarJugadas() throws RemoteException {
         jugadasSinVer = true;
+        continuarTurnoActual();
     }
 
     private void mostrarTablaPosiciones() {
