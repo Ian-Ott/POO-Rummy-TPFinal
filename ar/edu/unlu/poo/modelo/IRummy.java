@@ -22,24 +22,11 @@ public interface IRummy extends IObservableRemoto {
 
     void mezclarMazo() throws RemoteException;
 
-    void crearTapeteConJugada(ArrayList<Carta> jugada)throws RemoteException;
-
 
     boolean esEscalera(ArrayList<Carta> nuevaJugada)throws RemoteException;
 
     void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada)throws RemoteException;
 
-    ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3)throws RemoteException;
-
-    boolean crearJugada(Carta carta1, Carta carta2, Carta carta3) throws RemoteException;
-
-    boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3) throws RemoteException;
-
-    boolean comprobarValores(Carta carta1, Carta carta2, Carta carta3, Carta carta4) throws RemoteException;
-
-    /*private void agregarJugadaATapete(ArrayList<Carta> jugada){
-
-        }*/
     void agregarCartaAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada, String nombreJugador)throws RemoteException;
 
     void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida)throws RemoteException;
@@ -50,21 +37,13 @@ public interface IRummy extends IObservableRemoto {
 
     Jugador buscarJugadorIzquierda(Jugador jugadorActual)throws RemoteException;
 
-    void cancelarAccion() throws RemoteException;
 
-    void accionLista(Carta carta1, Carta carta2, Carta carta3, Carta carta4) throws RemoteException;
+    void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException;
 
-    boolean comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException;
-
-    boolean crearJugada(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
-
-    boolean tieneExtremos(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
-
-    ArrayList<Carta> generarPosibleEscalera(Carta carta1, Carta carta2, Carta carta3, Carta carta4)throws RemoteException;
 
     void finalizarPartida(String jugador)throws RemoteException;
 
-    void sumarPuntos() throws RemoteException;
+    void contarPuntosPartida() throws RemoteException;
 
     void agregarPuntosClasificacion()throws RemoteException;
 
@@ -78,13 +57,21 @@ public interface IRummy extends IObservableRemoto {
 
     ArrayList<String> getNombreOponentes(String nombreJugador)throws RemoteException;
 
+    ArrayList<String> getNombreJugadores()throws RemoteException;
+
     ArrayList<Carta> getCartasJugador(String nombreJugador) throws RemoteException;
 
     ArrayList<Jugador> getJugadores()throws RemoteException;
     String getNombreTurnoActual()throws RemoteException;
-    public Carta getCartaBocaArriba()throws RemoteException;
+    Carta getCartaBocaArriba()throws RemoteException;
 
-    ITapete getJugadas();
+    ITapete getMesaJugadas()throws RemoteException;
+
+    int getCantCartasOponente(String oponente) throws RemoteException;
+
+    void modoExpres() throws RemoteException;
+
+    void modoPuntos() throws RemoteException;
 
 
     //boolean esAnfitrion(String nombreJugador);

@@ -71,6 +71,8 @@ public class Controlador implements IControladorRemoto {
                 vista.actualizarJugadas();
             } else if (cambio.equals("fin de partida")) {
                 vista.finalizarPartida();
+            } else if (cambio.equals("partida cerrada")) {
+                vista.cerrarPartida();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -234,6 +236,30 @@ public class Controlador implements IControladorRemoto {
     }
 
     public ITapete obtenerJugadas() throws RemoteException {
-        return rummy.getJugadas();
+        return rummy.getMesaJugadas();
+    }
+
+    public int cantCartasOponente(String oponente) throws RemoteException {
+        return rummy.getCantCartasOponente(oponente);
+    }
+
+    public void activarModoExpres() {
+        try {
+            rummy.modoExpres();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getJugadasSize() throws RemoteException {
+        return rummy.getMesaJugadas().getJugada().size();
+    }
+
+    public void activarModoPuntos() {
+        try {
+            rummy.modoPuntos();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

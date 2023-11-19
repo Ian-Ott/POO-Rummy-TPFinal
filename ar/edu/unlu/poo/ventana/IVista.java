@@ -37,5 +37,7 @@ public interface IVista {
     void finalizarPartida();
 
 
-    void actualizarJugadas();
+    void actualizarJugadas() throws RemoteException;
+
+    void cerrarPartida();
 }
