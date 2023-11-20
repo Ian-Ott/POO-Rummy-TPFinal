@@ -8,36 +8,46 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public interface IVista {
-    void iniciarVentana(String nombreJugador, boolean b) throws RemoteException;
+    void iniciarVentana(String nombreJugador, boolean b);
 
     void actualizarCarta(Carta cambio);
 
     void setControlador(Controlador controlador);
 
-    void pantallaEspera(boolean anfitrion) throws InterruptedException, RemoteException;
+    void pantallaEspera(boolean anfitrion);
 
-    void actualizarCantJugadores() throws RemoteException, InterruptedException;
+    void actualizarCantJugadores();
 
     void cerrarPantallaEspera();
 
 
-    void iniciarTurno() throws RemoteException;
+    void iniciarTurno();
 
-    void esperarTurno() throws RemoteException;
+    void esperarTurno();
 
-    void darControl() throws RemoteException;
+    void darControl();
 
 
     void actualizarCartas(ArrayList<ICarta> cartasJugador);
 
-    void nuevoTurno() throws RemoteException;
+    void nuevoTurno();
 
-    void continuarTurnoActual() throws RemoteException;
+    void continuarTurnoActual();
 
     void finalizarPartida();
 
 
-    void actualizarJugadas() throws RemoteException;
+    void actualizarJugadas();
 
     void cerrarPartida();
+
+    void mostrarErrorApuesta();
+
+    void avisarSobreApuesta();
+
+    void mostrarResultadosPuntos();
+
+    void finalizarPartidaAmistosamente();
+
+    void eleccionAnularPartida();
 }

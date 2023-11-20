@@ -13,51 +13,31 @@ import java.util.ArrayList;
 public class Controlador implements IControladorRemoto {
     private IRummy rummy;
     private IVista vista;
-    //Rummy modelo = new Rummy();
-    private ArrayList<Carta> cartasActuales = new ArrayList<>();
     private String nombreJugador;
     private boolean anfitrion;
-    public Controlador(IVista vista) throws RemoteException {
+    public Controlador(IVista vista){
         this.vista = vista;
     }
 
-    public void crearJugada(Jugador jugadorActual) throws RemoteException{
-        boolean exito = false;
-        if (cartasActuales.size() == 3){
-            exito = rummy.crearJugada(cartasActuales.get(0), cartasActuales.get(1), cartasActuales.get(2));
-        } else if (cartasActuales.size() == 4) {
-            exito = rummy.crearJugada(cartasActuales.get(0), cartasActuales.get(1), cartasActuales.get(2), cartasActuales.get(3));
-        }
-        if (exito){
-            for (int i = 0; i < cartasActuales.size(); i++){
-                jugadorActual.usarCarta(cartasActuales.remove(i));
-            }
-        }else {
-            //elimino las cartas elegidas asi se pueden seleccionar nuevas
-            cartasActuales = new ArrayList<>();
-        }
-    }
-
-    public void cartaSeleccionada(Carta carta){
-        if (cartasActuales.size() <= 4){
-            cartasActuales.add(carta);
-        }
-    }
 
     /*public void agregameComoObservador(Observer observador){
         rummy.addObserver(observador);
     }*/
 
     @Override
-    public <T extends IObservableRemoto> void setModeloRemoto(T modeloRemoto) throws RemoteException {
+    public <T extends IObservableRemoto> void setModeloRemoto(T modeloRemoto){
         this.rummy = (IRummy) modeloRemoto;
     }
 
     @Override
-    public void actualizar(IObservableRemoto modelo, Object cambio) throws RemoteException {
+    public void actualizar(IObservableRemoto modelo, Object cambio){
         try{
             if (cambio.toString().equals("cartas repartidas")){
                 obtenerCartas();
+            } else if (cambio.equals("nueva apuesta")) {
+                vista.avisarSobreApuesta();
+            } else if (cambio.equals("apuesta cancelada")) {
+                vista.mostrarErrorApuesta();
             } else if (cambio.equals("juego iniciado")) {
                 vista.iniciarVentana(nombreJugador, anfitrion);
             } else if (cambio.equals("nuevo jugador")) {
@@ -73,6 +53,16 @@ public class Controlador implements IControladorRemoto {
                 vista.finalizarPartida();
             } else if (cambio.equals("partida cerrada")) {
                 vista.cerrarPartida();
+            } else if (cambio.equals("partida cerrada modo expres")) {
+                vista.cerrarPartida();
+                vista.finalizarPartida();
+            } else if (cambio.equals("pedido anular partida")) {
+                vista.eleccionAnularPartida();
+            } else if (cambio.equals("finalizo partida amistosamente")) {
+                vista.finalizarPartidaAmistosamente();
+            } else if (cambio.equals("nueva ronda")) {
+                vista.mostrarResultadosPuntos();
+                vista.pantallaEspera(anfitrion);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -87,8 +77,13 @@ public class Controlador implements IControladorRemoto {
         this.anfitrion = anfitrion;
     }
 
-    public ArrayList<ICarta> obtenerCartas() throws RemoteException {
-        ArrayList<Carta> cartasJugadorAux = rummy.getCartasJugador(nombreJugador);
+    public ArrayList<ICarta> obtenerCartas(){
+        ArrayList<Carta> cartasJugadorAux = null;
+        try {
+            cartasJugadorAux = rummy.getCartasJugador(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         ArrayList<ICarta> cartasJugador = cambiarTipoCartas(cartasJugadorAux);
         if (vista instanceof VistaConsola){
             vista.actualizarCartas(cartasJugador);
@@ -101,42 +96,62 @@ public class Controlador implements IControladorRemoto {
         return new ArrayList<>(cartasJugadorAux);
     }
 
-    public int getCartasSize() throws RemoteException {
-        return rummy.getCartasJugador(nombreJugador).size();
+    public int getCartasSize(){
+        try {
+            return rummy.getCartasJugador(nombreJugador).size();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public ICarta getCartaDescarte() throws RemoteException {
-        return rummy.getCartaBocaArriba();
+    public ICarta getCartaDescarte(){
+        try {
+            return rummy.getCartaBocaArriba();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
-    public boolean juegoIniciado() throws RemoteException {
-        return rummy.isJuegoIniciado();
+    public boolean juegoIniciado(){
+        try {
+            return rummy.isJuegoIniciado();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public boolean iniciarJuego() throws RemoteException {
+    public boolean iniciarJuego(){
         boolean resultado = false;
-        if (rummy.getJugadores().size() >= 2){
-            rummy.iniciarJuego();
-            resultado = true;
-        }else {
-            if (vista instanceof VistaConsola){
-                JOptionPane.showMessageDialog(null,"ERROR: faltan jugadores para iniciar el juego");
+        try {
+            if (rummy.getJugadores().size() >= 2){
+                rummy.iniciarJuego();
+                resultado = true;
+            }else {
+                if (vista instanceof VistaConsola){
+                    JOptionPane.showMessageDialog(null,"ERROR: faltan jugadores para iniciar el juego");
+                }
+                //posible dialogo de mensaje
             }
-            //posible dialogo de mensaje
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
         return resultado;
     }
 
-    public void nuevoJugador(boolean anfitrion) throws RemoteException {
+    public void nuevoJugador(boolean anfitrion){
         String nombreJugador = obtenerNombre();
         Jugador nuevoJugador = new Jugador(nombreJugador);
         this.nombreJugador = nombreJugador;
         nuevoJugador.setJefeMesa(anfitrion);
-        rummy.agregarJugador(nuevoJugador);
+        try {
+            rummy.agregarJugador(nuevoJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private String obtenerNombre() throws RemoteException {
+    private String obtenerNombre(){
         boolean nombreRepetido = true;
         String nombre = "";
         while(nombreRepetido){
@@ -150,9 +165,14 @@ public class Controlador implements IControladorRemoto {
         return nombre;
     }
 
-    private boolean estaEnElJuego(String nombreJugador) throws RemoteException {
+    private boolean estaEnElJuego(String nombreJugador){
         boolean resultado = false;
-        ArrayList<String> nombres = rummy.getNombreJugadores();
+        ArrayList<String> nombres = null;
+        try {
+            nombres = rummy.getNombreJugadores();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         if (!nombres.isEmpty()){
             for (int i = 0; i < nombres.size(); i++) {
                 if (nombres.get(i).equals(nombreJugador)){
@@ -163,16 +183,24 @@ public class Controlador implements IControladorRemoto {
         return resultado;
     }
 
-    public boolean primerJugador() throws RemoteException {
+    public boolean primerJugador()  {
         boolean resultado = false;
-        if (rummy.getJugadores().isEmpty()){
-            resultado = true;
+        try {
+            if (rummy.getJugadores().isEmpty()){
+                resultado = true;
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
         return resultado;
     }
 
-    public int cantJugadores() throws RemoteException {
-        return rummy.getJugadoresSize();
+    public int cantJugadores()  {
+        try {
+            return rummy.getJugadoresSize();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ArrayList<String> nombreOponentes(String nombreJugador) {
@@ -184,18 +212,27 @@ public class Controlador implements IControladorRemoto {
         return null;
     }
 
-    public void terminarTurno(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        if (posicionesSeleccionadas.size() == 1){
-            rummy.terminarTurno(posicionesSeleccionadas,nombreJugador);
-        } else if (posicionesSeleccionadas.isEmpty()) {
-            rummy.finalizarPartida(nombreJugador);
+    public void terminarTurno(ArrayList<Integer> posicionesSeleccionadas){
+        try {
+            if (posicionesSeleccionadas.size() == 1){
+                rummy.terminarTurno(posicionesSeleccionadas,nombreJugador);
+
+            } else if (posicionesSeleccionadas.isEmpty()) {
+                rummy.finalizarPartida(nombreJugador);
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public boolean esTurnoJugador() throws RemoteException {
+    public boolean esTurnoJugador(){
         boolean resultado = false;
-        if (rummy.getNombreTurnoActual().equals(nombreJugador)){
-             resultado = true;
+        try {
+            if (rummy.getNombreTurnoActual().equals(nombreJugador)){
+                 resultado = true;
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
         return resultado;
     }
@@ -204,46 +241,79 @@ public class Controlador implements IControladorRemoto {
         return nombreJugador;
     }
 
-    public void tomarCartaMazo() throws RemoteException {
-        rummy.sacarCartaMazo(nombreJugador);
-    }
-
-
-    public void tomarCartaDescarte() throws RemoteException {
-        rummy.agarrarCartaBocaArriba(nombreJugador);
-    }
-
-    public void armarRummy(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        rummy.comprobarRummy(posicionesSeleccionadas, nombreJugador);
-    }
-
-    public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
-            rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+    public void tomarCartaMazo(){
+        try {
+            rummy.sacarCartaMazo(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void armarCombinacionIguales(ArrayList<Integer> posicionesSeleccionadas) throws RemoteException {
-        if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
-            rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
-        }else {
-            System.out.println("error cantidad incorrecta de posiciones");
+
+    public void tomarCartaDescarte(){
+        try {
+            rummy.agarrarCartaBocaArriba(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void agregarCartasAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada) throws RemoteException {
-        rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada, nombreJugador);
+    public void armarRummy(ArrayList<Integer> posicionesSeleccionadas){
+        try {
+            rummy.comprobarRummy(posicionesSeleccionadas, nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public ITapete obtenerJugadas() throws RemoteException {
-        return rummy.getMesaJugadas();
+    public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas){
+        try {
+            if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
+                rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public int cantCartasOponente(String oponente) throws RemoteException {
-        return rummy.getCantCartasOponente(oponente);
+    public void armarCombinacionIguales(ArrayList<Integer> posicionesSeleccionadas){
+        try {
+            if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
+                rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
+            }else {
+                //falta excepcion
+                System.out.println("error cantidad incorrecta de posiciones");
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void activarModoExpres() {
+    public void agregarCartasAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada){
+        try {
+            rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada, nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ITapete obtenerJugadas(){
+        try {
+            return rummy.getMesaJugadas();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int cantCartasOponente(String oponente){
+        try {
+            return rummy.getCantCartasOponente(oponente);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void activarModoExpres(){
         try {
             rummy.modoExpres();
         } catch (RemoteException e) {
@@ -251,13 +321,133 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
-    public int getJugadasSize() throws RemoteException {
-        return rummy.getMesaJugadas().getJugada().size();
+    public int getJugadasSize()  {
+        try {
+            return rummy.getMesaJugadas().getJugada().size();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void activarModoPuntos() {
         try {
             rummy.modoPuntos();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int cantFichas() {
+        try {
+            return rummy.getCantidadFichas(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void apostar(int apuesta) {
+        try {
+            if (rummy.puedenApostarJugadores(apuesta)){
+                rummy.apostarFichas(apuesta);
+            }else {
+                vista.mostrarErrorApuesta();
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getcantidadApostada() {
+        try {
+            return rummy.getCantApostada(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void cancelarApuesta() {
+        try {
+            rummy.cancelarApuestas();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean apuestasActivadas() {
+        try {
+            return rummy.isApuestasActivas();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void restarFichas() {
+        try {
+            rummy.apostarFichasJugador(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getcantidadFichasBote() {
+        try {
+            return rummy.getCantidadTotalApuesta();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getGanador() {
+        try {
+            return rummy.getNombreGanador();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getCantidadPuntosGanador() {
+        try {
+            return rummy.getPuntosGanador();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void iniciarNuevaRonda() {
+        try {
+            rummy.iniciarOtraRonda();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getModoJuego() {
+        try {
+            return rummy.getModoActual();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void solicitarAnularPartida() {
+        try {
+            rummy.pedidoAnularPartidaAmistosamente();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void tomarDecisionDePartida(String eleccion) {
+        try {
+            rummy.anularPartida(eleccion);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String obtenerJugador(int posicion) {
+        try {
+            return rummy.getJugador(posicion);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

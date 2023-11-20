@@ -20,6 +20,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
     private modoDeJuego modo;
     private int limitePuntos;
     private Jugador ganador;
+    private boolean apuestasActivas;
+    private int solicitudDeAnularPartida;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -29,7 +31,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         juegoIniciado = false;
         modo = modoDeJuego.EXPRES;
         limitePuntos = 300;
-
+        solicitudDeAnularPartida = 0;
     }
 
     public void agregarJugador(Jugador nuevoJugador) throws RemoteException{
@@ -45,15 +47,20 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     public void iniciarJuego() throws RemoteException {
         try {
+            if (ganador != null){
+                iniciarOtraRonda();
+                //esta condiciuon comprueba que hubo una partida antes por lo que
+                //en el caso que la partida se empiece de nuevo sin importar el modo que sea se reincian los estados importantes
+            }
             juegoIniciado = true;
             if (jugadores.size() == 2){
                 repartirCartasJugadores(10);
             } else if (jugadores.size() >= 3) {
                 repartirCartasJugadores(7);
             }
-            notificarObservadores("juego iniciado");
-            notificarObservadores("cartas repartidas");
             elegirJugadorMano();
+            notificarObservadores("juego iniciado");
+            //notificarObservadores("cartas repartidas");
         }catch (RemoteException e){
             e.printStackTrace();
         }
@@ -62,10 +69,23 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     public void iniciarOtraRonda() throws RemoteException {
         ganador = null;
+        solicitudDeAnularPartida = 0;
+        reiniciarEstadosJugadores();
         devolverCartasAMesa();
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
         mezclarMazo();
         iniciarJuego();
+    }
+
+    private void reiniciarEstadosJugadores() {
+        for (Jugador jugadorActual:jugadores) {
+            jugadorActual.setAgregoJugada(false);
+            jugadorActual.setEliminado(false);
+            jugadorActual.setHizoRummy(false);
+            jugadorActual.setPuntosDePartida(0);
+            jugadorActual.setCantApostada(0);
+            jugadorActual.setFichasGanadasPartida(0);
+        }
     }
 
     private void devolverCartasAMesa() {
@@ -155,6 +175,141 @@ public class Rummy extends ObservableRemoto implements IRummy {
         modo = modoDeJuego.JUEGOAPUNTOS;
     }
 
+    @Override
+    public int getCantidadFichas(String nombreJugador) {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.getFichasTotales();
+    }
+
+
+
+    public void apostarFichas(int cantFichas) throws RemoteException{
+        //apuesta la misma cantidad por todos los jugadores
+        // y si no aceptan apostar luego se puede cancelar y devolver las fichas
+        for (Jugador jugador: jugadores) {
+            jugador.setCantApostada(cantFichas);
+            jugador.restarFichasTotales(cantFichas);
+            mesaDeJuego.agregarApuesta(cantFichas);
+        }
+        apuestasActivas = true;
+        notificarObservadores("nueva apuesta");
+    }
+
+    public void cancelarApuestas()throws RemoteException{
+        for (Jugador jugador: jugadores) {
+            jugador.sumarFichasTotales(jugador.getCantApostada());
+            mesaDeJuego.sacarApuesta(jugador.getCantApostada());
+            jugador.setCantApostada(0);
+        }
+        apuestasActivas = false;
+        notificarObservadores("apuesta cancelada");
+    }
+    @Override
+    public boolean puedenApostarJugadores(int apuesta) throws RemoteException {
+        boolean resultado = true;
+        for (Jugador jugador:jugadores) {
+            if (jugador.getFichasTotales() < apuesta){
+                resultado = false;
+            }
+        }
+        return resultado;
+    }
+
+    @Override
+    public int getCantApostada(String nombreJugador) throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.getCantApostada();
+    }
+
+    public boolean isApuestasActivas()throws RemoteException{
+        return apuestasActivas;
+    }
+
+    public void apostarFichasJugador(String nombreJugador) throws RemoteException{
+        //este metodo va a sacarle las fichas a los nuevos jugadores si hay una apuesta activa
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        //la apuesta sera segun la cantidad apostada por el anfitrion
+        int cantFichas = jugadores.get(0).getCantApostada();
+        jugadorActual.setCantApostada(cantFichas);
+        jugadorActual.restarFichasTotales(cantFichas);
+        mesaDeJuego.agregarApuesta(cantFichas);
+    }
+
+    @Override
+    public int getCantidadTotalApuesta() throws RemoteException {
+        return mesaDeJuego.getBoteApuestas();
+    }
+
+    @Override
+    public String getModoActual() throws RemoteException {
+        return String.valueOf(modo);
+        //supuestamente devuelve el modo pasado a string
+    }
+
+    @Override
+    public String getNombreGanador() throws RemoteException {
+        return ganador.getNombre();
+    }
+
+    @Override
+    public int getPuntosGanador() throws RemoteException {
+        return ganador.getPuntosTotalesXP();
+    }
+
+    @Override
+    public String getJugador(int posicion) throws RemoteException {
+        return String.valueOf(jugadores.get(posicion));
+    }
+
+    public void pedidoAnularPartidaAmistosamente() throws RemoteException {
+        notificarObservadores("pedido anular partida");
+    }
+
+    public void anularPartida(String decision) throws RemoteException {
+        if (decision.equals("Y")){
+            if (jugadores.size() == solicitudDeAnularPartida){
+                finalizarPartidaAmistosamente();
+            }else {
+                solicitudDeAnularPartida++;
+            }
+        } else if (decision.equals("N")) {
+            solicitudDeAnularPartida = 0;
+            notificarObservadores("continuar turno jugador");
+        }
+    }
+
+    private void finalizarPartidaAmistosamente() throws RemoteException {
+        for (Jugador jugador: jugadores) {
+            jugador.sumarFichasTotales(jugador.getCantApostada());
+            mesaDeJuego.sacarApuesta(jugador.getCantApostada());
+            jugador.setCantApostada(0);
+        }
+        apuestasActivas = false;
+        notificarObservadores("finalizo partida amistosamente");
+    }
+
+    public void reengancharJugador(String nombreJugador){
+        int puntosNuevos = buscarJugadorConMasPuntos();
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        jugadorActual.setPuntosDePartida(puntosNuevos);
+        jugadorActual.setEliminado(false);
+        //debe apostar la mitad de la apuesta inicial para reenganchar
+        int nuevaApuesta = (int) (jugadorActual.getCantApostada() * 0.5);
+        jugadorActual.setCantApostada(nuevaApuesta + jugadorActual.getCantApostada());
+        jugadorActual.restarFichasTotales(nuevaApuesta);
+        //le agrego la cantidad total que aposto por si quiere volver a hacer reenganche y le resto su cantidad de fichas
+        mesaDeJuego.agregarApuesta(nuevaApuesta);
+    }
+
+    private int buscarJugadorConMasPuntos() {
+        int puntosMasAltos = 0;
+        for (Jugador jugador:jugadores) {
+            if (jugador.getPuntosDePartida() > puntosMasAltos){
+                puntosMasAltos = jugador.getPuntosDePartida();
+            }
+        }
+        return puntosMasAltos;
+    }
 
     @Override
     public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException {
@@ -164,10 +319,10 @@ public class Rummy extends ObservableRemoto implements IRummy {
                 ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
                 obtenerCartasOrdenadas(cartasSeleccionadas, jugadorActual);
                 if (esRummy(cartasSeleccionadas)) {
-                    System.out.println("es rummy");
+                    jugadorActual.setHizoRummy(true);
                     agregarJugada(nombreJugador, cartasSeleccionadas, false);
                     notificarObservadores("jugada agregada");
-                    finalizarPartida(nombreJugador); //ojo capaz no anda
+                    finalizarPartida(nombreJugador);
                 }else {
                     devolverCartas(jugadorActual,cartasSeleccionadas);
                     notificarObservadores("continuar turno jugador");
@@ -440,6 +595,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
             finalizarPartida(nombreJugador);
         } else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()) {
             cerrarPartida(nombreJugador);
+        } else if (quedaUnJugador()) {
+            finalizarPartida(nombreJugador);
         } else {
             mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
             Jugador jugadorSiguiente = buscarJugadorIzquierda(jugadorActual);
@@ -489,7 +646,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         }
         if (jugadorAux.isEliminado()){
             jugadorAux = buscarJugadorIzquierda(jugadorAux);
-            //en el caso que el jugador de la izquierda este eliminado el metodo busca recursivamente cual debe buscar
+            //en el caso que el jugador de la izquierda este eliminado el metodo busca recursivamente cual es el siguiente
         }
         return jugadorAux;
     }
@@ -500,34 +657,194 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public void finalizarPartida(String nombreJugador) throws RemoteException {
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        if (modo.equals(modoDeJuego.EXPRES)){
-            contarPuntosTotales();
-        } else{
+         if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
             contarPuntosPartida();
-            comprobarEliminados();
-            if (quedaUnJugador()){
-                contarPuntosTotales();
-            }
         }
-        if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador()){
+        establecerGanador();
+         if (ganador.getHizoRummy()){
+             duplicarPuntosCartas();
+             //vuelve a comprobar los eliminados despues de contar los puntos
+             comprobarEliminados();
+         }
+        contarPuntosTotales();
+        if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
+            juegoIniciado = false; //se desactiva el juego iniciado
             notificarObservadores("fin de partida");
             //dialogo de mensaje que avise que la partida fue finalizada y tal vez algun boton de nueva partida
             //mostrar clasificacion y sumar los puntos del jugador a la clasificacion
         }else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()){
-            notificarObservadores("partida cerrada");
+            if (modo.equals(modoDeJuego.EXPRES)){
+                juegoIniciado = false;
+                //la partida fue cerrada en modo expres por lo que se puede iniciar una nueva si se quiere
+                notificarObservadores("partida cerrada modo expres");
+            }else {
+                //si llega aca significa que la ronda fue cerrada por lo que se iniciara una nueva
+                notificarObservadores("partida cerrada");
+            }
+        }else {
+            iniciarOtraRonda();
+            notificarObservadores("nueva ronda");
         }
+    }
+
+    private void duplicarPuntosCartas() {
+        //si el ganador hizo rummy a los que perdieron les duplica la cantidad de puntos de las cartas
+        int puntos;
+        for (Jugador jugador:jugadores) {
+            if (ganador != jugador){
+                puntos = jugador.getPuntosDePartida() * 2;
+                jugador.setPuntosDePartida(puntos);
+            }
+        }
+    }
+
+    private void establecerGanador() {
+        if (quedaUnJugador()){
+            for (Jugador jugador: jugadores) {
+                if (!jugador.isEliminado()){
+                    ganador = jugador;
+                }
+            }
+        } else if (todosEliminados()) {
+            ganador = obtenerJugadorConMenosPuntos();
+        }else {
+            //en este caso algun jugador gano la ronda por quedarse sin cartas asi que se lo busca
+            for (Jugador jugador:jugadores) {
+                if (jugador.getCartasEnMano().isEmpty()){
+                    ganador = jugador;
+                }
+            }
+            if (ganador == null){
+                //si llega aca es porque se cerro la partida en modo expres y ningun jugador se quedo sin cartas
+                // o que en el modo por puntos hay mas de un jugador y solo se termino la ronda
+                ganador = obtenerJugadorConMenosPuntos();
+            }
+        }
+    }
+
+    private Jugador obtenerJugadorConMenosPuntos() {
+        int menorCantPuntos = 500000;//estalezco puntos base para comparar luego con los jugadores
+        Jugador menorJugadorActual = null;
+        for (Jugador jugador:jugadores) {
+            if (jugador.getPuntosDePartida() < menorCantPuntos){
+                menorCantPuntos = jugador.getPuntosDePartida();
+                menorJugadorActual = jugador;
+            } else if (jugador.getPuntosDePartida() == menorCantPuntos) {
+                menorJugadorActual = jugadores.get(0); //en el caso que haya empate gana el anfitrion si no se encuentra otro con menor cantidad de puntos
+            }
+        }
+        if (menorJugadorActual == null){
+            menorJugadorActual = jugadores.get(0);
+            //pone al anfitrion de ganador para no declarar un ganador nulo
+        }
+        return menorJugadorActual;
     }
 
     private boolean quedaUnJugador() {
         boolean resultado = false;
-        int eliminados = 0;
+        int eliminados = contarEliminados();
+        if (jugadores.size() - 1 == eliminados){
+            //esta condicion se refiere a que solo queda un jugador
+            resultado = true;
+        }
         return resultado;
     }
 
-    private void comprobarEliminados() {
+    private int contarEliminados() {
+        int eliminados = 0;
+        for (Jugador jugadorActual:jugadores) {
+            if (jugadorActual.isEliminado()){
+                eliminados++;
+            }
+        }
+        return eliminados;
+    }
+
+    private boolean todosEliminados(){
+        boolean resultado = false;
+        int eliminados = contarEliminados();
+        if (jugadores.size() == eliminados){
+            //esta condicion se refiere a que estan todos eliminados
+            resultado = true;
+        }
+        return resultado;
+    }
+    private void comprobarEliminados() throws RemoteException {
+        boolean nuevoEliminado = false;
+        if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
+            for (Jugador jugadorActual:jugadores) {
+                if (jugadorActual.getPuntosDePartida() >= limitePuntos && !jugadorActual.isEliminado()){
+                    jugadorActual.setEliminado(true);
+                    nuevoEliminado = true;
+                }
+            }
+            if (nuevoEliminado){
+                notificarObservadores("jugador eliminado");
+            }
+        }
     }
 
     private void contarPuntosTotales() {
+        if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
+            if (quedaUnJugador() || todosEliminados()){
+                //solo va a contar los puntos totales cuando se termine la partida
+                // por lo que si termina una ronda no cuenta los totales
+                sumarPuntosXP();
+            }
+        }else {
+            sumarPuntosXP();
+        }
+    }
+
+    private void sumarPuntosXP() {
+        int puntosTotales = 0;
+        if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
+            if (jugadores.size() == 2){
+                puntosTotales += 20;
+            } else if (jugadores.size() == 3) {
+                puntosTotales += 30;
+            } else if (jugadores.size() == 4) {
+                puntosTotales += 40;
+            }
+        }else {
+            if (jugadores.size() == 2){
+                puntosTotales += 10;
+            } else if (jugadores.size() == 3) {
+                puntosTotales += 15;
+            } else if (jugadores.size() == 4) {
+                puntosTotales += 20;
+            }
+        }
+        if (ganador.getFichasGanadasPartida() >= 1000 && ganador.getFichasGanadasPartida() <= 5000){
+            puntosTotales += 4;
+        } else if (ganador.getFichasGanadasPartida() >= 5001 && ganador.getFichasGanadasPartida() <= 25000) {
+            puntosTotales += 8;
+        }else if (ganador.getFichasGanadasPartida() >= 25001 && ganador.getFichasGanadasPartida() <= 50000) {
+            puntosTotales += 12;
+        }else if (ganador.getFichasGanadasPartida() >= 50001 && ganador.getFichasGanadasPartida() <= 100000) {
+            puntosTotales += 16;
+        }else if (ganador.getFichasGanadasPartida() >= 100001 && ganador.getFichasGanadasPartida() <= 200000) {
+            puntosTotales += 20;
+        }else if (ganador.getFichasGanadasPartida() >= 200001 && ganador.getFichasGanadasPartida() <= 400000) {
+            puntosTotales += 24;
+        }else if (ganador.getFichasGanadasPartida() >= 400001 && ganador.getFichasGanadasPartida() <= 600000) {
+            puntosTotales += 28;
+        }else if (ganador.getFichasGanadasPartida() >= 600001 && ganador.getFichasGanadasPartida() <= 1000000) {
+            puntosTotales += 32;
+        }else if (ganador.getFichasGanadasPartida() >= 1000001 && ganador.getFichasGanadasPartida() <= 2500000) {
+            puntosTotales += 36;
+        }else if (ganador.getFichasGanadasPartida() >= 2500001 && ganador.getFichasGanadasPartida() <= 5000000) {
+            puntosTotales += 40;
+        }else if (ganador.getFichasGanadasPartida() > 5000000 ) {
+            puntosTotales += 44;
+        }
+        //le suma los puntos de xp que consiguio al ganador y a los perderos les agrega 5 puntos
+        ganador.sumarPuntosTotalesXP(puntosTotales);
+        for (Jugador jugador:jugadores) {
+            if (!jugador.equals(ganador)){
+                jugador.sumarPuntosTotalesXP(5);
+            }
+        }
     }
 
     @Override

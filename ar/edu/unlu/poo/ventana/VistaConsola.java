@@ -8,10 +8,13 @@ import ar.edu.unlu.poo.modelo.ITapete;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public class VistaConsola implements IVista{
+    enum EstadosPosibles{
+        PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, POSIBLE_RUMMY, POSIBLE_ESCALERA, POSIBLE_CARTA_PARA_JUGADA,
+        FIN_TURNO, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA
+    }
     private JFrame frame;
     private JPanel panelConsola;
     private JTextArea txtAreaMuestra;
@@ -37,6 +40,12 @@ public class VistaConsola implements IVista{
 
     private int posicionJugada;
 
+    private boolean hayApuesta = false;
+
+    private boolean finPartida = false;
+
+    private boolean posibleAnularPartida = false;
+
 
     public VistaConsola() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -51,11 +60,7 @@ public class VistaConsola implements IVista{
                 enterButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        try {
-                            procesarTexto();
-                        } catch (RemoteException ex) {
-                            throw new RuntimeException(ex);
-                        }
+                        procesarTexto();
                     }
                 });
             }
@@ -63,106 +68,183 @@ public class VistaConsola implements IVista{
 
     }
 
-    private void procesarTexto() throws RemoteException { //achicar metodo
+    private void procesarTexto(){ //achicar metodo
         String textoIngresado = txtConsola.getText().toLowerCase();
+        txtConsola.setText("");
         if (controlador.juegoIniciado()){
             if (primerasOpciones){
-                if (textoIngresado.equals("1") || textoIngresado.contains("tomar del mazo")){
-                    controlador.tomarCartaMazo();
-                } else if (textoIngresado.equals("2") || textoIngresado.contains("tomar descartada")) {
-                    controlador.tomarCartaDescarte();
-                }else {
-                    opcionIncorrecta();
-                }
+                seleccionarPrimerasOpciones(textoIngresado);
             } else if (seleccionCartas) {
-                int numero;
-                numero = Integer.parseInt(textoIngresado);
-                if (numero == 0){
-                    seleccionCartas = false;
-                    if (posibleRummy){
-                        posibleRummy = false;
-                        controlador.armarRummy(posicionesSeleccionadas);
-                        posicionesSeleccionadas.clear();
-                    } else if (posibleEscalera) {
-                        posibleEscalera = false;
-                        controlador.armarEscalera(posicionesSeleccionadas);
-                        posicionesSeleccionadas.clear();
-                    } else if (posibleCombinacion) {
-                        posibleCombinacion = false;
-                        controlador.armarCombinacionIguales(posicionesSeleccionadas);
-                        posicionesSeleccionadas.clear();
-                    } else if (posibleCartaParaJugada) {
-                        posibleCartaParaJugada = false;
-                        if (posicionesSeleccionadas.isEmpty()){
-                            continuarTurnoActual();
-                        }else {
-                            controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
-                        }
-                        posicionesSeleccionadas.clear();
-                    } else if (finTurno) {
-                        finTurno = false;
-                        controlador.terminarTurno(posicionesSeleccionadas);
-                        posicionesSeleccionadas.clear();
-                    }else {
-                        //excepcion
-                    }
-                } else if (numero <= controlador.getCartasSize() && numero > 0) {
-                    agregarPosicion(numero - 1);
-                    txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
-
-                } else {
-                    //excepcion
-                }
+                seleccionarCartas(textoIngresado);
             } else if (seleccionJugada) {
-                int numero = textoIngresado.indexOf(controlador.getCartasSize());
-                if (numero <= controlador.getCartasSize() && numero > 0){
-                    posicionJugada = numero;
-                    mostrarSeleccionCartas();
-                    posibleCartaParaJugada = true;
-                } else if (numero == 0) {
-                    continuarTurnoActual();
-                }
-                seleccionJugada = false;
+                seleccionarJugada(textoIngresado);
+            } else if (finPartida) {
+                seleccionarOpcionesDePartida(textoIngresado);
+            } else if (posibleAnularPartida) {
+                seleccionarOpcionesAnularPartida(textoIngresado);
             } else {
-                if (textoIngresado.equals("1")){
-                    mostrarSeleccionCartas();
-                    posibleRummy = true;
-                } else if (textoIngresado.equals("2")) {
-                    mostrarSeleccionCartas();
-                    posibleEscalera = true;
-                }
-                else if (textoIngresado.equals("3")) {
-                    posibleCombinacion = true;
-                    mostrarSeleccionCartas();
-                } else if (textoIngresado.equals("4")) {
-                    jugadasSinVer = false;
-                    mostrarJugadasEnMesa();
-                } else if (textoIngresado.equals("5")) {
-                    mostrarCantidadCartas();
-                } else if (textoIngresado.equals("6")) {
-
-                } else if (textoIngresado.equals("0")) {
-                    finTurno = true;
-                    terminarTurno();
-                }else {
-                    opcionIncorrecta();
-                }
+                seleccionarOpcionesTurno(textoIngresado);
             }
-
         }else {
-            if (textoIngresado.equals("1") || textoIngresado.contains("iniciar partida")){
-                if (controlador.esAnfitrion()){
-                    controlador.iniciarJuego();
+            if (controlador.esAnfitrion()){
+                seleccionarOpcionesInicio(textoIngresado);
+            }else {
+                //opciones para cancelar la apuesta
+                if (textoIngresado.equals("0")){
+                    hayApuesta = false;
+                    controlador.cancelarApuesta();
+                    txtConsola.setEnabled(false);
                 }else {
                     opcionIncorrecta();
                 }
-            }else {
-                opcionIncorrecta();
             }
         }
     }
 
-    private void mostrarCantidadCartas() {
+    private void seleccionarOpcionesInicio(String textoIngresado) {
+        int apuesta = Integer.parseInt(textoIngresado);
+        if (textoIngresado.equals("1")){
+            if (controlador.esAnfitrion()){
+                controlador.iniciarJuego();
+            }else {
+                opcionIncorrecta();
+            }
+        } else if (textoIngresado.equals("2")) {
+            controlador.activarModoExpres();
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Expres!!!");
+        } else if (textoIngresado.equals("3")) {
+            controlador.activarModoPuntos();
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
+        } else if (apuesta >= 250 && !hayApuesta) {
+            hayApuesta = true;
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nApuestas Activadas!!!");
+            controlador.apostar(apuesta);
+        } else {
+            opcionIncorrecta();
+        }
+    }
+
+    private void seleccionarOpcionesTurno(String textoIngresado) {
+        if (textoIngresado.equals("1")){
+            mostrarSeleccionCartas();
+            posibleRummy = true;
+        } else if (textoIngresado.equals("2")) {
+            mostrarSeleccionCartas();
+            posibleEscalera = true;
+        }
+        else if (textoIngresado.equals("3")) {
+            posibleCombinacion = true;
+            mostrarSeleccionCartas();
+        } else if (textoIngresado.equals("4")) {
+            jugadasSinVer = false;
+            mostrarJugadasEnMesa();
+        } else if (textoIngresado.equals("5")) {
+            mostrarCantidadCartas();
+        } else if (textoIngresado.equals("6")) {
+            controlador.solicitarAnularPartida();
+        } else if (textoIngresado.equals("9")) {
+
+        } else if (textoIngresado.equals("0")) {
+            finTurno = true;
+            terminarTurno();
+        }else {
+            opcionIncorrecta();
+        }
+    }
+
+    private void seleccionarOpcionesAnularPartida(String textoIngresado) {
+        String eleccion = textoIngresado.toUpperCase();
+        if (eleccion.equals("Y") || eleccion.equals("N")){
+            limpiarPantalla();
+            txtAreaMuestra.setText("Usted tomo su eleccion. Esperando a que el resto de jugadores decida...");
+            controlador.tomarDecisionDePartida(eleccion);
+        } else {
+            opcionIncorrecta();
+        }
+    }
+
+    private void seleccionarOpcionesDePartida(String textoIngresado) {
+        String eleccion = textoIngresado.toUpperCase();
+        if (eleccion.equals("Y")){
+            finPartida = false;
+            mostrarEspera();
+            //la consola vuelve al primer estado original donde se esperan jugadores (de hacho podrian entrar nuevos jugadores)
+        } else if (eleccion.equals("N")) {
+            System.exit(0);
+        }else {
+            opcionIncorrecta();
+        }
+    }
+
+    private void seleccionarJugada(String textoIngresado) {
+        int numero = Integer.parseInt(textoIngresado);
+        if (numero < controlador.getJugadasSize() && numero > 0){
+            posicionJugada = numero - 1;
+            mostrarSeleccionCartas();
+            posibleCartaParaJugada = true;
+        } else if (numero == 0) {
+            seleccionJugada = false;
+            continuarTurnoActual();
+        }
+    }
+
+    private void seleccionarCartas(String textoIngresado) {
+        int numero;
+        numero = Integer.parseInt(textoIngresado);
+        if (numero == 0){
+            seleccionCartas = false;
+            if (posibleRummy){
+                posibleRummy = false;
+                controlador.armarRummy(posicionesSeleccionadas);
+                posicionesSeleccionadas.clear();
+            } else if (posibleEscalera) {
+                posibleEscalera = false;
+                controlador.armarEscalera(posicionesSeleccionadas);
+                posicionesSeleccionadas.clear();
+            } else if (posibleCombinacion) {
+                posibleCombinacion = false;
+                controlador.armarCombinacionIguales(posicionesSeleccionadas);
+                posicionesSeleccionadas.clear();
+            } else if (posibleCartaParaJugada) {
+                posibleCartaParaJugada = false;
+                if (posicionesSeleccionadas.isEmpty()){
+                    continuarTurnoActual();
+                }else {
+                    controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
+                }
+                posicionesSeleccionadas.clear();
+            } else if (finTurno) {
+                finTurno = false;
+                controlador.terminarTurno(posicionesSeleccionadas);
+                posicionesSeleccionadas.clear();
+            }else {
+                //excepcion
+            }
+        } else if (numero <= controlador.getCartasSize() && numero > 0) {
+            agregarPosicion(numero - 1);
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
+        } else {
+            //excepcion
+        }
+    }
+
+    private void seleccionarPrimerasOpciones(String textoIngresado) {
+        if (textoIngresado.equals("1")){
+            controlador.tomarCartaMazo();
+        } else if (textoIngresado.equals("2")) {
+            controlador.tomarCartaDescarte();
+        }else {
+            opcionIncorrecta();
+        }
+    }
+
+    private void mostrarCantidadCartas(){
+        continuarTurnoActual();
+        ArrayList<String> oponentes = controlador.nombreOponentes(controlador.getNombreJugador());
+        for (int i = 0; i < controlador.cantJugadores() - 1;i++){
+            txtAreaMuestra.setText(txtAreaMuestra.getText()+"\nJugador " + oponentes.get(i) +
+                    "\nCantidad de cartas: " + controlador.cantCartasOponente(oponentes.get(i)));
+        }
     }
 
     private void agregarPosicion(int numero) {
@@ -173,7 +255,7 @@ public class VistaConsola implements IVista{
         }
     }
 
-    private void mostrarSeleccionCartas() throws RemoteException {
+    private void mostrarSeleccionCartas(){
         mostrarCartas();
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
                 "\n seleccione las cartas segun su posicion (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
@@ -185,21 +267,33 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void iniciarVentana(String nombreJugador, boolean b) throws RemoteException {
+    public void iniciarVentana(String nombreJugador, boolean b){
 
     }
 
     private void mostrarMenu() {
         limpiarPantalla();
+        String bienvenida;
+        if (controlador.esAnfitrion()){
+            bienvenida = "\nBienvenido " + controlador.getNombreJugador() + "*";
+        }else {
+            bienvenida = "\nBienvenido " + controlador.getNombreJugador();
+        }
         txtAreaMuestra.setText("----------------------------------------------------------" +
+                "|Modo" + controlador.getModoJuego() + "|"+
+                bienvenida +
+                "\nTus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
+                "\nSeleccione una opcion para continuar su turno:" +
                 "\n1-hacer Rummy" +
                 "\n2-hacer escalera" +
                 "\n3-hacer combinaciones de numeros iguales" +
                 "\n4-ver jugadas en mesa / agregar carta a una jugada" +
                 "\n5-ver cartas restantes jugadores" +
                 "\n6-Opciones de mesa (solo disponible para el jefe de mesa)" +
+                "\n9-Anular Partida" +
                 "\n0-terminar turno" +
-                "\n----------------------------------------------------------");
+                "\n----------------------------------------------------------"+
+                "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote());
     }
 
     @Override
@@ -213,7 +307,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void pantallaEspera(boolean anfitrion) throws InterruptedException, RemoteException {
+    public void pantallaEspera(boolean anfitrion) {
         if (!jugadorAgregado){
             jugadorAgregado = true;
             controlador.nuevoJugador(anfitrion);
@@ -227,20 +321,33 @@ public class VistaConsola implements IVista{
         }
     }
 
-    private void mostrarEspera() throws RemoteException {
+    private void mostrarEspera(){
         txtAreaMuestra.setText("\n__________________________________________" +
-                "\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para jugar) " +
+                "\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                 "\nCantidad de jugadores:" + controlador.cantJugadores() +
                 "\n__________________________________________");
+        if (controlador.apuestasActivadas()){
+            controlador.restarFichas();
+            avisarSobreApuesta();
+        }
     }
 
-    private void mostrarEsperaAnfitrion() throws RemoteException {
+    private void mostrarEsperaAnfitrion(){
         txtAreaMuestra.setText("__________________________________________" +
-                "\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para jugar) " +
+                "\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                 "\nCantidad de jugadores:" + controlador.cantJugadores() +
                 "\nCuando este la cantidad de jugadores necesaria seleccione la opcion:" +
                 "\n1-Iniciar Partida" +
-                "\n__________________________________________");
+                "\n tambien puede seleccionar otro modo de juego: (por defecto esta activado el modo expres)"+
+                "\n2-Activar Modo Expres (es una partida rapida de una ronda en la que gana el jugador que cierra antes)" +
+                "\n3-Activar Juego a Puntos (Cuando un jugador alcanza los 3000 puntos queda eliminado. El último jugador es el ganador de la partida)" +
+                "\n__________________________________________"+
+                "\nSi desea Apostar solo ingrese la cantidad que desea apostar y se definira la situacion de la apuesta segun la decision del resto de jugadores" +
+                "\nminimo de Apuesta: 250" +
+                "\nTus fichas:" + controlador.cantFichas());
+                if (hayApuesta){
+                    txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nApuestas Activadas!!!");
+                }
     }
 
     private void limpiarPantalla(){
@@ -248,7 +355,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void actualizarCantJugadores() throws RemoteException, InterruptedException {
+    public void actualizarCantJugadores(){
         pantallaEspera(controlador.esAnfitrion());
     }
 
@@ -257,14 +364,14 @@ public class VistaConsola implements IVista{
 
     }
 
-    private void mostrarJugadasEnMesa() throws RemoteException {
+    private void mostrarJugadasEnMesa(){
         ITapete jugadasEnMesa = controlador.obtenerJugadas();
         txtAreaMuestra.setText("\n");
         txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada que quiera con un numero (empezando con el de arriba que es la 1) y sino presione 0 para cancelar");
         seleccionJugada = true;
     }
-    private void terminarTurno() throws RemoteException {
+    private void terminarTurno(){
         txtAreaMuestra.setText("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
         mostrarSeleccionCartas();
     }
@@ -273,13 +380,13 @@ public class VistaConsola implements IVista{
 
 
     @Override
-    public void iniciarTurno() throws RemoteException {
+    public void iniciarTurno(){
         primerasOpciones = true;
         mostrarPrimerasOpciones();
         txtConsola.setEnabled(true);
     }
 
-    private void mostrarPrimerasOpciones() throws RemoteException {
+    private void mostrarPrimerasOpciones(){
         limpiarPantalla();
         txtAreaMuestra.setText("----------------------------------------------------------" +
                 "\n1-tomar Carta del mazo" +
@@ -287,14 +394,11 @@ public class VistaConsola implements IVista{
                 "\nCarta disponible en la pila de descartes:" + controlador.getCartaDescarte()+
                 "\nTus cartas:\n");
         mostrarCartas();
-        if (jugadasSinVer){
-            txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                    "Hay nuevas jugadas disponibles en la mesa!!!");
-        }
+
     }
 
 
-    private void mostrarCartas() throws RemoteException {
+    private void mostrarCartas(){
         ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
         for (int i = 0; i < cartasActuales.size(); i++) {
@@ -307,7 +411,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void esperarTurno() throws RemoteException {
+    public void esperarTurno(){
         limpiarPantalla();
         if (!controlador.esTurnoJugador()){
             txtAreaMuestra.setText("______________________________________________" +
@@ -318,7 +422,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void darControl() throws RemoteException {
+    public void darControl(){
 
     }
 
@@ -330,7 +434,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void nuevoTurno() throws RemoteException {
+    public void nuevoTurno(){
         if (controlador.esTurnoJugador()){
             iniciarTurno();
         }else {
@@ -339,27 +443,96 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void continuarTurnoActual() throws RemoteException {
+    public void continuarTurnoActual(){
         if (controlador.esTurnoJugador()){
             primerasOpciones = false;
             limpiarPantalla();
             mostrarMenu();
             mostrarCartas();
+            if (jugadasSinVer){
+                txtAreaMuestra.setText(txtAreaMuestra.getText() +
+                        "\nHay nuevas jugadas disponibles en la mesa!!!");
+            }
         }
     }
 
     @Override
     public void finalizarPartida() {
         limpiarPantalla();
-        txtAreaMuestra.setText("La partida ha finalizado!!! El ganador es..." +
-                " con x puntos");
+        txtAreaMuestra.setText("La partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
+                " con " + controlador.getCantidadPuntosGanador()+" puntos");
         mostrarTablaPosiciones();
+        eleccionNuevaPartida();
+    }
+
+    private void eleccionNuevaPartida() {
+        if (controlador.esAnfitrion()){
+            finPartida = true;
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
+        }else {
+            txtConsola.setEnabled(false);
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "El anfitrion esta decidiendo si iniciar una nueva partida..." +
+                    "\n(AVISO:En caso que se cierre el juego significa que no hay una nueva partida)");
+        }
     }
 
     @Override
-    public void actualizarJugadas() throws RemoteException {
+    public void actualizarJugadas(){
         jugadasSinVer = true;
         continuarTurnoActual();
+    }
+
+    @Override
+    public void cerrarPartida() {
+        if (controlador.getModoJuego().equals("EXPRES")){
+            txtAreaMuestra.setText("La partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+        }else {
+            txtAreaMuestra.setText("La ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+            controlador.iniciarNuevaRonda();
+        }
+
+    }
+
+    @Override
+    public void mostrarErrorApuesta(){
+        hayApuesta = false;
+        if (controlador.esAnfitrion()){
+            mostrarEsperaAnfitrion();
+        }
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe cancelaron las apuestas!!!");
+    }
+
+    @Override
+    public void avisarSobreApuesta() {
+        if (!controlador.esAnfitrion()){
+            hayApuesta = true;
+            txtConsola.setEnabled(true);
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nAVISO:"+
+                    "\nLas apuestas han sido activadas. (en el caso que quiera cancelar la apuesta presione 0)" +
+                    "\nTu apuesta seria de: " + controlador.getcantidadApostada() + " fichas.");
+        }
+    }
+
+    @Override
+    public void mostrarResultadosPuntos() {
+        txtAreaMuestra.setText("Puntos de los jugadores (el limite es 300):");
+        for (int i = 0; i < controlador.cantJugadores(); i++) {
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n" + controlador.obtenerJugador(i));
+        }
+    }
+
+    @Override
+    public void finalizarPartidaAmistosamente() {
+        limpiarPantalla();
+        txtAreaMuestra.setText("La partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+        mostrarTablaPosiciones();
+        eleccionNuevaPartida();
+    }
+
+    @Override
+    public void eleccionAnularPartida() {
+        posibleAnularPartida = true;
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "¿Desea anular la partida? (Y/N) (Y para si, N para no)");
     }
 
     private void mostrarTablaPosiciones() {

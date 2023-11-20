@@ -12,6 +12,8 @@ public interface IRummy extends IObservableRemoto {
 
     void iniciarJuego() throws RemoteException;
 
+    void iniciarOtraRonda() throws RemoteException;
+
     void sacarCartaMazo(String jugador) throws RemoteException;
 
     void agarrarCartaBocaArriba(String jugador) throws RemoteException;
@@ -43,6 +45,10 @@ public interface IRummy extends IObservableRemoto {
 
     void finalizarPartida(String jugador)throws RemoteException;
 
+    void pedidoAnularPartidaAmistosamente() throws RemoteException;
+
+    void anularPartida(String decision) throws RemoteException;
+
     void contarPuntosPartida() throws RemoteException;
 
     void agregarPuntosClasificacion()throws RemoteException;
@@ -73,6 +79,29 @@ public interface IRummy extends IObservableRemoto {
 
     void modoPuntos() throws RemoteException;
 
+    int getCantidadFichas(String nombreJugador) throws RemoteException;
+
+    void apostarFichas(int cantFichas) throws RemoteException;
+
+    void cancelarApuestas()throws RemoteException;
+
+    boolean puedenApostarJugadores(int apuesta) throws RemoteException;
+
+    int getCantApostada(String nombreJugador)throws RemoteException;
+
+    boolean isApuestasActivas()throws RemoteException;
+
+    void apostarFichasJugador(String nombreJugador) throws RemoteException;
+
+    int getCantidadTotalApuesta()throws RemoteException;
+
+    String getModoActual() throws RemoteException;
+
+    String getNombreGanador() throws RemoteException;
+
+    int getPuntosGanador()throws RemoteException;
+
+    String getJugador(int posicion) throws RemoteException;
 
     //boolean esAnfitrion(String nombreJugador);
 

@@ -1,75 +1,149 @@
 package ar.edu.unlu.poo.modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Jugador {
+public class Jugador implements Serializable, IJugador {
     private String nombre;
-    private  int nro;
     private ArrayList<Carta> cartasEnMano;
-    private int puntosTotales;
+    private int puntosTotalesXP;
+    private int puntosDePartida;
     private boolean jefeMesa;
     private int cantApostada;
-    private int bote;
+    private int fichasGanadasPartida;
+    private int fichasTotales;
+    private boolean agregoJugada;
+    private boolean eliminado;
+
+    private boolean hizoRummy;
 
     public Jugador(String nombreJugador) {
         cartasEnMano = new ArrayList<>();
+        fichasTotales = 1500000;
+        //les agrego fichas para apostar para que funcione el sistema de apuestas
         nombre = nombreJugador;
+        agregoJugada = false;
+        eliminado = false;
+        hizoRummy = false;
+        fichasGanadasPartida = 0;
+        puntosTotalesXP = 0;
     }
 
+    @Override
+    public void setAgregoJugada(boolean agregoJugada) {
+        this.agregoJugada = agregoJugada;
+    }
+
+    @Override
+    public boolean getAgregoJugada(){
+        return agregoJugada;
+    }
+
+    @Override
     public String getNombre() {
         return nombre;
     }
 
-    public void setNro(int nro) {
-        this.nro = nro;
+
+    @Override
+    public void setPuntosDePartida(int puntosDePartida) {
+        this.puntosDePartida = puntosDePartida;
     }
 
-    public int getNro() {
-        return nro;
+    @Override
+    public void sumarPuntosDePartida(int puntos) {
+        this.puntosDePartida += puntosDePartida;
     }
 
-    public void setBote(int bote) {
-        this.bote = bote;
+    @Override
+    public int getPuntosDePartida() {
+        return puntosDePartida;
     }
 
-    public int getBote() {
-        return bote;
+    @Override
+    public void restarFichasTotales(int fichas) {
+        this.fichasTotales -= fichas;
     }
 
+    @Override
+    public void sumarFichasTotales(int fichas) {
+        this.fichasTotales += fichas;
+    }
+
+    @Override
+    public int getFichasTotales() {
+        return fichasTotales;
+    }
+
+    @Override
     public void setCantApostada(int cantApostada) {
         this.cantApostada = cantApostada;
     }
 
+    @Override
     public int getCantApostada() {
         return cantApostada;
     }
 
+    @Override
     public void setJefeMesa(boolean jefeMesa) {
         this.jefeMesa = jefeMesa;
     }
 
 
+    @Override
     public boolean getJefeMesa(){
         return jefeMesa;
     }
 
-    public void setPuntosTotales(int puntosTotales) {
-        this.puntosTotales = puntosTotales;
+    @Override
+    public void sumarPuntosTotalesXP(int puntosTotalesXP) {
+        this.puntosTotalesXP += puntosTotalesXP;
     }
 
-    public int getPuntosTotales() {
-        return puntosTotales;
+    @Override
+    public int getPuntosTotalesXP() {
+        return puntosTotalesXP;
     }
 
+    @Override
     public ArrayList<Carta> getCartasEnMano() {
         return cartasEnMano;
     }
 
+    @Override
     public void agregarCartasEnMano(Carta nuevaCarta) {
         this.cartasEnMano.add(nuevaCarta);
     }
 
-    public Carta tirarCarta(Palo palo, int numero){
+    @Override
+    public void setEliminado(boolean eliminado) {
+        this.eliminado = eliminado;
+    }
+
+    @Override
+    public boolean isEliminado(){return eliminado;}
+
+    @Override
+    public void setHizoRummy(boolean hizoRummy) {
+        this.hizoRummy = hizoRummy;
+    }
+
+    @Override
+    public boolean getHizoRummy(){return hizoRummy;}
+
+    @Override
+    public void setFichasGanadasPartida(int fichasGanadasPartida) {
+        this.fichasGanadasPartida = fichasGanadasPartida;
+    }
+
+    @Override
+    public int getFichasGanadasPartida() {
+        return fichasGanadasPartida;
+    }
+
+    //antiguo tirar carta
+    /*public Carta tirarCarta(Palo palo, int numero){
         //idea provisional
         Carta cartaATirar = null;
         for (int i = 0; i < cartasEnMano.size();i++){
@@ -78,9 +152,28 @@ public class Jugador {
             }
         }
         return cartaATirar;
+    }*/
+    @Override
+    public Carta tirarCarta(Integer posicion){
+        //idea provisional
+        if (posicion < cartasEnMano.size()){
+            return cartasEnMano.remove((int)posicion);
+        }
+        return null; //cambiar por excepcion
     }
 
-    public void usarCarta(Carta cartaUsada) {
+
+    @Override
+    public String toString() {
+        return "Nombre: " + nombre + "puntos de partida actuales: " + puntosDePartida;
+    }
+
+    /*public void usarCarta(Carta cartaUsada) {
         cartasEnMano.remove(cartaUsada);
+    }*/
+
+    @Override
+    public void devolverCarta(Carta carta) {
+        this.cartasEnMano.add(carta);
     }
 }
