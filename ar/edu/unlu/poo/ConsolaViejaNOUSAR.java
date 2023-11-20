@@ -1,25 +1,27 @@
-package ar.edu.unlu.poo.ventana;
+package ar.edu.unlu.poo;
 
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.Carta;
-import ar.edu.unlu.poo.modelo.Palo;
+import ar.edu.unlu.poo.modelo.ICarta;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Consola implements IVista {
+public class ConsolaViejaNOUSAR {
     private Controlador controlador;
-    private boolean anfitrion;
-    private boolean jugadorAgregado = false;
 
-    @Override
+    private boolean jugadorAgregado = false;
+    private Scanner sc;
+    private boolean escanerEnUso = false;
+
+
     public void iniciarVentana(String nombreJugador, boolean b) throws RemoteException {
         int opcion = 1;
         int opcionCarta;
         Scanner sc = new Scanner(System.in);
         if (!controlador.esTurnoJugador()){
-            mostrarEsperaTurno();
+            esperarTurno();
         }
         while(opcion != 0){
             mostrarCartas();
@@ -28,8 +30,8 @@ public class Consola implements IVista {
         switch (opcion) {
             case 0:
                 opcionCarta = seleccionarCarta();
-                controlador.terminarTurno(nombreJugador, controlador.obtenerCartas().get(opcionCarta - 1));
-                mostrarEsperaTurno();
+                //controlador.terminarTurno(nombreJugador, controlador.obtenerCartas().get(opcionCarta - 1));
+                esperarTurno();
             case 1:
 
                 break;
@@ -64,16 +66,53 @@ public class Consola implements IVista {
         }
     }
 
-    private void mostrarEsperaTurno() {
-        System.out.println("______________________________________________");
-        System.out.println("Espere su siguiente turno...");
+    public void esperarTurno() throws RemoteException {
+        if (!controlador.esTurnoJugador()){
+            System.out.println("______________________________________________");
+            System.out.println("Ha iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno...");
+        }
+    }
+
+
+    public void darControl() throws RemoteException {
+        if (controlador.esAnfitrion()){
+            mostrarEsperaAnfitrion();
+        }
+    }
+
+    public void actualizarCartas(ArrayList<ICarta> cartasJugador) {
+
+    }
+
+    public void nuevoTurno() throws RemoteException {
+
+    }
+
+
+    public void continuarTurnoActual() throws RemoteException {
+
+    }
+
+
+    public void finalizarPartida() {
+
+    }
+
+
+    public void actualizarJugadas() {
+
+    }
+
+
+    public void cerrarPartida() {
+
     }
 
     private void mostrarCartas() throws RemoteException {
-        ArrayList<Carta> cartasActuales = controlador.obtenerCartas();
+        ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
         System.out.println("\nTus Cartas en mano:");
         System.out.println("__________________________________________________________");
-        Carta cartaAux;
+        ICarta cartaAux;
         for (int i = 0; i < cartasActuales.size(); i++) {
             cartaAux = cartasActuales.get(i);
             System.out.print("|" + cartaAux.getNumero() + cartaAux.getPalo());
@@ -96,32 +135,35 @@ public class Consola implements IVista {
         System.out.println("0-terminar turno");
     }
 
-    @Override
+
     public void actualizarCarta(Carta cambio) {
 
     }
 
-    public void nuevoTurno() throws RemoteException {
+    public void iniciarTurno() throws RemoteException {
         if (controlador.esTurnoJugador()){
-            iniciarVentana(controlador.getNombreJugador(), anfitrion);
+            iniciarVentana(controlador.getNombreJugador(), controlador.esAnfitrion());
+            //cambiarlo por mostrar opciones turno o algo parecido y en ventana tambien
         }
     }
-    @Override
+
+
+
+
+
     public void setControlador(Controlador controlador) {
         this.controlador = controlador;
     }
 
-    @Override
+
     public void pantallaEspera(boolean anfitrion) throws InterruptedException, RemoteException {
-        this.anfitrion = anfitrion;
         if (!jugadorAgregado){
             jugadorAgregado = true;
             controlador.nuevoJugador(anfitrion);
-        }
-        if (anfitrion) {
-            mostrarEsperaAnfitrion();
         }else {
-            mostrarEspera();
+            if (!anfitrion){
+                mostrarEspera();
+            }
         }
     }
 
@@ -132,15 +174,22 @@ public class Consola implements IVista {
     }
 
     private void mostrarEsperaAnfitrion() throws RemoteException {
+        if (sc != null){
+            sc.reset();
+        }
+        sc = new Scanner(System.in);
         int opcion = 0;
-        Scanner sc = new Scanner(System.in);
         mostrarMenuAnfitrion();
-        while (opcion != 1){
+        while(opcion != 1){
             opcion = sc.nextInt();
+            escanerEnUso = true;
             if (opcion != 1){
-                mostrarMenuAnfitrion();
+                mostrarMenuAnfitrion(); //vuelvo a invocar el metodo porque si utilizo un while
+                // todos los observadores no son avisados cuando hay un cambio
                 System.out.println("Opcion incorrecta!!!!! Solo seleccione la opcion 1 cuando este todo listo.");
+                escanerEnUso = false;
             }else {
+                escanerEnUso = false;
                 System.out.println("Iniciando juego....");
                 controlador.iniciarJuego();
             }
@@ -148,38 +197,29 @@ public class Consola implements IVista {
     }
 
     private void mostrarMenuAnfitrion() throws RemoteException {
-        System.out.println("__________________________________________");
-        System.out.println("esperando a que se unan jugadores (se necesitan entre 3-4 jugadores para jugar) \nCantidad de jugadores:" + controlador.cantJugadores());
-        System.out.println("Cuando este la cantidad de jugadores necesaria seleccione la opcion:");
-        System.out.println("1-Iniciar Partida");
-        System.out.println("__________________________________________");
+
     }
 
-    @Override
+
     public void actualizarCantJugadores() throws RemoteException, InterruptedException {
-        pantallaEspera(anfitrion);
+        if (!controlador.esAnfitrion()){
+            mostrarEspera();
+        }
     }
 
-    @Override
+
     public void cerrarPantallaEspera() {
 
     }
 
-    @Override
-    public void agregarCarta(int numero, Palo palo) {
 
-    }
 
-    @Override
-    public void agregarCartaOtroJugador(String nombreJugador) {
 
-    }
 
 
     private int seleccionarCarta() throws RemoteException {
         int opcion = 0;
         mostrarCartas();
-        Scanner sc = new Scanner(System.in);
         while (opcion < 0 || opcion > controlador.getCartasSize()) {
             System.out.println("Seleccione una carta segun la posicion en la que se muestra (empezando por la 1):");
             opcion = sc.nextInt();

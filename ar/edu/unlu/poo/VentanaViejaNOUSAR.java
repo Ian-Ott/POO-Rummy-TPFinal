@@ -1,10 +1,10 @@
-package ar.edu.unlu.poo.ventana;
+package ar.edu.unlu.poo;
 
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.Carta;
+import ar.edu.unlu.poo.modelo.ICarta;
 import ar.edu.unlu.poo.modelo.Observer;
 import ar.edu.unlu.poo.modelo.Palo;
-import org.w3c.dom.Text;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public class Ventana extends JFrame implements ActionListener, IVista, Observer{
+public class VentanaViejaNOUSAR extends JFrame implements ActionListener, Observer{
     private JFrame frame;
     private JFrame frameEspera;
     private JLabel etiqueta2;
@@ -34,11 +34,11 @@ public class Ventana extends JFrame implements ActionListener, IVista, Observer{
     private Integer jugadoresEnVentana = 0;
 
 
-    public Ventana() throws RemoteException {
+    public VentanaViejaNOUSAR() throws RemoteException {
 
     }
 
-    @Override
+
     public void iniciarVentana(String nombreJugador, boolean esAnfitrion) throws RemoteException {
         frame = new JFrame("Rummy Beta - Version 0.0");
         frame.setSize(1500,1000);
@@ -190,12 +190,12 @@ public class Ventana extends JFrame implements ActionListener, IVista, Observer{
         frameEspera.setVisible(false);
     }
 
-    @Override
+
     public void actualizarCarta(Carta cambio) {
 
     }
 
-    @Override
+
     public void pantallaEspera(boolean anfitrion) throws InterruptedException, RemoteException {
         if (anfitrion){
             iniciarVentanaEsperaAnfitrion();
@@ -205,20 +205,20 @@ public class Ventana extends JFrame implements ActionListener, IVista, Observer{
         }
     }
 
-    @Override
+
     public void actualizarCantJugadores() throws RemoteException {
         //cantidadJugadores++;
         String jugadores = String.valueOf(controlador.cantJugadores());
         cantJugadores.setText(jugadores);
     }
 
-    @Override
+
     public void cerrarPantallaEspera() {
 
     }
 
-    @Override
-    public void agregarCarta(int numero, Palo palo) {
+
+    public void actualizarCartas(int numero, Palo palo) {
         JButton nuevoBotonCarta = new JButton("N:" + numero + "P:" + palo);
         nuevoBotonCarta.addActionListener(this);
         nuevoBotonCarta.setMinimumSize(new Dimension(20,20));
@@ -240,7 +240,7 @@ public class Ventana extends JFrame implements ActionListener, IVista, Observer{
         //cantidadJugadores++;
     }
 
-    @Override
+
     public void agregarCartaOtroJugador(String nombreJugador) {
         JButton nuevoBotonCarta = new JButton("reverso");
         nuevoBotonCarta.addActionListener(this);
@@ -270,8 +270,43 @@ public class Ventana extends JFrame implements ActionListener, IVista, Observer{
         }
     }
 
-    @Override
+
+    public void iniciarTurno() throws RemoteException {
+
+    }
+
+
+    public void esperarTurno() throws RemoteException {
+
+    }
+
+
+    public void darControl() {
+
+    }
+
+
+    public void actualizarCartas(ArrayList<ICarta> cartasJugador) {
+
+    }
+
+
     public void nuevoTurno() throws RemoteException {
+
+    }
+
+
+    public void continuarTurnoActual() throws RemoteException {
+
+    }
+
+
+    public void finalizarPartida() {
+
+    }
+
+
+    public void actualizarJugadas() {
 
     }
 
@@ -324,12 +359,8 @@ public class Ventana extends JFrame implements ActionListener, IVista, Observer{
     public void actionPerformed(ActionEvent e) {
         String comando = e.getActionCommand();
         if (comando.equals("Iniciar Partida")){
-            try {
-                controlador.iniciarJuego();
-                //cierro la ventana actual para iniciar el juego
-            } catch (RemoteException ex) {
-                throw new RuntimeException(ex);
-            }
+            controlador.iniciarJuego();
+            //cierro la ventana actual para iniciar el juego
         }
     }
 
