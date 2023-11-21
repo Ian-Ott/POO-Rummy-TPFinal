@@ -103,6 +103,12 @@ public interface IRummy extends IObservableRemoto {
 
     String getJugador(int posicion) throws RemoteException;
 
+    boolean estaEliminado(String nombreJugador)throws RemoteException;
+
+    int contarEliminados() throws RemoteException;
+
+    void reengancharJugador(String nombreJugador)throws RemoteException;
+
     //boolean esAnfitrion(String nombreJugador);
 
     //IRummy getInstancia();

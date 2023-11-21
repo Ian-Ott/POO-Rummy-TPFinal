@@ -261,6 +261,12 @@ public class Rummy extends ObservableRemoto implements IRummy {
         return String.valueOf(jugadores.get(posicion));
     }
 
+    @Override
+    public boolean estaEliminado(String nombreJugador) throws RemoteException{
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.isEliminado();
+    }
+
     public void pedidoAnularPartidaAmistosamente() throws RemoteException {
         notificarObservadores("pedido anular partida");
     }
@@ -288,7 +294,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         notificarObservadores("finalizo partida amistosamente");
     }
 
-    public void reengancharJugador(String nombreJugador){
+    public void reengancharJugador(String nombreJugador)throws RemoteException{
         int puntosNuevos = buscarJugadorConMasPuntos();
         Jugador jugadorActual = buscarJugador(nombreJugador);
         jugadorActual.setPuntosDePartida(puntosNuevos);
@@ -698,7 +704,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         }
     }
 
-    private void establecerGanador() {
+    private void establecerGanador() throws RemoteException {
         if (quedaUnJugador()){
             for (Jugador jugador: jugadores) {
                 if (!jugador.isEliminado()){
@@ -740,7 +746,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         return menorJugadorActual;
     }
 
-    private boolean quedaUnJugador() {
+    private boolean quedaUnJugador() throws RemoteException {
         boolean resultado = false;
         int eliminados = contarEliminados();
         if (jugadores.size() - 1 == eliminados){
@@ -750,7 +756,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         return resultado;
     }
 
-    private int contarEliminados() {
+    public int contarEliminados() throws RemoteException{
         int eliminados = 0;
         for (Jugador jugadorActual:jugadores) {
             if (jugadorActual.isEliminado()){
@@ -760,7 +766,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         return eliminados;
     }
 
-    private boolean todosEliminados(){
+    private boolean todosEliminados() throws RemoteException {
         boolean resultado = false;
         int eliminados = contarEliminados();
         if (jugadores.size() == eliminados){
@@ -770,21 +776,21 @@ public class Rummy extends ObservableRemoto implements IRummy {
         return resultado;
     }
     private void comprobarEliminados() throws RemoteException {
-        boolean nuevoEliminado = false;
+        //boolean nuevoEliminado = false;
         if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
             for (Jugador jugadorActual:jugadores) {
                 if (jugadorActual.getPuntosDePartida() >= limitePuntos && !jugadorActual.isEliminado()){
                     jugadorActual.setEliminado(true);
-                    nuevoEliminado = true;
+                    //nuevoEliminado = true;
                 }
             }
-            if (nuevoEliminado){
+            /*if (nuevoEliminado){
                 notificarObservadores("jugador eliminado");
-            }
+            }*/
         }
     }
 
-    private void contarPuntosTotales() {
+    private void contarPuntosTotales() throws RemoteException {
         if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
             if (quedaUnJugador() || todosEliminados()){
                 //solo va a contar los puntos totales cuando se termine la partida

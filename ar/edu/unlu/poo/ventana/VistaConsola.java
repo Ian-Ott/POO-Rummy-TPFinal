@@ -82,6 +82,8 @@ public class VistaConsola implements IVista{
                 seleccionarOpcionesDePartida(textoIngresado);
             } else if (posibleAnularPartida) {
                 seleccionarOpcionesAnularPartida(textoIngresado);
+            }else if (controlador.isEliminado()) {
+                seleccionarOpcionesReenganche(textoIngresado);
             } else {
                 seleccionarOpcionesTurno(textoIngresado);
             }
@@ -98,6 +100,19 @@ public class VistaConsola implements IVista{
                     opcionIncorrecta();
                 }
             }
+        }
+    }
+
+    private void seleccionarOpcionesReenganche(String textoIngresado) {
+        if (hayApuesta){
+            String eleccion = textoIngresado.toUpperCase();
+            if (eleccion.equals("Y")){
+                controlador.hacerReenganche();
+            }else {
+                opcionIncorrecta();
+            }
+        }else {
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nLas apuestas estan desactivadas no es posible hacer el reenganche.");
         }
     }
 
@@ -141,9 +156,9 @@ public class VistaConsola implements IVista{
         } else if (textoIngresado.equals("5")) {
             mostrarCantidadCartas();
         } else if (textoIngresado.equals("6")) {
-            controlador.solicitarAnularPartida();
+            //falto implementar el opciones de mesa
         } else if (textoIngresado.equals("9")) {
-
+            controlador.solicitarAnularPartida();
         } else if (textoIngresado.equals("0")) {
             finTurno = true;
             terminarTurno();
@@ -280,7 +295,7 @@ public class VistaConsola implements IVista{
             bienvenida = "\nBienvenido " + controlador.getNombreJugador();
         }
         txtAreaMuestra.setText("----------------------------------------------------------" +
-                "|Modo" + controlador.getModoJuego() + "|"+
+                "\n|Modo" + controlador.getModoJuego() + "|"+
                 bienvenida +
                 "\nTus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
                 "\nSeleccione una opcion para continuar su turno:" +
@@ -289,11 +304,12 @@ public class VistaConsola implements IVista{
                 "\n3-hacer combinaciones de numeros iguales" +
                 "\n4-ver jugadas en mesa / agregar carta a una jugada" +
                 "\n5-ver cartas restantes jugadores" +
-                "\n6-Opciones de mesa (solo disponible para el jefe de mesa)" +
+                //"\n6-Opciones de mesa (solo disponible para el jefe de mesa)" +
                 "\n9-Anular Partida" +
                 "\n0-terminar turno" +
                 "\n----------------------------------------------------------"+
-                "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote());
+                "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
+                "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
     }
 
     @Override
@@ -340,7 +356,7 @@ public class VistaConsola implements IVista{
                 "\n1-Iniciar Partida" +
                 "\n tambien puede seleccionar otro modo de juego: (por defecto esta activado el modo expres)"+
                 "\n2-Activar Modo Expres (es una partida rapida de una ronda en la que gana el jugador que cierra antes)" +
-                "\n3-Activar Juego a Puntos (Cuando un jugador alcanza los 3000 puntos queda eliminado. El último jugador es el ganador de la partida)" +
+                "\n3-Activar Juego a Puntos (Cuando un jugador alcanza los 300 puntos queda eliminado. El último jugador es el ganador de la partida)" +
                 "\n__________________________________________"+
                 "\nSi desea Apostar solo ingrese la cantidad que desea apostar y se definira la situacion de la apuesta segun la decision del resto de jugadores" +
                 "\nminimo de Apuesta: 250" +
@@ -394,7 +410,6 @@ public class VistaConsola implements IVista{
                 "\nCarta disponible en la pila de descartes:" + controlador.getCartaDescarte()+
                 "\nTus cartas:\n");
         mostrarCartas();
-
     }
 
 
@@ -413,7 +428,10 @@ public class VistaConsola implements IVista{
     @Override
     public void esperarTurno(){
         limpiarPantalla();
-        if (!controlador.esTurnoJugador()){
+        if (controlador.isEliminado()){
+            mostrarAvisoEliminado();
+        }
+        else if (!controlador.esTurnoJugador()){
             txtAreaMuestra.setText("______________________________________________" +
                     "\nHa iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno..." +
                     "\n______________________________________________");
@@ -444,7 +462,9 @@ public class VistaConsola implements IVista{
 
     @Override
     public void continuarTurnoActual(){
-        if (controlador.esTurnoJugador()){
+        if (controlador.isEliminado()){
+            mostrarAvisoEliminado();
+        } else if (controlador.esTurnoJugador()){
             primerasOpciones = false;
             limpiarPantalla();
             mostrarMenu();
@@ -454,6 +474,14 @@ public class VistaConsola implements IVista{
                         "\nHay nuevas jugadas disponibles en la mesa!!!");
             }
         }
+    }
+
+    private void mostrarAvisoEliminado() {
+        txtAreaMuestra.setText("Usted ha sido eliminado de la partida por sobrepasar la cantidad de puntos."+
+                "\n¿Quiere reengancharse? (si acepta debe apostar la mitad de lo que aposto en un inicio)"+
+                "\nTus fichas: " + controlador.cantFichas() + " | Cantidad apostada: " + controlador.getcantidadApostada() +
+                "\nAVISO: En el caso que las apuestas esten desactivadas no es posible hacer el reenganche. "+
+                "\nEscriba Y para reenganchar.");
     }
 
     @Override

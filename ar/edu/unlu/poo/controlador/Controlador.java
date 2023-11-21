@@ -452,4 +452,28 @@ public class Controlador implements IControladorRemoto {
             throw new RuntimeException(e);
         }
     }
+
+    public void hacerReenganche() {
+        try {
+            rummy.reengancharJugador(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isEliminado() {
+        try {
+            return rummy.estaEliminado(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getCantDisponibles() {
+        try {
+            return (rummy.getJugadoresSize() - rummy.contarEliminados());
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
