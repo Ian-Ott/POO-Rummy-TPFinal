@@ -1,9 +1,6 @@
 package ar.edu.unlu.poo.app;
 
-import ar.edu.unlu.poo.controlador.Controlador;
-import ar.edu.unlu.poo.modelo.IRummy;
-import ar.edu.unlu.poo.modelo.Rummy;
-import ar.edu.unlu.poo.ventana.Ventana;
+import ar.edu.unlu.poo.ventana.VistaGrafica;
 
 import javax.swing.*;
 
@@ -13,10 +10,11 @@ public class NuevoJuego {
             @Override
             public void run() {
                 try{
-                    IRummy modelo = Rummy.getInstancia();
+                    /*IRummy modelo = Rummy.getInstancia();
                     Ventana v = new Ventana();
-                    Controlador controlador = new Controlador(v,modelo);
-                    v.setControlador(controlador);
+                    Controlador controlador = new Controlador(v);
+                    v.setControlador(controlador);*/
+                    VistaGrafica vista = new VistaGrafica();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
