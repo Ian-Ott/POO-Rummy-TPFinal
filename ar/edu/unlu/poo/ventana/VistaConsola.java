@@ -12,8 +12,11 @@ import java.util.ArrayList;
 
 public class VistaConsola implements IVista{
     enum EstadosPosibles{
-        PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, POSIBLE_RUMMY, POSIBLE_ESCALERA, POSIBLE_CARTA_PARA_JUGADA,
-        FIN_TURNO, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA
+        SIN_ESTADO,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_TURNO, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO
+    }
+
+    enum EstadosJugadas{
+        SIN_ESTADO,POSIBLE_RUMMY, POSIBLE_ESCALERA, POSIBLE_CARTA_PARA_JUGADA, POSIBLE_COMBINACION
     }
     private JFrame frame;
     private JPanel panelConsola;
@@ -23,18 +26,7 @@ public class VistaConsola implements IVista{
 
     private Controlador controlador;
     private boolean jugadorAgregado = false;
-    private boolean primerasOpciones = false;//nombre temporal
-
-    private boolean seleccionCartas = false;
-    private boolean posibleRummy = false;
-    private boolean posibleEscalera = false;
-    private boolean posibleCombinacion = false;
-
-    private boolean posibleCartaParaJugada = false;
-    private boolean finTurno = false;
     private ArrayList<Integer> posicionesSeleccionadas = new ArrayList<>();
-
-    private boolean seleccionJugada = false;
 
     private boolean jugadasSinVer = false;
 
@@ -42,9 +34,9 @@ public class VistaConsola implements IVista{
 
     private boolean hayApuesta = false;
 
-    private boolean finPartida = false;
+    private EstadosJugadas estadoActualJugada;
 
-    private boolean posibleAnularPartida = false;
+    private EstadosPosibles estadoActual;
 
 
     public VistaConsola() {
@@ -68,23 +60,23 @@ public class VistaConsola implements IVista{
 
     }
 
-    private void procesarTexto(){ //achicar metodo
+    private void procesarTexto(){
         String textoIngresado = txtConsola.getText().toLowerCase();
         txtConsola.setText("");
         if (controlador.juegoIniciado()){
-            if (primerasOpciones){
+            if (estadoActual.equals(EstadosPosibles.PRIMERAS_OPCIONES)){
                 seleccionarPrimerasOpciones(textoIngresado);
-            } else if (seleccionCartas) {
+            } else if (estadoActual.equals(EstadosPosibles.SELECCION_CARTAS)) {
                 seleccionarCartas(textoIngresado);
-            } else if (seleccionJugada) {
+            } else if (estadoActual.equals(EstadosPosibles.SELECCION_JUGADA)) {
                 seleccionarJugada(textoIngresado);
-            } else if (finPartida) {
+            } else if (estadoActual.equals(EstadosPosibles.FIN_PARTIDA)) {
                 seleccionarOpcionesDePartida(textoIngresado);
-            } else if (posibleAnularPartida) {
+            } else if (estadoActual.equals(EstadosPosibles.POSIBLE_ANULAR_PARTIDA)) {
                 seleccionarOpcionesAnularPartida(textoIngresado);
             }else if (controlador.isEliminado()) {
                 seleccionarOpcionesReenganche(textoIngresado);
-            } else {
+            } else if(estadoActual.equals(EstadosPosibles.CONTINUAR_TURNO)) {
                 seleccionarOpcionesTurno(textoIngresado);
             }
         }else {
@@ -117,38 +109,41 @@ public class VistaConsola implements IVista{
     }
 
     private void seleccionarOpcionesInicio(String textoIngresado) {
-        int apuesta = Integer.parseInt(textoIngresado);
-        if (textoIngresado.equals("1")){
-            if (controlador.esAnfitrion()){
-                controlador.iniciarJuego();
-            }else {
+        //valida el texto sea un string
+        if (textoIngresado.matches("[0-123456789]*")){
+            int apuesta = Integer.parseInt(textoIngresado);
+            if (textoIngresado.equals("1")){
+                if (controlador.esAnfitrion()){
+                    controlador.iniciarJuego();
+                }else {
+                    opcionIncorrecta();
+                }
+            } else if (textoIngresado.equals("2")) {
+                controlador.activarModoExpres();
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Expres!!!");
+            } else if (textoIngresado.equals("3")) {
+                controlador.activarModoPuntos();
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
+            } else if (apuesta >= 250 && !hayApuesta) {
+                hayApuesta = true;
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nApuestas Activadas!!!");
+                controlador.apostar(apuesta);
+            } else {
                 opcionIncorrecta();
             }
-        } else if (textoIngresado.equals("2")) {
-            controlador.activarModoExpres();
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Expres!!!");
-        } else if (textoIngresado.equals("3")) {
-            controlador.activarModoPuntos();
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
-        } else if (apuesta >= 250 && !hayApuesta) {
-            hayApuesta = true;
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nApuestas Activadas!!!");
-            controlador.apostar(apuesta);
-        } else {
-            opcionIncorrecta();
-        }
+        }else {opcionIncorrecta();}
     }
 
     private void seleccionarOpcionesTurno(String textoIngresado) {
         if (textoIngresado.equals("1")){
             mostrarSeleccionCartas();
-            posibleRummy = true;
+            estadoActualJugada = EstadosJugadas.POSIBLE_RUMMY;
         } else if (textoIngresado.equals("2")) {
             mostrarSeleccionCartas();
-            posibleEscalera = true;
+            estadoActualJugada = EstadosJugadas.POSIBLE_ESCALERA;
         }
         else if (textoIngresado.equals("3")) {
-            posibleCombinacion = true;
+            estadoActualJugada = EstadosJugadas.POSIBLE_COMBINACION;
             mostrarSeleccionCartas();
         } else if (textoIngresado.equals("4")) {
             jugadasSinVer = false;
@@ -160,7 +155,7 @@ public class VistaConsola implements IVista{
         } else if (textoIngresado.equals("9")) {
             controlador.solicitarAnularPartida();
         } else if (textoIngresado.equals("0")) {
-            finTurno = true;
+            estadoActual = EstadosPosibles.FIN_TURNO;
             terminarTurno();
         }else {
             opcionIncorrecta();
@@ -181,7 +176,7 @@ public class VistaConsola implements IVista{
     private void seleccionarOpcionesDePartida(String textoIngresado) {
         String eleccion = textoIngresado.toUpperCase();
         if (eleccion.equals("Y")){
-            finPartida = false;
+            estadoActual = EstadosPosibles.SIN_ESTADO;
             mostrarEspera();
             //la consola vuelve al primer estado original donde se esperan jugadores (de hacho podrian entrar nuevos jugadores)
         } else if (eleccion.equals("N")) {
@@ -192,53 +187,68 @@ public class VistaConsola implements IVista{
     }
 
     private void seleccionarJugada(String textoIngresado) {
+        //valida el texto sea un string
+        if (textoIngresado.matches("[0-123456789]*")){
         int numero = Integer.parseInt(textoIngresado);
-        if (numero < controlador.getJugadasSize() && numero > 0){
-            posicionJugada = numero - 1;
-            mostrarSeleccionCartas();
-            posibleCartaParaJugada = true;
-        } else if (numero == 0) {
-            seleccionJugada = false;
-            continuarTurnoActual();
-        }
+        if (numero <= controlador.getJugadasSize() && numero > 0){
+                posicionJugada = numero - 1;
+                mostrarSeleccionCartas();
+                estadoActualJugada = EstadosJugadas.POSIBLE_CARTA_PARA_JUGADA;
+            } else if (numero == 0) {
+                estadoActual = EstadosPosibles.CONTINUAR_TURNO;
+                continuarTurnoActual();
+            }else {
+                opcionIncorrecta();
+            }
+        }else {opcionIncorrecta();}
     }
 
     private void seleccionarCartas(String textoIngresado) {
         int numero;
-        numero = Integer.parseInt(textoIngresado);
-        if (numero == 0){
-            seleccionCartas = false;
-            if (posibleRummy){
-                posibleRummy = false;
-                controlador.armarRummy(posicionesSeleccionadas);
-                posicionesSeleccionadas.clear();
-            } else if (posibleEscalera) {
-                posibleEscalera = false;
-                controlador.armarEscalera(posicionesSeleccionadas);
-                posicionesSeleccionadas.clear();
-            } else if (posibleCombinacion) {
-                posibleCombinacion = false;
-                controlador.armarCombinacionIguales(posicionesSeleccionadas);
-                posicionesSeleccionadas.clear();
-            } else if (posibleCartaParaJugada) {
-                posibleCartaParaJugada = false;
-                if (posicionesSeleccionadas.isEmpty()){
-                    continuarTurnoActual();
-                }else {
-                    controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
+        //valida el texto sea un string
+        if (textoIngresado.matches("[0-123456789]*")){
+            numero = Integer.parseInt(textoIngresado);
+            if (numero == 0){
+                if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_RUMMY)){
+                    estadoActualJugada = EstadosJugadas.SIN_ESTADO;
+                    controlador.armarRummy(posicionesSeleccionadas);
+                    posicionesSeleccionadas.clear();
+                } else if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_ESCALERA)) {
+                    estadoActualJugada = EstadosJugadas.SIN_ESTADO;
+                    controlador.armarEscalera(posicionesSeleccionadas);
+                    posicionesSeleccionadas.clear();
+                } else if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_COMBINACION)) {
+                    estadoActualJugada = EstadosJugadas.SIN_ESTADO;
+                    controlador.armarCombinacionIguales(posicionesSeleccionadas);
+                    posicionesSeleccionadas.clear();
+                } else if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_CARTA_PARA_JUGADA)) {
+                    estadoActualJugada = EstadosJugadas.SIN_ESTADO;
+                    if (posicionesSeleccionadas.isEmpty()){
+                        continuarTurnoActual();
+                    }else {
+                        controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
+                    }
+                    posicionesSeleccionadas.clear();
+                } else if (estadoActual.equals(EstadosPosibles.FIN_TURNO) && controlador.getCartasSize() == 0) {
+                    estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
+                    controlador.terminarTurno(posicionesSeleccionadas);
+                } else {
+
+                    //excepcion
                 }
-                posicionesSeleccionadas.clear();
-            } else if (finTurno) {
-                finTurno = false;
-                controlador.terminarTurno(posicionesSeleccionadas);
-                posicionesSeleccionadas.clear();
+            } else if (numero <= controlador.getCartasSize() && numero > 0) {
+                agregarPosicion(numero - 1);
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
+                if (estadoActual.equals(EstadosPosibles.FIN_TURNO)) {
+                    estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
+                    controlador.terminarTurno(posicionesSeleccionadas);
+                    posicionesSeleccionadas.clear();
+                }
             }else {
-                //excepcion
+                opcionIncorrecta();
             }
-        } else if (numero <= controlador.getCartasSize() && numero > 0) {
-            agregarPosicion(numero - 1);
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
         } else {
+            opcionIncorrecta();
             //excepcion
         }
     }
@@ -274,7 +284,7 @@ public class VistaConsola implements IVista{
         mostrarCartas();
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
                 "\n seleccione las cartas segun su posicion (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
-        seleccionCartas = true;
+        estadoActual = EstadosPosibles.SELECCION_CARTAS;
     }
 
     public void opcionIncorrecta(){
@@ -385,7 +395,7 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText("\n");
         txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada que quiera con un numero (empezando con el de arriba que es la 1) y sino presione 0 para cancelar");
-        seleccionJugada = true;
+        estadoActual = EstadosPosibles.SELECCION_JUGADA;
     }
     private void terminarTurno(){
         txtAreaMuestra.setText("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
@@ -397,7 +407,7 @@ public class VistaConsola implements IVista{
 
     @Override
     public void iniciarTurno(){
-        primerasOpciones = true;
+        estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
         mostrarPrimerasOpciones();
         txtConsola.setEnabled(true);
     }
@@ -465,7 +475,7 @@ public class VistaConsola implements IVista{
         if (controlador.isEliminado()){
             mostrarAvisoEliminado();
         } else if (controlador.esTurnoJugador()){
-            primerasOpciones = false;
+            estadoActual = EstadosPosibles.CONTINUAR_TURNO;
             limpiarPantalla();
             mostrarMenu();
             mostrarCartas();
@@ -495,8 +505,8 @@ public class VistaConsola implements IVista{
 
     private void eleccionNuevaPartida() {
         if (controlador.esAnfitrion()){
-            finPartida = true;
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
+            estadoActual = EstadosPosibles.FIN_PARTIDA;
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
         }else {
             txtConsola.setEnabled(false);
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "El anfitrion esta decidiendo si iniciar una nueva partida..." +
@@ -559,7 +569,7 @@ public class VistaConsola implements IVista{
 
     @Override
     public void eleccionAnularPartida() {
-        posibleAnularPartida = true;
+        estadoActual = EstadosPosibles.POSIBLE_ANULAR_PARTIDA;
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "¿Desea anular la partida? (Y/N) (Y para si, N para no)");
     }
 

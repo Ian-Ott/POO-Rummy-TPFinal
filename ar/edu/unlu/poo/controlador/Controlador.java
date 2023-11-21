@@ -42,8 +42,10 @@ public class Controlador implements IControladorRemoto {
                 vista.iniciarVentana(nombreJugador, anfitrion);
             } else if (cambio.equals("nuevo jugador")) {
                 vista.actualizarCantJugadores();
-            }
-            else if (cambio.equals("nuevo turno")){
+            } else if (cambio.equals("cartas agregadas")) {
+                vista.actualizarJugadas();
+                vista.continuarTurnoActual();
+            } else if (cambio.equals("nuevo turno")){
                 vista.nuevoTurno();
             } else if (cambio.equals("continuar turno jugador")) {
                 vista.continuarTurnoActual();

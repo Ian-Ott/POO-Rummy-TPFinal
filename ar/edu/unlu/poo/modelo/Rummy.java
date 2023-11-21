@@ -551,6 +551,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         }else{
             //excepcion
         }
+        notificarObservadores("continuar turno jugador");
     }
 
     private void agregarCartasSeleccionadas(ArrayList<Carta> cartasSeleccionadas, ArrayList<Carta> jugada) {

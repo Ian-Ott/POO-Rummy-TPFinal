@@ -36,7 +36,7 @@ public class Jugada implements Serializable {
 
     @Override
     public String toString() {
-        String acumulador = "\n";
+        String acumulador = "";
         for (int i = 0; i < cartasJugada.size(); i++) {
             acumulador += cartasJugada.get(i);
         }
