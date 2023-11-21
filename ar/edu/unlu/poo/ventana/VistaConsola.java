@@ -497,7 +497,7 @@ public class VistaConsola implements IVista{
             mostrarCartas();
             if (jugadasSinVer){
                 txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                        "\nHay nuevas jugadas disponibles en la mesa!!!");
+                        "\n\nHay nuevas jugadas disponibles en la mesa!!!");
             }
         }
     }
