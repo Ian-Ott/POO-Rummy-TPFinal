@@ -71,11 +71,9 @@ public class AppCliente {
             controlador = new Controlador(vista);
             assert vista != null;
             vista.setControlador(controlador);
-            //agregar jugador al rummy
             Cliente c = new Cliente(ip, Integer.parseInt(port), ipServidor, Integer.parseInt(portServidor));
-            //vista.iniciarVentana();
 
-                c.iniciar(controlador);
+            c.iniciar(controlador);
             if (!controlador.juegoIniciado()){
                 //controlador.nuevoJugador(nuevoJugador);
                 if(!controlador.juegoIniciado() && controlador.cantJugadores() < 4){

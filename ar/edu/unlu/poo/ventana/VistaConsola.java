@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class VistaConsola implements IVista{
     enum EstadosPosibles{
-        SIN_ESTADO,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_TURNO, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO
+        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO
     }
 
     enum EstadosJugadas{
@@ -37,13 +37,14 @@ public class VistaConsola implements IVista{
     private EstadosJugadas estadoActualJugada;
 
     private EstadosPosibles estadoActual;
+    private boolean finTurno = false;
 
 
     public VistaConsola() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                frame = new JFrame("Rummy Beta - Version 0.0");
+                frame = new JFrame("Rummy - Version 1.0");
                 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 frame.setContentPane(panelConsola);
                 frame.pack();
@@ -79,7 +80,15 @@ public class VistaConsola implements IVista{
             } else if(estadoActual.equals(EstadosPosibles.CONTINUAR_TURNO)) {
                 seleccionarOpcionesTurno(textoIngresado);
             }
-        }else {
+        } else if (estadoActual.equals(EstadosPosibles.SELECCION_NOMBRE)){
+            if (!controlador.estaEnElJuego(textoIngresado)){
+                estadoActual = EstadosPosibles.SIN_ESTADO;
+                controlador.nuevoJugador(controlador.esAnfitrion(), textoIngresado);
+            }else {
+                JOptionPane.showMessageDialog(null,"Error: hay alguien con ese nombre en la partida!!!");
+                obtenerNombre();
+            }
+        } else{
             if (controlador.esAnfitrion()){
                 seleccionarOpcionesInicio(textoIngresado);
             }else {
@@ -136,13 +145,19 @@ public class VistaConsola implements IVista{
 
     private void seleccionarOpcionesTurno(String textoIngresado) {
         if (textoIngresado.equals("1")){
+            limpiarPantalla();
+            txtAreaMuestra.setText("Para hacer Rummy debe armar una escalera con todas sus cartas con la condicion de que no hizo una jugada anteriormente:");
             mostrarSeleccionCartas();
             estadoActualJugada = EstadosJugadas.POSIBLE_RUMMY;
         } else if (textoIngresado.equals("2")) {
+            limpiarPantalla();
+            txtAreaMuestra.setText("Hacer Escalera (minimo 3 cartas):");
             mostrarSeleccionCartas();
             estadoActualJugada = EstadosJugadas.POSIBLE_ESCALERA;
         }
         else if (textoIngresado.equals("3")) {
+            limpiarPantalla();
+            txtAreaMuestra.setText("Hacer Combinacion de numeros iguales (solo se puede entre 3-4 cartas):");
             estadoActualJugada = EstadosJugadas.POSIBLE_COMBINACION;
             mostrarSeleccionCartas();
         } else if (textoIngresado.equals("4")) {
@@ -155,7 +170,7 @@ public class VistaConsola implements IVista{
         } else if (textoIngresado.equals("9")) {
             controlador.solicitarAnularPartida();
         } else if (textoIngresado.equals("0")) {
-            estadoActual = EstadosPosibles.FIN_TURNO;
+            finTurno = true;
             terminarTurno();
         }else {
             opcionIncorrecta();
@@ -211,16 +226,31 @@ public class VistaConsola implements IVista{
             if (numero == 0){
                 if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_RUMMY)){
                     estadoActualJugada = EstadosJugadas.SIN_ESTADO;
-                    controlador.armarRummy(posicionesSeleccionadas);
-                    posicionesSeleccionadas.clear();
+                    if (posicionesSeleccionadas.isEmpty()){
+                        continuarTurnoActual();
+                    }else {
+                        estadoActual = EstadosPosibles.CONTINUAR_TURNO;
+                        controlador.armarRummy(posicionesSeleccionadas);
+                        posicionesSeleccionadas.clear();
+                    }
                 } else if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_ESCALERA)) {
                     estadoActualJugada = EstadosJugadas.SIN_ESTADO;
-                    controlador.armarEscalera(posicionesSeleccionadas);
-                    posicionesSeleccionadas.clear();
+                    if (posicionesSeleccionadas.isEmpty()){
+                        continuarTurnoActual();
+                    }else {
+                        estadoActual = EstadosPosibles.CONTINUAR_TURNO;
+                        controlador.armarEscalera(posicionesSeleccionadas);
+                        posicionesSeleccionadas.clear();
+                    }
                 } else if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_COMBINACION)) {
                     estadoActualJugada = EstadosJugadas.SIN_ESTADO;
-                    controlador.armarCombinacionIguales(posicionesSeleccionadas);
-                    posicionesSeleccionadas.clear();
+                    if (posicionesSeleccionadas.isEmpty()){
+                        continuarTurnoActual();
+                    }else {
+                        estadoActual = EstadosPosibles.CONTINUAR_TURNO;
+                        controlador.armarCombinacionIguales(posicionesSeleccionadas);
+                        posicionesSeleccionadas.clear();
+                    }
                 } else if (estadoActualJugada.equals(EstadosJugadas.POSIBLE_CARTA_PARA_JUGADA)) {
                     estadoActualJugada = EstadosJugadas.SIN_ESTADO;
                     if (posicionesSeleccionadas.isEmpty()){
@@ -229,7 +259,8 @@ public class VistaConsola implements IVista{
                         controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
                     }
                     posicionesSeleccionadas.clear();
-                } else if (estadoActual.equals(EstadosPosibles.FIN_TURNO) && controlador.getCartasSize() == 0) {
+                } else if (finTurno && controlador.getCartasSize() == 0) {
+                    finTurno = false;
                     estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
                     controlador.terminarTurno(posicionesSeleccionadas);
                 } else {
@@ -239,7 +270,8 @@ public class VistaConsola implements IVista{
             } else if (numero <= controlador.getCartasSize() && numero > 0) {
                 agregarPosicion(numero - 1);
                 txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
-                if (estadoActual.equals(EstadosPosibles.FIN_TURNO)) {
+                if (finTurno){
+                    finTurno = false;
                     estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
                     controlador.terminarTurno(posicionesSeleccionadas);
                     posicionesSeleccionadas.clear();
@@ -283,8 +315,8 @@ public class VistaConsola implements IVista{
     private void mostrarSeleccionCartas(){
         mostrarCartas();
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                "\n seleccione las cartas segun su posicion (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
-        estadoActual = EstadosPosibles.SELECCION_CARTAS;
+                "\n seleccione las cartas segun su POSICION (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
+            estadoActual = EstadosPosibles.SELECCION_CARTAS;
     }
 
     public void opcionIncorrecta(){
@@ -322,10 +354,6 @@ public class VistaConsola implements IVista{
                 "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
     }
 
-    @Override
-    public void actualizarCarta(Carta cambio) {
-
-    }
 
     @Override
     public void setControlador(Controlador controlador) {
@@ -336,7 +364,7 @@ public class VistaConsola implements IVista{
     public void pantallaEspera(boolean anfitrion) {
         if (!jugadorAgregado){
             jugadorAgregado = true;
-            controlador.nuevoJugador(anfitrion);
+            obtenerNombre();
         }else {
             limpiarPantalla();
             if (!anfitrion){
@@ -385,16 +413,12 @@ public class VistaConsola implements IVista{
         pantallaEspera(controlador.esAnfitrion());
     }
 
-    @Override
-    public void cerrarPantallaEspera() {
-
-    }
 
     private void mostrarJugadasEnMesa(){
         ITapete jugadasEnMesa = controlador.obtenerJugadas();
         txtAreaMuestra.setText("\n");
         txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada que quiera con un numero (empezando con el de arriba que es la 1) y sino presione 0 para cancelar");
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada a la que quiera agregar una carta \n(si desea la agregar cartas a la jugada 1 solo seleccione el 1 y asi con las demas) \n\npresione 0 para cancelar");
         estadoActual = EstadosPosibles.SELECCION_JUGADA;
     }
     private void terminarTurno(){
@@ -449,10 +473,6 @@ public class VistaConsola implements IVista{
         }
     }
 
-    @Override
-    public void darControl(){
-
-    }
 
     @Override
     public void actualizarCartas(ArrayList<ICarta> cartasJugador) {
@@ -571,6 +591,12 @@ public class VistaConsola implements IVista{
     public void eleccionAnularPartida() {
         estadoActual = EstadosPosibles.POSIBLE_ANULAR_PARTIDA;
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "¿Desea anular la partida? (Y/N) (Y para si, N para no)");
+    }
+
+    @Override
+    public void obtenerNombre() {
+        estadoActual = EstadosPosibles.SELECCION_NOMBRE;
+        txtAreaMuestra.setText("Escriba su nombre...");
     }
 
     private void mostrarTablaPosiciones() {

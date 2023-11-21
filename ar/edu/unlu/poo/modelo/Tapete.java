@@ -6,30 +6,30 @@ import java.util.ArrayList;
 public class Tapete implements Serializable, ITapete {
     private ArrayList<Jugada> jugada;
 
-    private int boteApuestas;
+    private int boteApuesta;
 
     public Tapete(){
         jugada = new ArrayList<>();
-        boteApuestas = 0;
+        boteApuesta = 0;
     }
 
     public void agregarApuesta(int apuesta) {
-        this.boteApuestas += apuesta;
+        this.boteApuesta += apuesta;
     }
 
     public void sacarApuesta(int apuesta) {
-        this.boteApuestas -= apuesta;
+        this.boteApuesta -= apuesta;
     }
 
-    public int getBoteApuestas() {
-        return boteApuestas;
+    public int getBoteApuesta() {
+        return boteApuesta;
     }
 
     public int otorgarFichasAlGanador(){
         //le otorga al jugador el 80% de las fichas en el bote
         // y el resto se mantiene en el bote para partidas siguientes
-        int fichasGanadas = (int) (boteApuestas * 0.8);
-        boteApuestas = (int) (boteApuestas * 0.2);
+        int fichasGanadas = (int) (boteApuesta * 0.8);
+        boteApuesta = (int) (boteApuesta * 0.2);
         return fichasGanadas;
     }
 

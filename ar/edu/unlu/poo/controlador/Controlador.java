@@ -3,6 +3,7 @@ package ar.edu.unlu.poo.controlador;
 import ar.edu.unlu.poo.modelo.*;
 import ar.edu.unlu.poo.ventana.IVista;
 import ar.edu.unlu.poo.ventana.VistaConsola;
+import ar.edu.unlu.poo.ventana.VistaGrafica;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
@@ -141,8 +142,7 @@ public class Controlador implements IControladorRemoto {
         return resultado;
     }
 
-    public void nuevoJugador(boolean anfitrion){
-        String nombreJugador = obtenerNombre();
+    public void nuevoJugador(boolean anfitrion, String nombreJugador){
         Jugador nuevoJugador = new Jugador(nombreJugador);
         this.nombreJugador = nombreJugador;
         nuevoJugador.setJefeMesa(anfitrion);
@@ -153,7 +153,9 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
-    private String obtenerNombre(){
+
+    //para la ventanaGrafica
+    /*private String obtenerNombre(){
         boolean nombreRepetido = true;
         String nombre = "";
         while(nombreRepetido){
@@ -165,9 +167,9 @@ public class Controlador implements IControladorRemoto {
             }
         }
         return nombre;
-    }
+    }*/
 
-    private boolean estaEnElJuego(String nombreJugador){
+    public boolean estaEnElJuego(String nombreJugador){
         boolean resultado = false;
         ArrayList<String> nombres = null;
         try {
@@ -272,6 +274,8 @@ public class Controlador implements IControladorRemoto {
         try {
             if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
                 rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+            }else {
+                vista.continuarTurnoActual();
             }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
@@ -284,6 +288,7 @@ public class Controlador implements IControladorRemoto {
                 rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
             }else {
                 //falta excepcion
+                vista.continuarTurnoActual();
                 System.out.println("error cantidad incorrecta de posiciones");
             }
         } catch (RemoteException e) {

@@ -237,7 +237,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     @Override
     public int getCantidadTotalApuesta() throws RemoteException {
-        return mesaDeJuego.getBoteApuestas();
+        return mesaDeJuego.getBoteApuesta();
     }
 
     @Override
@@ -342,7 +342,6 @@ public class Rummy extends ObservableRemoto implements IRummy {
             notificarObservadores("continuar turno jugador");
             //excepcion
         }
-
     }
 
     private boolean agregoJugada(Jugador jugadorActual) {
@@ -676,6 +675,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
         contarPuntosTotales();
         if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
+            if (apuestasActivas){
+                ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
+            }
             notificarObservadores("fin de partida");
             //dialogo de mensaje que avise que la partida fue finalizada y tal vez algun boton de nueva partida
             //mostrar clasificacion y sumar los puntos del jugador a la clasificacion
