@@ -22,6 +22,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
     private Jugador ganador;
     private boolean apuestasActivas;
     private int solicitudDeAnularPartida;
+
+    private boolean partidaFinalizada;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -47,11 +49,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     public void iniciarJuego() throws RemoteException {
         try {
-            if (ganador != null){
-                iniciarOtraRonda();
-                //esta condiciuon comprueba que hubo una partida antes por lo que
-                //en el caso que la partida se empiece de nuevo sin importar el modo que sea se reincian los estados importantes
-            }
+            iniciarOtraRonda();
             juegoIniciado = true;
             if (jugadores.size() == 2){
                 repartirCartasJugadores(10);
@@ -59,7 +57,6 @@ public class Rummy extends ObservableRemoto implements IRummy {
                 repartirCartasJugadores(7);
             }
             elegirJugadorMano();
-            notificarObservadores("juego iniciado");
             //notificarObservadores("cartas repartidas");
         }catch (RemoteException e){
             e.printStackTrace();
@@ -74,34 +71,45 @@ public class Rummy extends ObservableRemoto implements IRummy {
         devolverCartasAMesa();
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
         mezclarMazo();
-        iniciarJuego();
     }
 
     private void reiniciarEstadosJugadores() {
         for (Jugador jugadorActual:jugadores) {
             jugadorActual.setAgregoJugada(false);
-            jugadorActual.setEliminado(false);
+            if (modo.equals(modoDeJuego.JUEGOAPUNTOS) && partidaFinalizada){
+                jugadorActual.setEliminado(false);
+                jugadorActual.setCantApostada(0);
+                partidaFinalizada = false;
+            } else if (modo.equals(modoDeJuego.EXPRES)) {
+                jugadorActual.setCantApostada(0);
+            }
             jugadorActual.setHizoRummy(false);
             jugadorActual.setPuntosDePartida(0);
-            jugadorActual.setCantApostada(0);
             jugadorActual.setFichasGanadasPartida(0);
         }
     }
 
     private void devolverCartasAMesa() {
+        Carta cartaAux;
         for (int i = 0; i < jugadores.size();i++){
-            for (Carta carta:jugadores.get(i).getCartasEnMano()) {
-                mazoDeJuego.agregarCartaBocaArriba(carta);
+            if (!jugadores.get(i).getCartasEnMano().isEmpty()){
+                while (!jugadores.get(i).getCartasEnMano().isEmpty()){
+                    cartaAux = jugadores.get(i).getCartasEnMano().remove(0);
+                    mazoDeJuego.agregarCartaBocaArriba(cartaAux);
+                }
             }
         }
     }
 
     private void elegirJugadorMano() throws RemoteException {
+        int posiciones = jugadores.size() - 1;
         //aca se elige cual jugador va a ser mano y se comienza el nuevo turno
-        posicionTurnoActual = (int) (random() * (jugadores.size() - 1));
+        posicionTurnoActual = (int) (random() * (posiciones));
         while(jugadores.get(posicionTurnoActual).isEliminado()) {
             //este while hace que no inicie un jugador que este eliminado
-            posicionTurnoActual = (int) (random() * (jugadores.size() - 1));
+            if (jugadores.get(posicionTurnoActual).isEliminado()){
+                posicionTurnoActual = (int) (random() * (posiciones));
+            }
         }
         notificarObservadores("nuevo turno");
     }
@@ -119,17 +127,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     @Override
     public void repartirCartasJugadores(int cantidadCartas) throws RemoteException {
-        try {
-            Carta cartaAux;
-            for (int i = 0; i < jugadores.size(); i++){
-                mazoDeJuego.repartir(cantidadCartas, jugadores.get(i));
-                for (int j = 0; j < jugadores.get(i).getCartasEnMano().size(); j++){
-                    cartaAux = (Carta) jugadores.get(i).getCartasEnMano().get(j);
-                    notificarObservadores("jugador"+ i + " "+ cartaAux);
-                }
-            }
-        }catch (RemoteException e){
-            e.printStackTrace();
+        Carta cartaAux;
+        for (int i = 0; i < jugadores.size(); i++){
+            mazoDeJuego.repartir(cantidadCartas, jugadores.get(i));
         }
 
     }
@@ -271,14 +271,15 @@ public class Rummy extends ObservableRemoto implements IRummy {
         notificarObservadores("pedido anular partida");
     }
 
-    public void anularPartida(String decision) throws RemoteException {
-        if (decision.equals("Y")){
-            if (jugadores.size() == solicitudDeAnularPartida){
+    public void anularPartida(boolean anular) throws RemoteException {
+        if (anular){
+            if (jugadores.size() - 1 == solicitudDeAnularPartida){
+                solicitudDeAnularPartida = 0;
                 finalizarPartidaAmistosamente();
             }else {
                 solicitudDeAnularPartida++;
             }
-        } else if (decision.equals("N")) {
+        } else{
             solicitudDeAnularPartida = 0;
             notificarObservadores("continuar turno jugador");
         }
@@ -290,6 +291,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
             mesaDeJuego.sacarApuesta(jugador.getCantApostada());
             jugador.setCantApostada(0);
         }
+        partidaFinalizada = true;
+        //pongo de ganador al anfitrion aunque no gana nada para reiniciar los estados del juego
         apuestasActivas = false;
         notificarObservadores("finalizo partida amistosamente");
     }
@@ -305,6 +308,18 @@ public class Rummy extends ObservableRemoto implements IRummy {
         jugadorActual.restarFichasTotales(nuevaApuesta);
         //le agrego la cantidad total que aposto por si quiere volver a hacer reenganche y le resto su cantidad de fichas
         mesaDeJuego.agregarApuesta(nuevaApuesta);
+    }
+
+    @Override
+    public void nuevoJuego() throws RemoteException {
+        juegoIniciado = false;
+        notificarObservadores("nuevo juego");
+    }
+
+    @Override
+    public void cerrarJuego() throws RemoteException {
+        notificarObservadores("cerrar juego");
+        System.exit(0);
     }
 
     private int buscarJugadorConMasPuntos() {
@@ -675,6 +690,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
         contarPuntosTotales();
         if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
+            if (quedaUnJugador() || todosEliminados()){
+                partidaFinalizada = true;
+            }
             if (apuestasActivas){
                 ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
             }

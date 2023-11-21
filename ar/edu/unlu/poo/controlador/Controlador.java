@@ -39,8 +39,6 @@ public class Controlador implements IControladorRemoto {
                 vista.avisarSobreApuesta();
             } else if (cambio.equals("apuesta cancelada")) {
                 vista.mostrarErrorApuesta();
-            } else if (cambio.equals("juego iniciado")) {
-                vista.iniciarVentana(nombreJugador, anfitrion);
             } else if (cambio.equals("nuevo jugador")) {
                 vista.actualizarCantJugadores();
             } else if (cambio.equals("cartas agregadas")) {
@@ -66,6 +64,10 @@ public class Controlador implements IControladorRemoto {
             } else if (cambio.equals("nueva ronda")) {
                 vista.mostrarResultadosPuntos();
                 vista.pantallaEspera(anfitrion);
+            } else if (cambio.equals("nuevo juego")) {
+                vista.pantallaEspera(anfitrion);
+            } else if (cambio.equals("cerrar juego")) {
+                vista.solicitarCerrarVentana();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -446,7 +448,11 @@ public class Controlador implements IControladorRemoto {
 
     public void tomarDecisionDePartida(String eleccion) {
         try {
-            rummy.anularPartida(eleccion);
+            if (eleccion.equals("Y")){
+                rummy.anularPartida(true);
+            }else {
+                rummy.anularPartida(false);
+            }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -479,6 +485,22 @@ public class Controlador implements IControladorRemoto {
     public int getCantDisponibles() {
         try {
             return (rummy.getJugadoresSize() - rummy.contarEliminados());
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void nuevoJuego() {
+        try {
+            rummy.nuevoJuego();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void cerrarJuego() {
+        try {
+            rummy.cerrarJuego();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

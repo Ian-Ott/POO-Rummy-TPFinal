@@ -50,8 +50,8 @@ public class AppCliente {
                 8888
         );
         ArrayList<String> vistasDisponibles = new ArrayList<>();
-        vistasDisponibles.add("Ventana Grafica");
         vistasDisponibles.add("Consola");
+        vistasDisponibles.add("Ventana Grafica");
         String visualizacion = (String) JOptionPane.showInputDialog(
                 null,
                 "Seleccione la vista que quiere para ver el juego", "Visualizacion del juego",

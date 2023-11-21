@@ -192,10 +192,10 @@ public class VistaConsola implements IVista{
         String eleccion = textoIngresado.toUpperCase();
         if (eleccion.equals("Y")){
             estadoActual = EstadosPosibles.SIN_ESTADO;
-            mostrarEspera();
-            //la consola vuelve al primer estado original donde se esperan jugadores (de hacho podrian entrar nuevos jugadores)
+            controlador.nuevoJuego();
+            //la consola vuelve al primer estado original donde se esperan jugadores (de hecho podrian entrar nuevos jugadores)
         } else if (eleccion.equals("N")) {
-            System.exit(0);
+            controlador.cerrarJuego();
         }else {
             opcionIncorrecta();
         }
@@ -323,11 +323,6 @@ public class VistaConsola implements IVista{
         JOptionPane.showMessageDialog(null, "Opcion incorrecta!!!");
     }
 
-    @Override
-    public void iniciarVentana(String nombreJugador, boolean b){
-
-    }
-
     private void mostrarMenu() {
         limpiarPantalla();
         String bienvenida;
@@ -337,7 +332,7 @@ public class VistaConsola implements IVista{
             bienvenida = "\nBienvenido " + controlador.getNombreJugador();
         }
         txtAreaMuestra.setText("----------------------------------------------------------" +
-                "\n|Modo" + controlador.getModoJuego() + "|"+
+                "\n| Modo " + controlador.getModoJuego() + " |"+
                 bienvenida +
                 "\nTus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
                 "\nSeleccione una opcion para continuar su turno:" +
@@ -362,6 +357,7 @@ public class VistaConsola implements IVista{
 
     @Override
     public void pantallaEspera(boolean anfitrion) {
+        estadoActual = EstadosPosibles.SIN_ESTADO;
         if (!jugadorAgregado){
             jugadorAgregado = true;
             obtenerNombre();
@@ -399,7 +395,7 @@ public class VistaConsola implements IVista{
                 "\nSi desea Apostar solo ingrese la cantidad que desea apostar y se definira la situacion de la apuesta segun la decision del resto de jugadores" +
                 "\nminimo de Apuesta: 250" +
                 "\nTus fichas:" + controlador.cantFichas());
-                if (hayApuesta){
+                if (controlador.apuestasActivadas()){
                     txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nApuestas Activadas!!!");
                 }
     }
@@ -518,7 +514,7 @@ public class VistaConsola implements IVista{
     @Override
     public void finalizarPartida() {
         limpiarPantalla();
-        txtAreaMuestra.setText("La partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
+        txtAreaMuestra.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
                 " con " + controlador.getCantidadPuntosGanador()+" puntos");
         mostrarTablaPosiciones();
         eleccionNuevaPartida();
@@ -530,8 +526,9 @@ public class VistaConsola implements IVista{
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
         }else {
             txtConsola.setEnabled(false);
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "El anfitrion esta decidiendo si iniciar una nueva partida..." +
-                    "\n(AVISO:En caso que se cierre el juego significa que no hay una nueva partida)");
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nEl anfitrion esta decidiendo si iniciar una nueva partida..."
+                            //+ "\n(AVISO:En caso que se cierre el juego significa que no hay una nueva partida)"
+            );
         }
     }
 
@@ -544,9 +541,9 @@ public class VistaConsola implements IVista{
     @Override
     public void cerrarPartida() {
         if (controlador.getModoJuego().equals("EXPRES")){
-            txtAreaMuestra.setText("La partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+            txtAreaMuestra.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
         }else {
-            txtAreaMuestra.setText("La ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+            txtAreaMuestra.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
             controlador.iniciarNuevaRonda();
         }
 
@@ -574,10 +571,11 @@ public class VistaConsola implements IVista{
 
     @Override
     public void mostrarResultadosPuntos() {
-        txtAreaMuestra.setText("Puntos de los jugadores (el limite es 300):");
+        txtAreaMuestra.setText("\nPuntos de los jugadores (el limite es 300):");
         for (int i = 0; i < controlador.cantJugadores(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n" + controlador.obtenerJugador(i));
         }
+        controlador.iniciarNuevaRonda();
     }
 
     @Override
@@ -591,7 +589,7 @@ public class VistaConsola implements IVista{
     @Override
     public void eleccionAnularPartida() {
         estadoActual = EstadosPosibles.POSIBLE_ANULAR_PARTIDA;
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea anular la partida? (Y/N) (Y para si, N para no)");
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe solicito anular la partida.\n¿Desea anular la partida? (Y/N) (Y para si, N para no)");
         txtConsola.setEnabled(true);
     }
 
@@ -599,6 +597,11 @@ public class VistaConsola implements IVista{
     public void obtenerNombre() {
         estadoActual = EstadosPosibles.SELECCION_NOMBRE;
         txtAreaMuestra.setText("Escriba su nombre...");
+    }
+
+    @Override
+    public void solicitarCerrarVentana() {
+        txtAreaMuestra.setText("Se decidio no empezar una nueva partida. Por favor, cierre la ventana.");
     }
 
     private void mostrarTablaPosiciones() {

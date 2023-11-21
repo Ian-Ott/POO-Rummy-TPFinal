@@ -8,7 +8,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public interface IVista {
-    void iniciarVentana(String nombreJugador, boolean b);
 
     void setControlador(Controlador controlador);
 
@@ -45,4 +44,6 @@ public interface IVista {
     void eleccionAnularPartida();
 
     void obtenerNombre();
+
+    void solicitarCerrarVentana();
 }

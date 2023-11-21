@@ -47,7 +47,7 @@ public interface IRummy extends IObservableRemoto {
 
     void pedidoAnularPartidaAmistosamente() throws RemoteException;
 
-    void anularPartida(String decision) throws RemoteException;
+    void anularPartida(boolean anular) throws RemoteException;
 
     void contarPuntosPartida() throws RemoteException;
 
@@ -108,6 +108,10 @@ public interface IRummy extends IObservableRemoto {
     int contarEliminados() throws RemoteException;
 
     void reengancharJugador(String nombreJugador)throws RemoteException;
+
+    void nuevoJuego() throws RemoteException;
+
+    void cerrarJuego() throws RemoteException;
 
     //boolean esAnfitrion(String nombreJugador);
 
