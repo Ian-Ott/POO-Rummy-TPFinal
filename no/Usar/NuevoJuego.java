@@ -1,4 +1,4 @@
-package ar.edu.unlu.poo.app;
+package no.Usar;
 
 import ar.edu.unlu.poo.ventana.VistaGrafica;
 

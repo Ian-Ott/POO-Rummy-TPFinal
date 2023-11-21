@@ -1,4 +1,4 @@
-package ar.edu.unlu.poo;
+package no.Usar;
 
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.Carta;
