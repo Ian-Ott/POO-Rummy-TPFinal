@@ -5,10 +5,6 @@ public interface ICarta {
 
     Palo getPalo();
 
-    void setEsta_enMazo(boolean esta_enMazo);
-
-    boolean getEsta_enMazo();
-
     int getPuntos();
 
     String toString();
