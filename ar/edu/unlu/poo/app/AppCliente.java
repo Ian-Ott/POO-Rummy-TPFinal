@@ -7,12 +7,8 @@ import javax.swing.JOptionPane;
 
 
 import ar.edu.unlu.poo.controlador.Controlador;
-import ar.edu.unlu.poo.modelo.IRummy;
-import ar.edu.unlu.poo.modelo.Jugador;
-import ar.edu.unlu.poo.modelo.Rummy;
-import ar.edu.unlu.poo.ventana.Consola;
 import ar.edu.unlu.poo.ventana.IVista;
-import ar.edu.unlu.poo.ventana.Ventana;
+import ar.edu.unlu.poo.ventana.VistaConsola;
 import ar.edu.unlu.rmimvc.RMIMVCException;
 import ar.edu.unlu.rmimvc.Util;
 import ar.edu.unlu.rmimvc.cliente.Cliente;
@@ -68,11 +64,12 @@ public class AppCliente {
             IVista vista = null;
             Controlador controlador;
             if (visualizacion.equals("Ventana Grafica")){
-                 vista = new Ventana();
+                 //vista = new Ventana();
             } else if (visualizacion.equals("Consola")) {
-                vista = new Consola();
+                vista = new VistaConsola();
             }
             controlador = new Controlador(vista);
+            assert vista != null;
             vista.setControlador(controlador);
             //agregar jugador al rummy
             Cliente c = new Cliente(ip, Integer.parseInt(port), ipServidor, Integer.parseInt(portServidor));
@@ -83,9 +80,11 @@ public class AppCliente {
                 //controlador.nuevoJugador(nuevoJugador);
                 if(!controlador.juegoIniciado() && controlador.cantJugadores() < 4){
                     if (controlador.primerJugador()){
-                        vista.pantallaEspera(true);
+                        controlador.setAnfitrion(true);
+                        vista.pantallaEspera(controlador.esAnfitrion());
                     }else {
-                        vista.pantallaEspera(false);
+                        controlador.setAnfitrion(false);
+                        vista.pantallaEspera(controlador.esAnfitrion());
                     }
                 }else {
                     System.out.println("ERROR: maximo de jugadores alcanzado");
