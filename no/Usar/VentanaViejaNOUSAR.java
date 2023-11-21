@@ -3,7 +3,6 @@ package no.Usar;
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.Carta;
 import ar.edu.unlu.poo.modelo.ICarta;
-import ar.edu.unlu.poo.modelo.Observer;
 import ar.edu.unlu.poo.modelo.Palo;
 
 import javax.swing.*;
@@ -13,7 +12,7 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public class VentanaViejaNOUSAR extends JFrame implements ActionListener, Observer{
+public class VentanaViejaNOUSAR extends JFrame implements ActionListener{
     private JFrame frame;
     private JFrame frameEspera;
     private JLabel etiqueta2;
@@ -364,7 +363,6 @@ public class VentanaViejaNOUSAR extends JFrame implements ActionListener, Observ
         }
     }
 
-    @Override
     public void notificarCambio(Object o) throws RemoteException {
 
     }
