@@ -155,7 +155,6 @@ public class Jugador implements Serializable {
     }*/
 
     public Carta tirarCarta(Integer posicion){
-        //idea provisional
         if (posicion < cartasEnMano.size()){
             return cartasEnMano.remove((int)posicion);
         }
