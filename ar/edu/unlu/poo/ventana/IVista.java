@@ -10,23 +10,16 @@ import java.util.ArrayList;
 public interface IVista {
     void iniciarVentana(String nombreJugador, boolean b);
 
-    void actualizarCarta(Carta cambio);
-
     void setControlador(Controlador controlador);
 
     void pantallaEspera(boolean anfitrion);
 
     void actualizarCantJugadores();
 
-    void cerrarPantallaEspera();
-
 
     void iniciarTurno();
 
     void esperarTurno();
-
-    void darControl();
-
 
     void actualizarCartas(ArrayList<ICarta> cartasJugador);
 
@@ -50,4 +43,6 @@ public interface IVista {
     void finalizarPartidaAmistosamente();
 
     void eleccionAnularPartida();
+
+    void obtenerNombre();
 }

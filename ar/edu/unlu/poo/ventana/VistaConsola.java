@@ -512,6 +512,7 @@ public class VistaConsola implements IVista{
                 "\nTus fichas: " + controlador.cantFichas() + " | Cantidad apostada: " + controlador.getcantidadApostada() +
                 "\nAVISO: En el caso que las apuestas esten desactivadas no es posible hacer el reenganche. "+
                 "\nEscriba Y para reenganchar.");
+        txtConsola.setEnabled(true);
     }
 
     @Override
@@ -582,7 +583,7 @@ public class VistaConsola implements IVista{
     @Override
     public void finalizarPartidaAmistosamente() {
         limpiarPantalla();
-        txtAreaMuestra.setText("La partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+        txtAreaMuestra.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
         mostrarTablaPosiciones();
         eleccionNuevaPartida();
     }
@@ -590,7 +591,8 @@ public class VistaConsola implements IVista{
     @Override
     public void eleccionAnularPartida() {
         estadoActual = EstadosPosibles.POSIBLE_ANULAR_PARTIDA;
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "¿Desea anular la partida? (Y/N) (Y para si, N para no)");
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea anular la partida? (Y/N) (Y para si, N para no)");
+        txtConsola.setEnabled(true);
     }
 
     @Override
