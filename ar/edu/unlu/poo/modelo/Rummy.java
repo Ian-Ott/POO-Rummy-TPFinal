@@ -125,7 +125,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         return instancia;
     }
 
-    @Override
+    @Override //
     public void repartirCartasJugadores(int cantidadCartas) throws RemoteException {
         Carta cartaAux;
         for (int i = 0; i < jugadores.size(); i++){
@@ -134,14 +134,14 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     }
 
-    @Override
+    @Override //
     public void sacarCartaMazo(String jugador) throws RemoteException{
         Jugador jugadorAux = buscarJugador(jugador);
         mazoDeJuego.sacarCartaMazo(jugadorAux);
         notificarObservadores("continuar turno jugador");
     }
 
-    @Override
+    @Override //
     public void agarrarCartaBocaArriba(String nombreJugador) throws RemoteException{
         Jugador jugadorAux = buscarJugador(nombreJugador);
         if (mazoDeJuego.sacarCartaBocaArriba(jugadorAux)){
@@ -487,7 +487,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
         boolean resultado = true;
         for (int i = 0; i < nuevaJugada.size(); i++) {
             if ((i +1) != nuevaJugada.size()) {
-                if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero != 1) {
+                if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero == 1){
+
+                } else if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero != 1) {
                     resultado = false;
                     //compruebo que el siguiente a la k en la escalera sea el As
                 } else if ((nuevaJugada.get(i).numero + 1) != nuevaJugada.get(i + 1).numero) {
@@ -509,15 +511,18 @@ public class Rummy extends ObservableRemoto implements IRummy {
         if (nuevaJugada.get(0).numero == 1){
             if (nuevaJugada.get(posUltimaCarta).numero == 13) {
                 for (int i = 0; i < nuevaJugada.size(); i++) {
+                    if ((i +1) != nuevaJugada.size()){
                     //si el numero anterior sumado 1 no es igual al siguiente
                     // es posible que sea el inicio de la escalera
-                    siguiente = nuevaJugada.get(i + 1).numero;
-                    actual = (nuevaJugada.get(i).numero + 1);
-                    if (siguiente > actual) {
-                        cartaAux = nuevaJugada.remove(i + 1);
-                        nuevaJugada.add(posAgregada, cartaAux);
-                        posAgregada++;
-                        //posAgregada sirve para saber en que posicion mover la carta mal ordenada
+                        siguiente = nuevaJugada.get(i + 1).numero;
+                        actual = (nuevaJugada.get(i).numero + 1);
+                        if (siguiente > actual) {
+                            System.out.println("ejecutado");
+                            cartaAux = nuevaJugada.remove(i + 1);
+                            nuevaJugada.add(posAgregada, cartaAux);
+                            posAgregada++;
+                            //posAgregada sirve para saber en que posicion mover la carta mal ordenada
+                        }
                     }
                 }
             }
