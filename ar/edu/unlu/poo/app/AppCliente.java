@@ -7,8 +7,8 @@ import javax.swing.JOptionPane;
 
 
 import ar.edu.unlu.poo.controlador.Controlador;
-import ar.edu.unlu.poo.ventana.IVista;
-import ar.edu.unlu.poo.ventana.VistaConsola;
+import ar.edu.unlu.poo.vistas.IVista;
+import ar.edu.unlu.poo.vistas.VistaConsola;
 import ar.edu.unlu.rmimvc.RMIMVCException;
 import ar.edu.unlu.rmimvc.Util;
 import ar.edu.unlu.rmimvc.cliente.Cliente;

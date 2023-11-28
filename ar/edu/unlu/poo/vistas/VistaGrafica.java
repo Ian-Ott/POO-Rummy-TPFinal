@@ -1,4 +1,4 @@
-package ar.edu.unlu.poo.ventana;
+package ar.edu.unlu.poo.vistas;
 
 import ar.edu.unlu.poo.modelo.Carta;
 import ar.edu.unlu.poo.modelo.Jugador;

@@ -3,7 +3,7 @@ package ar.edu.unlu.poo.modelo;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Jugador implements Serializable {
+public class Jugador implements Serializable, IJugador {
     private String nombre;
     private ArrayList<Carta> cartasEnMano;
     private int puntosTotalesXP;
@@ -30,114 +30,137 @@ public class Jugador implements Serializable {
     }
 
 
+    @Override
     public void setAgregoJugada(boolean agregoJugada) {
         this.agregoJugada = agregoJugada;
     }
 
 
+    @Override
     public boolean getAgregoJugada(){
         return agregoJugada;
     }
 
 
+    @Override
     public String getNombre() {
         return nombre;
     }
 
 
 
+    @Override
     public void setPuntosDePartida(int puntosDePartida) {
         this.puntosDePartida = puntosDePartida;
     }
 
 
+    @Override
     public void sumarPuntosDePartida(int puntos) {
         this.puntosDePartida += puntosDePartida;
     }
 
 
+    @Override
     public int getPuntosDePartida() {
         return puntosDePartida;
     }
 
 
+    @Override
     public void restarFichasTotales(int fichas) {
         this.fichasTotales -= fichas;
     }
 
 
+    @Override
     public void sumarFichasTotales(int fichas) {
         this.fichasTotales += fichas;
     }
 
 
+    @Override
     public int getFichasTotales() {
         return fichasTotales;
     }
 
 
+    @Override
     public void setCantApostada(int cantApostada) {
         this.cantApostada = cantApostada;
     }
 
 
+    @Override
     public int getCantApostada() {
         return cantApostada;
     }
 
 
+    @Override
     public void setJefeMesa(boolean jefeMesa) {
         this.jefeMesa = jefeMesa;
     }
 
 
 
+    @Override
     public boolean getJefeMesa(){
         return jefeMesa;
     }
 
 
+    @Override
     public void sumarPuntosTotalesXP(int puntosTotalesXP) {
         this.puntosTotalesXP += puntosTotalesXP;
     }
 
 
+    @Override
     public int getPuntosTotalesXP() {
         return puntosTotalesXP;
     }
 
 
+    @Override
     public ArrayList<Carta> getCartasEnMano() {
         return cartasEnMano;
     }
 
 
+    @Override
     public void agregarCartasEnMano(Carta nuevaCarta) {
         this.cartasEnMano.add(nuevaCarta);
     }
 
 
+    @Override
     public void setEliminado(boolean eliminado) {
         this.eliminado = eliminado;
     }
 
 
+    @Override
     public boolean isEliminado(){return eliminado;}
 
 
+    @Override
     public void setHizoRummy(boolean hizoRummy) {
         this.hizoRummy = hizoRummy;
     }
 
 
+    @Override
     public boolean getHizoRummy(){return hizoRummy;}
 
 
+    @Override
     public void setFichasGanadasPartida(int fichasGanadasPartida) {
         this.fichasGanadasPartida = fichasGanadasPartida;
     }
 
 
+    @Override
     public int getFichasGanadasPartida() {
         return fichasGanadasPartida;
     }
@@ -154,6 +177,7 @@ public class Jugador implements Serializable {
         return cartaATirar;
     }*/
 
+    @Override
     public Carta tirarCarta(Integer posicion){
         if (posicion < cartasEnMano.size()){
             return cartasEnMano.remove((int)posicion);
@@ -171,6 +195,7 @@ public class Jugador implements Serializable {
         cartasEnMano.remove(cartaUsada);
     }*/
 
+    @Override
     public void devolverCarta(Carta carta) {
         this.cartasEnMano.add(carta);
     }
