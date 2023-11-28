@@ -1,9 +1,9 @@
 package ar.edu.unlu.poo.controlador;
 
+import ar.edu.unlu.poo.Serializacion.services.Serializador;
 import ar.edu.unlu.poo.modelo.*;
-import ar.edu.unlu.poo.ventana.IVista;
-import ar.edu.unlu.poo.ventana.VistaConsola;
-import ar.edu.unlu.poo.ventana.VistaGrafica;
+import ar.edu.unlu.poo.vistas.IVista;
+import ar.edu.unlu.poo.vistas.VistaConsola;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
@@ -16,6 +16,9 @@ public class Controlador implements IControladorRemoto {
     private IVista vista;
     private String nombreJugador;
     private boolean anfitrion;
+
+    private static Serializador serializador;
+
     public Controlador(IVista vista){
         this.vista = vista;
     }
@@ -503,6 +506,25 @@ public class Controlador implements IControladorRemoto {
             rummy.cerrarJuego();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void obtenerPosiciones() {
+        ArrayList<IJugador> jugadores = new ArrayList<>();
+        serializador = new Serializador("top5.dat");
+        Object[] recuperado = serializador.readObjects();
+        for (int i = 0; i < recuperado.length; i++) {
+            jugadores.add((IJugador) recuperado[i]);
+        }
+        try {
+            rummy.obtenerJugadoresPorPuntos(jugadores);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+        vista.mostrarTablaPosiciones(jugadores);
+        serializador.writeOneObject(jugadores.get(0));
+        for (int i = 1; i < jugadores.size(); i++) {
+            serializador.addOneObject(jugadores.get(i));
         }
     }
 }

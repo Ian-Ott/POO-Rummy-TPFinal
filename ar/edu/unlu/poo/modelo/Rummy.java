@@ -322,6 +322,33 @@ public class Rummy extends ObservableRemoto implements IRummy {
         System.exit(0);
     }
 
+    @Override
+    public void obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException{
+        for (Jugador jugador:this.jugadores) {
+            agregarJugadorOrdenado(jugadores, jugador);
+        }
+    }
+
+    private void agregarJugadorOrdenado(ArrayList<IJugador> jugadores, Jugador jugador) {
+        boolean agregado = false;
+        if (jugadores.isEmpty()){
+            jugadores.add(jugador);
+        }else {
+            for (int i = 0; i < jugadores.size(); i++){
+                if (jugador.getNombre().equals(jugadores.get(i).getNombre()) && !agregado) {
+                    jugadores.get(i).sumarPuntosTotalesXP(jugador.getPuntosTotalesXP());
+                    agregado = true;
+                }else if (jugador.getPuntosTotalesXP() > jugadores.get(i).getPuntosTotalesXP() && !agregado){
+                    jugadores.add(i, jugador);
+                    agregado = true;
+                }
+            }
+            if (!agregado){
+                jugadores.add(jugador);
+            }
+        }
+    }
+
     private int buscarJugadorConMasPuntos() {
         int puntosMasAltos = 0;
         for (Jugador jugador:jugadores) {

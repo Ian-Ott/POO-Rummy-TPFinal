@@ -1,8 +1,8 @@
-package ar.edu.unlu.poo.ventana;
+package ar.edu.unlu.poo.vistas;
 
 import ar.edu.unlu.poo.controlador.Controlador;
-import ar.edu.unlu.poo.modelo.Carta;
 import ar.edu.unlu.poo.modelo.ICarta;
+import ar.edu.unlu.poo.modelo.IJugador;
 import ar.edu.unlu.poo.modelo.ITapete;
 
 import javax.swing.*;
@@ -341,7 +341,7 @@ public class VistaConsola implements IVista{
                 "\n3-hacer combinaciones de numeros iguales" +
                 "\n4-ver jugadas en mesa / agregar carta a una jugada" +
                 "\n5-ver cartas restantes jugadores" +
-                //"\n6-Opciones de mesa (solo disponible para el jefe de mesa)" +
+                "\n6-Opciones de mesa (solo disponible para el jefe de mesa)" +
                 "\n9-Anular Partida" +
                 "\n0-terminar turno" +
                 "\n----------------------------------------------------------"+
@@ -445,6 +445,7 @@ public class VistaConsola implements IVista{
 
     private void mostrarCartas(){
         ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
+        mostrarPosiciones(cartasActuales.size());
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
         for (int i = 0; i < cartasActuales.size(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + cartasActuales.get(i));
@@ -452,6 +453,13 @@ public class VistaConsola implements IVista{
                 txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
                 //esto sirve para que no pase el tamaño de la consola
             }
+        }
+    }
+
+    private void mostrarPosiciones(int cantidadCartas) {
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
+        for (int i = 0; i < cantidadCartas; i++) {
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "    " + (i + 1));
         }
     }
 
@@ -516,7 +524,7 @@ public class VistaConsola implements IVista{
         limpiarPantalla();
         txtAreaMuestra.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
                 " con " + controlador.getCantidadPuntosGanador()+" puntos");
-        mostrarTablaPosiciones();
+        controlador.obtenerPosiciones();
         eleccionNuevaPartida();
     }
 
@@ -582,7 +590,8 @@ public class VistaConsola implements IVista{
     public void finalizarPartidaAmistosamente() {
         limpiarPantalla();
         txtAreaMuestra.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
-        mostrarTablaPosiciones();
+        controlador.obtenerPosiciones();
+        //revisar que los puntos de XP no cuenten por finalizar amistosamente
         eleccionNuevaPartida();
     }
 
@@ -604,8 +613,15 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText("Se decidio no empezar una nueva partida. Por favor, cierre la ventana.");
     }
 
-    private void mostrarTablaPosiciones() {
+    @Override
+    public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                "\nTabla de posiciones:");
+                "\nTabla de posiciones (top 5 jugadores):");
+        IJugador jugadorAux;
+        for (int i = 0; i < 5; i++) {
+            jugadorAux = jugadores.get(i);
+            txtAreaMuestra.setText(txtAreaMuestra.getText() +
+                    "\n" + (i + 1) + "- Nombre: " + jugadorAux.getNombre() + " Puntos de XP: " + jugadorAux.getPuntosTotalesXP());
+        }
     }
 }

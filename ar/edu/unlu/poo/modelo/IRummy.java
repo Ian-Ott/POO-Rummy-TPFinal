@@ -113,6 +113,8 @@ public interface IRummy extends IObservableRemoto {
 
     void cerrarJuego() throws RemoteException;
 
+    void obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException;
+
     //boolean esAnfitrion(String nombreJugador);
 
     //IRummy getInstancia();
