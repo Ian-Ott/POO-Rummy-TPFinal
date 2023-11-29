@@ -72,17 +72,16 @@ public class AppCliente {
             assert vista != null;
             vista.setControlador(controlador);
             Cliente c = new Cliente(ip, Integer.parseInt(port), ipServidor, Integer.parseInt(portServidor));
-
             c.iniciar(controlador);
             if (!controlador.juegoIniciado()){
                 //controlador.nuevoJugador(nuevoJugador);
                 if(!controlador.juegoIniciado() && controlador.cantJugadores() < 4){
                     if (controlador.primerJugador()){
                         controlador.setAnfitrion(true);
-                        vista.pantallaEspera(controlador.esAnfitrion());
+                        vista.pantallaEspera();
                     }else {
                         controlador.setAnfitrion(false);
-                        vista.pantallaEspera(controlador.esAnfitrion());
+                        vista.pantallaEspera();
                     }
                 }else {
                     System.out.println("ERROR: maximo de jugadores alcanzado");

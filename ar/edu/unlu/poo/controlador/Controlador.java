@@ -69,9 +69,9 @@ public class Controlador implements IControladorRemoto {
                 vista.finalizarPartidaAmistosamente();
             } else if (cambio.equals("nueva ronda")) {
                 vista.mostrarResultadosPuntos();
-                vista.pantallaEspera(anfitrion);
+                vista.pantallaEspera();
             } else if (cambio.equals("nuevo juego")) {
-                vista.pantallaEspera(anfitrion);
+                vista.pantallaEspera();
             } else if (cambio.equals("cerrar juego")) {
                 vista.solicitarCerrarVentana();
             }

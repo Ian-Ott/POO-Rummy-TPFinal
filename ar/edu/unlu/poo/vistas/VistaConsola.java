@@ -408,7 +408,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void pantallaEspera(boolean anfitrion) {
+    public void pantallaEspera() {
         estadoActual = EstadosPosibles.SIN_ESTADO;
         if (!jugadorAgregado){
             jugadorAgregado = true;
@@ -416,7 +416,7 @@ public class VistaConsola implements IVista{
         }else {
             controlador.comprobarAnfitrion();
             limpiarPantalla();
-            if (!anfitrion){
+            if (!controlador.esAnfitrion()){
                 mostrarEspera();
             }else {
                 mostrarEsperaAnfitrion();
@@ -459,7 +459,7 @@ public class VistaConsola implements IVista{
 
     @Override
     public void actualizarCantJugadores(){
-        pantallaEspera(controlador.esAnfitrion());
+        pantallaEspera();
     }
 
 

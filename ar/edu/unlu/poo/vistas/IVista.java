@@ -10,7 +10,7 @@ public interface IVista {
 
     void setControlador(Controlador controlador);
 
-    void pantallaEspera(boolean anfitrion);
+    void pantallaEspera();
 
     void actualizarCantJugadores();
 
