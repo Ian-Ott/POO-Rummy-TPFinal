@@ -104,7 +104,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     private void elegirJugadorMano() throws RemoteException {
-        int posiciones = jugadores.size() - 1;
+        int posiciones = jugadores.size();
         //aca se elige cual jugador va a ser mano y se comienza el nuevo turno
         posicionTurnoActual = (int) (random() * (posiciones));
         while(jugadores.get(posicionTurnoActual).isEliminado()) {
@@ -113,6 +113,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
                 posicionTurnoActual = (int) (random() * (posiciones));
             }
         }
+        System.out.println("posicion turno: " + posicionTurnoActual);
         notificarObservadores("nuevo turno");
     }
 
@@ -342,7 +343,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
             jugadores.get(0).setJefeMesa(true);
         }
         if (juegoIniciado){
-            solicitudDeAnularPartida = jugadores.size();
+            solicitudDeAnularPartida = jugadores.size() - 1;
             //obligo anular la partida por la falta de un jugador
             anularPartida(true);
         }else {
@@ -1045,6 +1046,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     public String getNombreTurnoActual(){
+        System.out.println("posicion turno actual: " + posicionTurnoActual);
+        System.out.println("nombre turno: " + jugadores.get(posicionTurnoActual).getNombre());
         return jugadores.get(posicionTurnoActual).getNombre();
     }
 

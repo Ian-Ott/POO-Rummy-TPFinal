@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class VistaConsola implements IVista{
     enum EstadosPosibles{
-        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO
+        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA
     }
 
     enum EstadosJugadas{
@@ -131,6 +131,8 @@ public class VistaConsola implements IVista{
                 seleccionarOpcionesReenganche(textoIngresado);
             } else if(estadoActual.equals(EstadosPosibles.CONTINUAR_TURNO)) {
                 seleccionarOpcionesTurno(textoIngresado);
+            } else if (estadoActual.equals(EstadosPosibles.OPCIONES_DE_MESA)) {
+                seleccionarOpcionesDeMesa(textoIngresado);
             }
         } else if (estadoActual.equals(EstadosPosibles.SELECCION_NOMBRE)){
             if (!controlador.estaEnElJuego(textoIngresado)){
@@ -140,6 +142,8 @@ public class VistaConsola implements IVista{
                 JOptionPane.showMessageDialog(null,"Error: hay alguien con ese nombre en la partida!!!");
                 obtenerNombre();
             }
+        }else if (estadoActual.equals(EstadosPosibles.OPCIONES_DE_MESA)) {
+            seleccionarOpcionesDeMesa(textoIngresado);
         } else{
             if (controlador.esAnfitrion()){
                 seleccionarOpcionesInicio(textoIngresado);
@@ -154,6 +158,36 @@ public class VistaConsola implements IVista{
                 }
             }
         }
+    }
+
+    private void seleccionarOpcionesDeMesa(String textoIngresado) {
+        if (textoIngresado.equals("1")) {
+            mostrarOpcionesDeTiempo();
+        } else if (textoIngresado.equals("2")) {
+            controlador.modificarPartidasCompetitivas();
+        } else if (textoIngresado.equals("3")) {
+            controlador.modificarOpcionChat();
+        } else if (textoIngresado.equals("4")) {
+            controlador.activarModoExpres();
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Expres!!!");
+        } else if (textoIngresado.equals("5")) {
+            controlador.activarModoPuntos();
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
+        } else if (textoIngresado.equals("0")) {
+            if (controlador.juegoIniciado()){
+                continuarTurnoActual();
+            }else {
+                pantallaEspera();
+            }
+        }
+    }
+
+    private void mostrarOpcionesDeTiempo() {
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la cantidad de tiempo que quiere por cada turno:" +
+                "\n1-60 segundos por turno" +
+                "\n2-120 segundos por turno" +
+                "\n3-desactivar tiempo por turnos" +
+                "\nTiempo actual: " + " ");
     }
 
     private void seleccionarOpcionesReenganche(String textoIngresado) {
@@ -180,11 +214,7 @@ public class VistaConsola implements IVista{
                     opcionIncorrecta();
                 }
             } else if (textoIngresado.equals("2")) {
-                controlador.activarModoExpres();
-                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Expres!!!");
-            } else if (textoIngresado.equals("3")) {
-                controlador.activarModoPuntos();
-                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
+                mostrarOpcionesDeMesa();
             } else if (apuesta >= 250 && !hayApuesta) {
                 hayApuesta = true;
                 txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nApuestas Activadas!!!");
@@ -218,7 +248,7 @@ public class VistaConsola implements IVista{
         } else if (textoIngresado.equals("5")) {
             mostrarCantidadCartas();
         } else if (textoIngresado.equals("6")) {
-            //falto implementar el opciones de mesa
+            mostrarOpcionesDeMesa();
         } else if (textoIngresado.equals("9")) {
             controlador.solicitarAnularPartida();
         } else if (textoIngresado.equals("0")) {
@@ -226,6 +256,22 @@ public class VistaConsola implements IVista{
             terminarTurno();
         }else {
             opcionIncorrecta();
+        }
+    }
+
+    private void mostrarOpcionesDeMesa() {
+        if (controlador.esAnfitrion()){
+            estadoActual = EstadosPosibles.OPCIONES_DE_MESA;
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione las opciones que quiera cambiar: " +
+                    "\n1-Cambiar tiempo por cada turno (tiempo actual: " + " " + "segundos)" +
+                    "\n2-Activar/Desactivar partidas competitivas, Estado actual: " + " "+ "(al desactivar esta opcion no se cuentan las fichas y los puntos obtenidos)" +
+                    "\n3-Permitir publico y chat, Estado Actual: " + " " +
+                    "\n4-Activar Ronda Expres (es una partida rapida de una ronda en la que gana el jugador que cierra antes)" +
+                    "\n5-Activar Modo Por Puntos (Cuando un jugador alcanza los 300 puntos queda eliminado. El último jugador es el ganador de la partida)" +
+                    "\nModo Actual: "+ controlador.getModoJuego() +
+                    "\n0-Volver");
+        }else {
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo podes modificar las opciones de mesa solo esta disponible para el anfitrion.");
         }
     }
 
@@ -442,8 +488,7 @@ public class VistaConsola implements IVista{
                 "\nCuando este la cantidad de jugadores necesaria seleccione la opcion:" +
                 "\n1-Iniciar Partida" +
                 "\n tambien puede seleccionar otro modo de juego: (por defecto esta activado el modo expres)"+
-                "\n2-Activar Modo Expres (es una partida rapida de una ronda en la que gana el jugador que cierra antes)" +
-                "\n3-Activar Juego a Puntos (Cuando un jugador alcanza los 300 puntos queda eliminado. El último jugador es el ganador de la partida)" +
+                "\n2-Cambiar Opciones de Mesa" +
                 "\n__________________________________________"+
                 "\nSi desea Apostar solo ingrese la cantidad que desea apostar y se definira la situacion de la apuesta segun la decision del resto de jugadores" +
                 "\nminimo de Apuesta: 250" +
@@ -530,13 +575,13 @@ public class VistaConsola implements IVista{
         limpiarPantalla();
         if (controlador.isEliminado()){
             mostrarAvisoEliminado();
-        }
-        else if (!controlador.esTurnoJugador()){
+        } else if (!controlador.esTurnoJugador()){
             txtAreaMuestra.setText("______________________________________________" +
                     "\nHa iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno..." +
                     "\n______________________________________________");
             txtConsola.setEnabled(false);
         }
+        //else que continue el turno?
     }
 
 
@@ -569,6 +614,8 @@ public class VistaConsola implements IVista{
                 txtAreaMuestra.setText(txtAreaMuestra.getText() +
                         "\n\nHay nuevas jugadas disponibles en la mesa!!!");
             }
+        }else {
+            esperarTurno();
         }
     }
 

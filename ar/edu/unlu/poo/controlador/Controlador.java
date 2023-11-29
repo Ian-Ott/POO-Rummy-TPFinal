@@ -557,4 +557,10 @@ public class Controlador implements IControladorRemoto {
             }
         }
     }
+
+    public void modificarOpcionChat() {
+    }
+
+    public void modificarPartidasCompetitivas() {
+    }
 }
