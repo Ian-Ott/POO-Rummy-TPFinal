@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.controlador;
 
 import ar.edu.unlu.poo.Serializacion.services.Serializador;
+import ar.edu.unlu.poo.exceptions.JugadorInexistente;
 import ar.edu.unlu.poo.modelo.*;
 import ar.edu.unlu.poo.vistas.IVista;
 import ar.edu.unlu.poo.vistas.VistaConsola;
@@ -43,6 +44,8 @@ public class Controlador implements IControladorRemoto {
             } else if (cambio.equals("apuesta cancelada")) {
                 vista.mostrarErrorApuesta();
             } else if (cambio.equals("nuevo jugador")) {
+                vista.actualizarCantJugadores();
+            } else if (cambio.equals("jugador eliminado")) {
                 vista.actualizarCantJugadores();
             } else if (cambio.equals("cartas agregadas")) {
                 vista.actualizarJugadas();
@@ -150,9 +153,8 @@ public class Controlador implements IControladorRemoto {
     public void nuevoJugador(boolean anfitrion, String nombreJugador){
         Jugador nuevoJugador = new Jugador(nombreJugador);
         this.nombreJugador = nombreJugador;
-        nuevoJugador.setJefeMesa(anfitrion);
         try {
-            rummy.agregarJugador(nuevoJugador);
+            rummy.agregarJugador(nuevoJugador, anfitrion);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -512,12 +514,17 @@ public class Controlador implements IControladorRemoto {
     public void obtenerPosiciones() {
         ArrayList<IJugador> jugadores = new ArrayList<>();
         serializador = new Serializador("top5.dat");
+        /*if (serializador.readFirstObject() == null){
+            serializador.writeOneObject()
+        }*/
         Object[] recuperado = serializador.readObjects();
-        for (int i = 0; i < recuperado.length; i++) {
-            jugadores.add((IJugador) recuperado[i]);
+        if (recuperado != null){
+            for (int i = 0; i < recuperado.length; i++) {
+                jugadores.add((IJugador) recuperado[i]);
+            }
         }
         try {
-            rummy.obtenerJugadoresPorPuntos(jugadores);
+            jugadores = rummy.obtenerJugadoresPorPuntos(jugadores);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -525,6 +532,29 @@ public class Controlador implements IControladorRemoto {
         serializador.writeOneObject(jugadores.get(0));
         for (int i = 1; i < jugadores.size(); i++) {
             serializador.addOneObject(jugadores.get(i));
+        }
+    }
+
+    public void eliminarJugador() {
+        try {
+            rummy.removerObservador(this);
+            rummy.eliminarJugador(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void comprobarAnfitrion() {
+        try {
+            if (rummy.isJefeMesa(nombreJugador)){
+                anfitrion = true;
+            }
+        } catch (RemoteException | JugadorInexistente e) {
+            if (e instanceof JugadorInexistente){
+                System.exit(0);
+            }else {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

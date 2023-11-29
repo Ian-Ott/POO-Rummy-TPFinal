@@ -1,12 +1,13 @@
 package ar.edu.unlu.poo.modelo;
 
+import ar.edu.unlu.poo.exceptions.JugadorInexistente;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public interface IRummy extends IObservableRemoto {
-    void agregarJugador(Jugador nuevoJugador) throws RemoteException;
+    void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException;
     boolean isJuegoIniciado() throws RemoteException;
     void repartirCartasJugadores(int cantidadCartas) throws RemoteException;
 
@@ -113,7 +114,12 @@ public interface IRummy extends IObservableRemoto {
 
     void cerrarJuego() throws RemoteException;
 
-    void obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException;
+    ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException;
+
+    void eliminarJugador(String nombreJugador) throws RemoteException;
+
+    boolean isJefeMesa(String nombreJugador) throws RemoteException, JugadorInexistente;
+
 
     //boolean esAnfitrion(String nombreJugador);
 

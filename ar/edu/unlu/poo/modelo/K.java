@@ -10,6 +10,6 @@ public class K extends Carta implements Serializable {
 
     @Override
     public String toString() {
-        return " | K "+ palo + "|";
+        return " |K "+ palo + "|";
     }
 }

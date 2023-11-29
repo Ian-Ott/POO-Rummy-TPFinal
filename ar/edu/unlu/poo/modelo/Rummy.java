@@ -1,5 +1,6 @@
 package ar.edu.unlu.poo.modelo;
 
+import ar.edu.unlu.poo.exceptions.JugadorInexistente;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
 import java.rmi.RemoteException;
@@ -36,8 +37,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
         solicitudDeAnularPartida = 0;
     }
 
-    public void agregarJugador(Jugador nuevoJugador) throws RemoteException{
+    public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
         if (!juegoIniciado){
+            nuevoJugador.setJefeMesa(anfitrion);
             jugadores.add(nuevoJugador);
             notificarObservadores("nuevo jugador");
         }
@@ -323,30 +325,86 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     @Override
-    public void obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException{
+    public ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException{
+        devolverCartasAMesa();
+        //devuelvo las cartas a mesa para no pasarlas al archivo
         for (Jugador jugador:this.jugadores) {
             agregarJugadorOrdenado(jugadores, jugador);
         }
+        return jugadores;
     }
+
+    @Override
+    public void eliminarJugador(String nombreJugador) throws RemoteException {
+        Jugador jugadorBorrado = buscarJugador(nombreJugador);
+        jugadores.remove(jugadorBorrado);
+        if (jugadorBorrado.getJefeMesa() && !jugadores.isEmpty()){
+            jugadores.get(0).setJefeMesa(true);
+        }
+        if (juegoIniciado){
+            solicitudDeAnularPartida = jugadores.size();
+            //obligo anular la partida por la falta de un jugador
+            anularPartida(true);
+        }else {
+            notificarObservadores("jugador eliminado");
+        }
+    }
+
+    @Override
+    public boolean isJefeMesa(String nombreJugador) throws RemoteException, JugadorInexistente {
+        Jugador jugadorAux = buscarJugador(nombreJugador);
+        if (jugadorAux == null){
+            throw new JugadorInexistente();
+        }
+        return jugadorAux.getJefeMesa();
+    }
+
 
     private void agregarJugadorOrdenado(ArrayList<IJugador> jugadores, Jugador jugador) {
         boolean agregado = false;
         if (jugadores.isEmpty()){
             jugadores.add(jugador);
         }else {
-            for (int i = 0; i < jugadores.size(); i++){
-                if (jugador.getNombre().equals(jugadores.get(i).getNombre()) && !agregado) {
-                    jugadores.get(i).sumarPuntosTotalesXP(jugador.getPuntosTotalesXP());
-                    agregado = true;
-                }else if (jugador.getPuntosTotalesXP() > jugadores.get(i).getPuntosTotalesXP() && !agregado){
-                    jugadores.add(i, jugador);
-                    agregado = true;
+            if (jugadorEnTabla(jugadores, jugador)) {
+                sumarPuntosJugador(jugadores, jugador);
+            }else {
+                for (int i = 0; i < jugadores.size(); i++) {
+
+                    if (jugador.getPuntosTotalesXP() >= jugadores.get(i).getPuntosTotalesXP() && !agregado){
+                        jugadores.add(i, jugador);
+                        agregado = true;
+                    }
+                }
+                if (!agregado){
+                    jugadores.add(jugador);
                 }
             }
-            if (!agregado){
-                jugadores.add(jugador);
+        }
+    }
+
+    private void sumarPuntosJugador(ArrayList<IJugador> jugadores, Jugador jugador) {
+        Jugador jugadorAux = null;
+        for (IJugador ijugador: jugadores) {
+            if (jugador.getNombre().equals(ijugador.getNombre())){
+                ijugador.sumarPuntosTotalesXP(jugador.getPuntosTotalesXP());
+                jugadorAux = (Jugador) ijugador;
+                //lo elimino para luego reordenarlo en el top con su nuevo puntaje
             }
         }
+        if (jugadorAux != null){
+            jugadores.remove(jugadorAux);
+            agregarJugadorOrdenado(jugadores,jugadorAux);
+        }
+    }
+
+    private boolean jugadorEnTabla(ArrayList<IJugador> jugadores, Jugador jugador) {
+        boolean resultado = false;
+        for (IJugador ijugador: jugadores) {
+            if (jugador.getNombre().equals(ijugador.getNombre())){
+                resultado = true;
+            }
+        }
+        return resultado;
     }
 
     private int buscarJugadorConMasPuntos() {

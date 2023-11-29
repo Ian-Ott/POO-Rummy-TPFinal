@@ -6,8 +6,7 @@ import ar.edu.unlu.poo.modelo.IJugador;
 import ar.edu.unlu.poo.modelo.ITapete;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 public class VistaConsola implements IVista{
@@ -56,9 +55,62 @@ public class VistaConsola implements IVista{
                         procesarTexto();
                     }
                 });
+                frame.addWindowListener(new WindowListener() {
+                    @Override
+                    public void windowOpened(WindowEvent e) {
+                        //sin uso
+                    }
+
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        controlador.eliminarJugador();
+                        System.exit(0);
+                    }
+
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        //sin uso
+                    }
+
+                    @Override
+                    public void windowIconified(WindowEvent e) {
+                        //sin uso
+                    }
+
+                    @Override
+                    public void windowDeiconified(WindowEvent e) {
+                        //sin uso
+                    }
+
+                    @Override
+                    public void windowActivated(WindowEvent e) {
+                        //sin uso
+                    }
+
+                    @Override
+                    public void windowDeactivated(WindowEvent e) {
+                        //sin uso
+                    }
+                });
+                txtConsola.addKeyListener(new KeyListener() {
+                                              @Override
+                                              public void keyTyped(KeyEvent e) {
+                                                  //sin uso
+                                              }
+                                              @Override
+                                              public void keyPressed(KeyEvent e) {
+                                                  if (e.getKeyCode() == KeyEvent.VK_ENTER){
+                                                      procesarTexto();
+                                                  }
+                                              }
+                                              @Override
+                                              public void keyReleased(KeyEvent e) {
+                                                //sin uso
+                                              }
+                                          }
+                );
             }
         });
-
     }
 
     private void procesarTexto(){
@@ -362,6 +414,7 @@ public class VistaConsola implements IVista{
             jugadorAgregado = true;
             obtenerNombre();
         }else {
+            controlador.comprobarAnfitrion();
             limpiarPantalla();
             if (!anfitrion){
                 mostrarEspera();
@@ -445,7 +498,7 @@ public class VistaConsola implements IVista{
 
     private void mostrarCartas(){
         ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
-        mostrarPosiciones(cartasActuales.size());
+        mostrarPosiciones(cartasActuales);
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
         for (int i = 0; i < cartasActuales.size(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + cartasActuales.get(i));
@@ -456,10 +509,19 @@ public class VistaConsola implements IVista{
         }
     }
 
-    private void mostrarPosiciones(int cantidadCartas) {
+    private void mostrarPosiciones(ArrayList<ICarta> cartasActuales) {
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
-        for (int i = 0; i < cantidadCartas; i++) {
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "    " + (i + 1));
+        int mitadString;
+        for (int i = 0; i < cartasActuales.size(); i++) {
+            mitadString = cartasActuales.get(i).toString().length() / 2;
+            mitadString+= 3; //le sumo por los espacios que deja la carta y añadidos que no los cuenta este calculo
+            for (int j = 0; j < mitadString; j++) {
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "-");
+            }
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + (i + 1));
+            for (int j = 0; j < mitadString; j++) {
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "-");
+            }
         }
     }
 
@@ -529,6 +591,8 @@ public class VistaConsola implements IVista{
     }
 
     private void eleccionNuevaPartida() {
+        //comprueba cual es el anfitrion antes de dar la eleccion por si hubo un cambio inesperado
+        controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()){
             estadoActual = EstadosPosibles.FIN_PARTIDA;
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
@@ -591,7 +655,6 @@ public class VistaConsola implements IVista{
         limpiarPantalla();
         txtAreaMuestra.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
         controlador.obtenerPosiciones();
-        //revisar que los puntos de XP no cuenten por finalizar amistosamente
         eleccionNuevaPartida();
     }
 
@@ -619,9 +682,11 @@ public class VistaConsola implements IVista{
                 "\nTabla de posiciones (top 5 jugadores):");
         IJugador jugadorAux;
         for (int i = 0; i < 5; i++) {
-            jugadorAux = jugadores.get(i);
-            txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                    "\n" + (i + 1) + "- Nombre: " + jugadorAux.getNombre() + " Puntos de XP: " + jugadorAux.getPuntosTotalesXP());
+            if (i < jugadores.size()){
+                jugadorAux = jugadores.get(i);
+                txtAreaMuestra.setText(txtAreaMuestra.getText() +
+                        "\n" + (i + 1) + "- Nombre: " + jugadorAux.getNombre() + " | Puntos de XP: " + jugadorAux.getPuntosTotalesXP());
+            }
         }
     }
 }
