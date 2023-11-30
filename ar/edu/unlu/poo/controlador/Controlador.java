@@ -74,6 +74,8 @@ public class Controlador implements IControladorRemoto {
                 vista.pantallaEspera();
             } else if (cambio.equals("cerrar juego")) {
                 vista.solicitarCerrarVentana();
+            } else if (cambio.equals("continuar espera")) {
+                vista.pantallaEspera();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -559,8 +561,22 @@ public class Controlador implements IControladorRemoto {
     }
 
     public void modificarOpcionChat() {
+
     }
 
     public void modificarPartidasCompetitivas() {
+        try {
+            rummy.modificarCompetitivo();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
+
+    public boolean getEstadoCompetitivo() {
+        try {
+            return rummy.getEstadoCompetitivo();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

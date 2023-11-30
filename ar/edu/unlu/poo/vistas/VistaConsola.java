@@ -8,10 +8,12 @@ import ar.edu.unlu.poo.modelo.ITapete;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class VistaConsola implements IVista{
     enum EstadosPosibles{
-        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA
+        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO
     }
 
     enum EstadosJugadas{
@@ -37,6 +39,7 @@ public class VistaConsola implements IVista{
 
     private EstadosPosibles estadoActual;
     private boolean finTurno = false;
+    private Timer temporizador;
 
 
     public VistaConsola() {
@@ -49,6 +52,14 @@ public class VistaConsola implements IVista{
                 frame.pack();
                 frame.setVisible(true);
                 txtAreaMuestra.setEditable(false);
+                temporizador = new Timer();
+                TimerTask juegoAutomatico = new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.out.println("se acabo el tiempo se ejecuta solo el turno");
+                        temporizador.cancel();
+                    }
+                };
                 enterButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -133,6 +144,8 @@ public class VistaConsola implements IVista{
                 seleccionarOpcionesTurno(textoIngresado);
             } else if (estadoActual.equals(EstadosPosibles.OPCIONES_DE_MESA)) {
                 seleccionarOpcionesDeMesa(textoIngresado);
+            } else if (estadoActual.equals(EstadosPosibles.OPCIONES_TIEMPO)) {
+                seleccionarOpcionesTiempo(textoIngresado);
             }
         } else if (estadoActual.equals(EstadosPosibles.SELECCION_NOMBRE)){
             if (!controlador.estaEnElJuego(textoIngresado)){
@@ -144,7 +157,9 @@ public class VistaConsola implements IVista{
             }
         }else if (estadoActual.equals(EstadosPosibles.OPCIONES_DE_MESA)) {
             seleccionarOpcionesDeMesa(textoIngresado);
-        } else{
+        }  else if (estadoActual.equals(EstadosPosibles.OPCIONES_TIEMPO)) {
+            seleccionarOpcionesTiempo(textoIngresado);
+        }else{
             if (controlador.esAnfitrion()){
                 seleccionarOpcionesInicio(textoIngresado);
             }else {
@@ -158,6 +173,17 @@ public class VistaConsola implements IVista{
                 }
             }
         }
+    }
+
+    private void seleccionarOpcionesTiempo(String textoIngresado) {
+        if (textoIngresado.equals("1")) {
+            controlador.setTiempoTurno(60);
+        } else if (textoIngresado.equals("2")) {
+            controlador.setTiempoTurno(120);
+        } else if (textoIngresado.equals("3")) {
+            controlador.setTiempoTurno(0);
+        }
+        continuarEnEstadoAnterior();
     }
 
     private void seleccionarOpcionesDeMesa(String textoIngresado) {
@@ -174,15 +200,21 @@ public class VistaConsola implements IVista{
             controlador.activarModoPuntos();
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
         } else if (textoIngresado.equals("0")) {
-            if (controlador.juegoIniciado()){
-                continuarTurnoActual();
-            }else {
-                pantallaEspera();
-            }
+            continuarEnEstadoAnterior();
+        }
+        continuarEnEstadoAnterior();
+    }
+
+    private void continuarEnEstadoAnterior() {
+        if (controlador.juegoIniciado()){
+            continuarTurnoActual();
+        }else {
+            pantallaEspera();
         }
     }
 
     private void mostrarOpcionesDeTiempo() {
+        estadoActual = EstadosPosibles.OPCIONES_TIEMPO;
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la cantidad de tiempo que quiere por cada turno:" +
                 "\n1-60 segundos por turno" +
                 "\n2-120 segundos por turno" +
@@ -264,7 +296,7 @@ public class VistaConsola implements IVista{
             estadoActual = EstadosPosibles.OPCIONES_DE_MESA;
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione las opciones que quiera cambiar: " +
                     "\n1-Cambiar tiempo por cada turno (tiempo actual: " + " " + "segundos)" +
-                    "\n2-Activar/Desactivar partidas competitivas, Estado actual: " + " "+ "(al desactivar esta opcion no se cuentan las fichas y los puntos obtenidos)" +
+                    "\n2-Activar/Desactivar partidas competitivas, Estado actual: " + obtenerEstado(controlador.getEstadoCompetitivo()) + "(al desactivar esta opcion no se cuentan las fichas y los puntos obtenidos)" +
                     "\n3-Permitir publico y chat, Estado Actual: " + " " +
                     "\n4-Activar Ronda Expres (es una partida rapida de una ronda en la que gana el jugador que cierra antes)" +
                     "\n5-Activar Modo Por Puntos (Cuando un jugador alcanza los 300 puntos queda eliminado. El último jugador es el ganador de la partida)" +
@@ -273,6 +305,16 @@ public class VistaConsola implements IVista{
         }else {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo podes modificar las opciones de mesa solo esta disponible para el anfitrion.");
         }
+    }
+
+    private String obtenerEstado(boolean estado) {
+        String resultado;
+        if (estado){
+            resultado = "ACTIVADO";
+        }else {
+            resultado = "DESACTIVADO";
+        }
+        return resultado;
     }
 
     private void seleccionarOpcionesAnularPartida(String textoIngresado) {
@@ -633,6 +675,9 @@ public class VistaConsola implements IVista{
         limpiarPantalla();
         txtAreaMuestra.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
                 " con " + controlador.getCantidadPuntosGanador()+" puntos");
+        if (!controlador.getEstadoCompetitivo()){
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+        }
         controlador.obtenerPosiciones();
         eleccionNuevaPartida();
     }
@@ -661,6 +706,9 @@ public class VistaConsola implements IVista{
     public void cerrarPartida() {
         if (controlador.getModoJuego().equals("EXPRES")){
             txtAreaMuestra.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+            if (!controlador.getEstadoCompetitivo()){
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+            }
         }else {
             txtAreaMuestra.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
             controlador.iniciarNuevaRonda();
@@ -735,5 +783,10 @@ public class VistaConsola implements IVista{
                         "\n" + (i + 1) + "- Nombre: " + jugadorAux.getNombre() + " | Puntos de XP: " + jugadorAux.getPuntosTotalesXP());
             }
         }
+    }
+
+    @Override
+    public void mostrarErrorConexion() {
+        System.out.println("error remoto");
     }
 }

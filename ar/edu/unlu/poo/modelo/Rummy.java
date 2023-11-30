@@ -23,6 +23,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     private Jugador ganador;
     private boolean apuestasActivas;
     private int solicitudDeAnularPartida;
+    private boolean estadoCompetitivo;
 
     private boolean partidaFinalizada;
     //private ArrayList<Observer> observadores = new ArrayList<>();
@@ -35,6 +36,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         modo = modoDeJuego.EXPRES;
         limitePuntos = 300;
         solicitudDeAnularPartida = 0;
+        estadoCompetitivo = true;
     }
 
     public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
@@ -358,6 +360,25 @@ public class Rummy extends ObservableRemoto implements IRummy {
             throw new JugadorInexistente();
         }
         return jugadorAux.getJefeMesa();
+    }
+
+    @Override
+    public void modificarCompetitivo() throws RemoteException {
+        if (estadoCompetitivo){
+            estadoCompetitivo = false;
+        }else {
+            estadoCompetitivo = true;
+        }
+        if (juegoIniciado){
+            notificarObservadores("continuar turno jugador");
+        }else {
+            notificarObservadores("continuar espera");
+        }
+    }
+
+    @Override
+    public boolean getEstadoCompetitivo() throws RemoteException {
+        return estadoCompetitivo;
     }
 
 
@@ -778,13 +799,15 @@ public class Rummy extends ObservableRemoto implements IRummy {
              //vuelve a comprobar los eliminados despues de contar los puntos
              comprobarEliminados();
          }
-        contarPuntosTotales();
+         if (!estadoCompetitivo){
+            contarPuntosTotales();
+         }
         if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
             if (quedaUnJugador() || todosEliminados()){
                 partidaFinalizada = true;
             }
-            if (apuestasActivas){
+            if (apuestasActivas && estadoCompetitivo){
                 ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
             }
             notificarObservadores("fin de partida");

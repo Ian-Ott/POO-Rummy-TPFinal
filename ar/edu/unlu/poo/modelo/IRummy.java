@@ -120,6 +120,10 @@ public interface IRummy extends IObservableRemoto {
 
     boolean isJefeMesa(String nombreJugador) throws RemoteException, JugadorInexistente;
 
+    void modificarCompetitivo() throws RemoteException;
+
+    boolean getEstadoCompetitivo() throws RemoteException;
+
 
     //boolean esAnfitrion(String nombreJugador);
 
