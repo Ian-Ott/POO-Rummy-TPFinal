@@ -1,22 +1,32 @@
 package ar.edu.unlu.poo.vistas;
 
-import ar.edu.unlu.poo.modelo.Carta;
-import ar.edu.unlu.poo.modelo.Jugador;
-import ar.edu.unlu.poo.modelo.Rummy;
+import ar.edu.unlu.poo.controlador.Controlador;
+import ar.edu.unlu.poo.modelo.*;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class VistaGrafica {
+public class VistaGrafica implements IVista{
     private JFrame frame;
     private JTabbedPane tabbedPane1;
     private JList listaAbajo;
     private JPanel panelVentana;
-    private JTabbedPane OpcionMesa;
-    private JList list2;
-    private JList list4;
+    private JList listaDerecha;
+    private JList listaIzquierda;
+    private JList listaArriba;
+    private JCheckBox modoExpresCheckBox;
+    private JCheckBox modoPorPuntosCheckBox;
+    private JCheckBox CheckBoxChat;
+    private JComboBox comboBox1;
+    private JTextField seleccioneLasOpcionesDeTextField;
+    private JTextField txtInfoInicio;
+    private JButton iniciarPartidaButton;
+    private JProgressBar cantidadJugadoresBar;
+    private JCheckBox a;
     private DefaultListModel<String> listaModelo;
+    private Controlador controlador;
 
     public VistaGrafica() throws RemoteException {
         frame = new JFrame();
@@ -26,8 +36,8 @@ public class VistaGrafica {
         listaModelo = new DefaultListModel<>();
         listaAbajo.setModel(listaModelo);
         Rummy moddelo = new Rummy();
-        moddelo.agregarJugador(new Jugador("pepito"));
-        moddelo.agregarJugador(new Jugador("un jugador"));
+        moddelo.agregarJugador(new Jugador("a"), true);
+        moddelo.agregarJugador(new Jugador("un jugador"), false);
         moddelo.iniciarJuego();
         mostrarResultadosBusqueda(moddelo.getCartasJugador("pepito"));
         frame.setVisible(true);
@@ -50,4 +60,103 @@ public class VistaGrafica {
         }*/
     }
 
+    @Override
+    public void setControlador(Controlador controlador) {
+        this.controlador = controlador;
+    }
+
+    @Override
+    public void pantallaEspera() {
+
+    }
+
+    @Override
+    public void actualizarCantJugadores() {
+
+    }
+
+    @Override
+    public void iniciarTurno() {
+
+    }
+
+    @Override
+    public void esperarTurno() {
+
+    }
+
+    @Override
+    public void actualizarCartas(ArrayList<ICarta> cartasJugador) {
+
+    }
+
+    @Override
+    public void nuevoTurno() {
+
+    }
+
+    @Override
+    public void continuarTurnoActual() {
+
+    }
+
+    @Override
+    public void finalizarPartida() {
+
+    }
+
+    @Override
+    public void actualizarJugadas() {
+
+    }
+
+    @Override
+    public void cerrarPartida() {
+
+    }
+
+    @Override
+    public void mostrarErrorApuesta() {
+
+    }
+
+    @Override
+    public void avisarSobreApuesta() {
+
+    }
+
+    @Override
+    public void mostrarResultadosPuntos() {
+
+    }
+
+    @Override
+    public void finalizarPartidaAmistosamente() {
+
+    }
+
+    @Override
+    public void eleccionAnularPartida() {
+
+    }
+
+    @Override
+    public void obtenerNombre() {
+
+    }
+
+    @Override
+    public void solicitarCerrarVentana() {
+
+    }
+
+    @Override
+    public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
+
+    }
+
+    @Override
+    public void mostrarErrorConexion() {
+
+    }
 }

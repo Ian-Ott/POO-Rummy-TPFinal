@@ -19,19 +19,49 @@
         <properties/>
         <border type="none"/>
         <children>
-          <tabbedpane id="c51b1" binding="OpcionMesa">
+          <grid id="9e121" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="opciones de mesa"/>
+              <tabbedpane title="Inicio"/>
             </constraints>
             <properties>
-              <visible value="false"/>
+              <background color="-16510416"/>
             </properties>
             <border type="none"/>
-            <children/>
-          </tabbedpane>
+            <children>
+              <component id="297ff" class="javax.swing.JTextField" binding="txtInfoInicio">
+                <constraints border-constraint="North"/>
+                <properties/>
+              </component>
+              <component id="5be65" class="javax.swing.JButton" binding="iniciarPartidaButton" default-binding="true">
+                <constraints border-constraint="South"/>
+                <properties>
+                  <background color="-16777216"/>
+                  <borderPainted value="false"/>
+                  <horizontalTextPosition value="0"/>
+                  <maximumSize width="20" height="30"/>
+                  <minimumSize width="20" height="30"/>
+                  <preferredSize width="20" height="30"/>
+                  <text value="Iniciar Partida"/>
+                </properties>
+              </component>
+              <grid id="cc4b5" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <background color="-16510416"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="b7a75" class="javax.swing.JProgressBar" binding="cantidadJugadoresBar">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
           <grid id="6c54e" binding="panelVentana" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Untitled"/>
+              <tabbedpane title="Partida"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -42,7 +72,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="11d0a" class="javax.swing.JList" binding="list4" default-binding="true">
+                  <component id="11d0a" class="javax.swing.JList" binding="listaIzquierda">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="50"/>
@@ -58,7 +88,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="463c1" class="javax.swing.JList" binding="list2" default-binding="true">
+                  <component id="463c1" class="javax.swing.JList" binding="listaDerecha">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="50"/>
@@ -95,14 +125,86 @@
                 <constraints border-constraint="North"/>
                 <properties/>
                 <border type="none"/>
-                <children/>
+                <children>
+                  <component id="2d07" class="javax.swing.JList" binding="listaArriba">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
               </grid>
-              <grid id="65cc6" layout-manager="CardLayout" hgap="0" vgap="0">
-                <constraints border-constraint="Center"/>
-                <properties/>
-                <border type="none"/>
-                <children/>
-              </grid>
+            </children>
+          </grid>
+          <grid id="821f4" layout-manager="GridBagLayout">
+            <constraints>
+              <tabbedpane title="Opciones de Mesa"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="a8290" class="javax.swing.JCheckBox" binding="checkPartidaCompetitiva">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="1.0"/>
+                </constraints>
+                <properties>
+                  <text value="Partidas Competitivas"/>
+                </properties>
+              </component>
+              <component id="d3004" class="javax.swing.JCheckBox" binding="modoExpresCheckBox" default-binding="true">
+                <constraints>
+                  <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="1.0"/>
+                </constraints>
+                <properties>
+                  <text value="Modo Expres"/>
+                </properties>
+              </component>
+              <component id="47253" class="javax.swing.JCheckBox" binding="modoPorPuntosCheckBox" default-binding="true">
+                <constraints>
+                  <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="1.0"/>
+                </constraints>
+                <properties>
+                  <text value="Modo por Puntos"/>
+                </properties>
+              </component>
+              <component id="f5aa2" class="javax.swing.JCheckBox" binding="CheckBoxChat">
+                <constraints>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="1.0" weighty="1.0"/>
+                </constraints>
+                <properties>
+                  <text value="Publico con Chat"/>
+                </properties>
+              </component>
+              <component id="3a158" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="1.0"/>
+                </constraints>
+                <properties>
+                  <model>
+                    <item value="60 segundos por turno"/>
+                    <item value="120 segundos por turno"/>
+                    <item value="Tiempo Por Turnos Desactivado"/>
+                  </model>
+                </properties>
+              </component>
+              <component id="ada3a" class="javax.swing.JTextField" binding="seleccioneLasOpcionesDeTextField" default-binding="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Seleccione las opciones de Mesa que quiera cambiar"/>
+                </properties>
+              </component>
             </children>
           </grid>
         </children>
