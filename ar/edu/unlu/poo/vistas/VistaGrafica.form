@@ -122,9 +122,9 @@
                 <children>
                   <component id="d36d1" class="javax.swing.JTextArea" binding="datosJugadorActual">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <minimum-size width="40" height="40"/>
-                        <preferred-size width="120" height="120"/>
+                        <preferred-size width="600" height="40"/>
                       </grid>
                     </constraints>
                     <properties>
