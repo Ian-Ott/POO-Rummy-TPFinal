@@ -262,6 +262,7 @@
                             </constraints>
                             <properties>
                               <preferredSize width="40" height="22"/>
+                              <selected value="true"/>
                               <text value="Asistente"/>
                             </properties>
                           </component>
@@ -326,12 +327,13 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="a8290" class="javax.swing.JCheckBox" binding="checkPartidaCompetitiva">
+              <component id="a8290" class="javax.swing.JCheckBox" binding="partidaCompetitivaCheck">
                 <constraints>
                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                   <gridbag weightx="1.0" weighty="1.0"/>
                 </constraints>
                 <properties>
+                  <selected value="true"/>
                   <text value="Partidas Competitivas"/>
                 </properties>
               </component>
@@ -341,6 +343,7 @@
                   <gridbag weightx="1.0" weighty="1.0"/>
                 </constraints>
                 <properties>
+                  <selected value="true"/>
                   <text value="Modo Expres"/>
                 </properties>
               </component>
@@ -353,7 +356,7 @@
                   <text value="Modo por Puntos"/>
                 </properties>
               </component>
-              <component id="f5aa2" class="javax.swing.JCheckBox" binding="CheckBoxChat">
+              <component id="f5aa2" class="javax.swing.JCheckBox" binding="checkBoxChat">
                 <constraints>
                   <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                   <gridbag weightx="1.0" weighty="1.0"/>
@@ -362,13 +365,14 @@
                   <text value="Publico con Chat"/>
                 </properties>
               </component>
-              <component id="3a158" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+              <component id="3a158" class="javax.swing.JComboBox" binding="seleccionTiempo">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                   <gridbag weightx="0.0" weighty="1.0"/>
                 </constraints>
                 <properties>
                   <model>
+                    <item value="--Seleccionar Tiempo Por Turno--"/>
                     <item value="60 segundos por turno"/>
                     <item value="120 segundos por turno"/>
                     <item value="Tiempo Por Turnos Desactivado"/>
@@ -388,7 +392,7 @@
               </component>
             </children>
           </grid>
-          <grid id="954b1" layout-manager="CardLayout" hgap="0" vgap="0">
+          <grid id="954b1" binding="panelAsistente" layout-manager="CardLayout" hgap="0" vgap="0">
             <constraints>
               <tabbedpane title="asistente"/>
             </constraints>

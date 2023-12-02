@@ -19,10 +19,12 @@ public class VistaGrafica implements IVista{
     private JList<String> listaDerecha;
     private JList listaIzquierda;
     private JList listaArriba;
+
+    private JCheckBox partidaCompetitivaCheck;
     private JCheckBox modoExpresCheckBox;
     private JCheckBox modoPorPuntosCheckBox;
-    private JCheckBox CheckBoxChat;
-    private JComboBox comboBox1;
+    private JCheckBox checkBoxChat;
+    private JComboBox seleccionTiempo;
     private JTextField seleccioneLasOpcionesDeTextField;
     private JTextField txtInfoInicio;
     private JButton iniciarPartidaButton;
@@ -45,6 +47,7 @@ public class VistaGrafica implements IVista{
     private JButton cancelarSeleccionButton;
     private JButton agregarNuevaJugadaButton;
     private JComboBox seleccionJugada;
+    private JPanel panelAsistente;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
     private DefaultListModel<String> listaModeloArriba;
@@ -97,7 +100,106 @@ public class VistaGrafica implements IVista{
         agregarNuevaJugadaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                controlador
+                if (seleccionJugada.getModel().getSelectedItem().equals("Hacer una Escalera")){
+                    controlador.armarEscalera(cartasSeleccionadasPosicion);
+                } else if (seleccionJugada.getModel().getSelectedItem().equals("Combinacion de Cartas Iguales")){
+                    controlador.armarCombinacionIguales(cartasSeleccionadasPosicion);
+                } else if (seleccionJugada.getModel().getSelectedItem().equals("Hacer Rummy")) {
+                    controlador.armarRummy(cartasSeleccionadasPosicion);
+                }else {
+                    //podria setear un texto al asistente
+                }
+            }
+        });
+        agregarCartaAJugadaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //controlador.agregarCartasAJugada(cartasSeleccionadasPosicion,);
+                //agregar un checkbox por cada jugada?
+            }
+        });
+        asistenteCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (asistenteCheckBox.isSelected()){
+                    panelAsistente.setVisible(true);
+                }else {
+                    panelAsistente.setVisible(false);
+                }
+            }
+        });
+        terminarTurnoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controlador.terminarTurno(cartasSeleccionadasPosicion);
+            }
+        });
+        mazoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controlador.tomarCartaMazo();
+            }
+        });
+        cartaBocaArribaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controlador.tomarCartaDescarte();
+            }
+        });
+        seleccionTiempo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (seleccionTiempo.getModel().getSelectedItem().equals("60 segundos por turno")) {
+                    controlador.setTiempoTurno(60);
+                } else if (seleccionTiempo.getModel().getSelectedItem().equals("120 segundos por turno")) {
+                    controlador.setTiempoTurno(120);
+                } else if (seleccionTiempo.getModel().getSelectedItem().equals("Tiempo Por Turnos Desactivado")) {
+                    controlador.setTiempoTurno(0);
+                }
+            }
+        });
+        partidaCompetitivaCheck.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (partidaCompetitivaCheck.isSelected()){
+                    controlador.modificarPartidasCompetitivas();
+                }else {
+                    controlador.modificarPartidasCompetitivas();
+                }
+            }
+        });
+        checkBoxChat.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (checkBoxChat.isSelected()){
+                    controlador.modificarOpcionChat();
+                }else {
+                    controlador.modificarOpcionChat();
+                }
+            }
+        });
+        modoExpresCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (modoExpresCheckBox.isSelected()){
+                    controlador.activarModoExpres();
+                    modoPorPuntosCheckBox.setSelected(false);
+                }else {
+                    controlador.activarModoPuntos();
+                    modoPorPuntosCheckBox.setSelected(true);
+                }
+            }
+        });
+        modoPorPuntosCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (modoPorPuntosCheckBox.isSelected()){
+                    controlador.activarModoPuntos();
+                    modoExpresCheckBox.setSelected(false);
+                }else {
+                    controlador.activarModoExpres();
+                    modoExpresCheckBox.setSelected(true);
+                }
             }
         });
     }
