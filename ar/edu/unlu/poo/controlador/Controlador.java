@@ -144,7 +144,7 @@ public class Controlador implements IControladorRemoto {
                 if (vista instanceof VistaConsola){
                     JOptionPane.showMessageDialog(null,"ERROR: faltan jugadores para iniciar el juego");
                 }
-                //posible dialogo de mensaje
+                //vista.errorCantidadJugadores();
             }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
@@ -575,6 +575,38 @@ public class Controlador implements IControladorRemoto {
     public boolean getEstadoCompetitivo() {
         try {
             return rummy.getEstadoCompetitivo();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setTiempoTurno(int tiempoEstablecido) {
+        try {
+            rummy.cambiarTiempoTurno(tiempoEstablecido);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getTiempoPorTurno(){
+        try {
+            return rummy.getCantidadTiempoTurno();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getNombreAnfitrion() {
+        try {
+            return rummy.getNombreJefeMesa();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getNombreTurnoActual() {
+        try {
+            return rummy.getNombreTurnoActual();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.modelo.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -13,9 +14,9 @@ import java.util.ArrayList;
 
 public class VistaGrafica implements IVista{
     private JFrame frame;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane tabbedPane;
     private JList listaAbajo;
-    private JPanel panelPrincipal;
+    private JPanel panelPartida;
     private JList<String> listaDerecha;
     private JList listaIzquierda;
     private JList listaArriba;
@@ -26,7 +27,7 @@ public class VistaGrafica implements IVista{
     private JCheckBox checkBoxChat;
     private JComboBox seleccionTiempo;
     private JTextField seleccioneLasOpcionesDeTextField;
-    private JTextField txtInfoInicio;
+    private JTextArea txtInfoInicio;
     private JButton iniciarPartidaButton;
     private JProgressBar cantidadJugadoresBar;
     private JPanel panelInicio;
@@ -42,166 +43,213 @@ public class VistaGrafica implements IVista{
     private JButton agregarCartaAJugadaButton;
     private JButton terminarTurnoButton;
     private JTextArea txtTurno;
-    private JTextField txtAsistenteAyuda;
+    private JTextArea txtAsistenteAyuda;
     private JCheckBox asistenteCheckBox;
     private JButton cancelarSeleccionButton;
     private JButton agregarNuevaJugadaButton;
     private JComboBox seleccionJugada;
     private JPanel panelAsistente;
+    private JTextArea txtNombre;
+    private JButton iniciarSesionButton;
+    private JPanel panelUsuario;
+    private JPanel panelPrincipal;
+    private JPanel panelVacio;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
     private DefaultListModel<String> listaModeloArriba;
     private DefaultListModel<String> listaModeloDerecha;
     private DefaultListModel<String> listaModeloIzquierda;
     private Controlador controlador;
-    ArrayList<Integer> cartasSeleccionadasPosicion;
+    ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
 
     public VistaGrafica() throws RemoteException {
-        frame = new JFrame();
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setContentPane(panelPrincipal);
-        frame.pack();
-        listaModeloAbajo = new DefaultListModel<>();
-        listaAbajo.setModel(listaModeloAbajo);
-        listaDerecha.setModel(listaModeloDerecha);
-        listaIzquierda.setModel(listaModeloIzquierda);
-        listaArriba.setModel(listaModeloArriba);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                frame = new JFrame();
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                frame.setContentPane(panelPrincipal);
+                frame.pack();
+                listaModeloAbajo = new DefaultListModel<>();
+                listaModeloDerecha = new DefaultListModel<>();
+                listaModeloArriba = new DefaultListModel<>();
+                listaModeloIzquierda = new DefaultListModel<>();
+                listaAbajo.setModel(listaModeloAbajo);
+                listaDerecha.setModel(listaModeloDerecha);
+                listaIzquierda.setModel(listaModeloIzquierda);
+                listaArriba.setModel(listaModeloArriba);
         /*Rummy moddelo = new Rummy();
         moddelo.agregarJugador(new Jugador("a"), true);
         moddelo.agregarJugador(new Jugador("un jugador"), false);
         moddelo.iniciarJuego();
         mostrarResultadosBusqueda(moddelo.getCartasJugador("pepito"));*/
-        frame.setVisible(true);
-        panelPrincipal.setVisible(false);
-        asignarNombresJugadores();
-        iniciarPartidaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                panelInicio.setVisible(false);
-                panelPrincipal.setVisible(true);
-                controlador.iniciarJuego();
+                frame.setVisible(true);
+                tabbedPane.remove(panelPartida);
+                iniciarPartidaButton.setVisible(false);
+                panelUsuario.setVisible(true);
+                iniciarSesionButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (!txtNombre.getText().isEmpty()) {
+                            txtNombre.setVisible(false);
+                            iniciarSesionButton.setVisible(false);
+                            txtNombre.setEnabled(false);
+                            iniciarSesionButton.setEnabled(false);
+                            //panelUsuario.setBackground(new Color(17048));
+                            //panelUsuario.setBorder(null);
+                            //panelUsuario.repaint();
+                            ocultarPanelUsuario();
+                            panelVacio.setVisible(false);
+                            panelUsuario.setVisible(false);
+                            panelUsuario.repaint();
+                            iniciarPartidaButton.setVisible(true);
+                            controlador.nuevoJugador(controlador.esAnfitrion(), txtNombre.getText());
+                        }else {
+                            txtNombre.setText("");
+                            //error en el asistente
+                        }
+                    }
+                });
+                iniciarPartidaButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        tabbedPane.remove(panelInicio);
+                        panelPartida.setToolTipText("Partida");
+                        tabbedPane.add(panelPartida,0);
+                        controlador.iniciarJuego();
+                        tabbedPane.add(panelInicio);
+                        tabbedPane.remove(panelPartida);
+                    }
+                });
+                ListSelectionListener listenerCartas = new ListSelectionListener() {
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+                        JList<String> cartas = (JList<String>) e.getSource();
+                        cartasSeleccionadasPosicion.add(cartas.getSelectedIndex());
+                        //verificar si esto funciona y explicarlo
+                    }
+                };
+                listaAbajo.addListSelectionListener(listenerCartas);
+                cancelarSeleccionButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cartasSeleccionadasPosicion.clear();
+                    }
+                });
+                agregarNuevaJugadaButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (seleccionJugada.getModel().getSelectedItem().equals("Hacer una Escalera")){
+                            controlador.armarEscalera(cartasSeleccionadasPosicion);
+                        } else if (seleccionJugada.getModel().getSelectedItem().equals("Combinacion de Cartas Iguales")){
+                            controlador.armarCombinacionIguales(cartasSeleccionadasPosicion);
+                        } else if (seleccionJugada.getModel().getSelectedItem().equals("Hacer Rummy")) {
+                            controlador.armarRummy(cartasSeleccionadasPosicion);
+                        }else {
+                            //podria setear un texto al asistente
+                        }
+                    }
+                });
+                agregarCartaAJugadaButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        //controlador.agregarCartasAJugada(cartasSeleccionadasPosicion,);
+                        //agregar un checkbox por cada jugada?
+                    }
+                });
+                asistenteCheckBox.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (asistenteCheckBox.isSelected()){
+                            panelAsistente.setVisible(true);
+                        }else {
+                            panelAsistente.setVisible(false);
+                        }
+                    }
+                });
+                terminarTurnoButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        controlador.terminarTurno(cartasSeleccionadasPosicion);
+                    }
+                });
+                mazoButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        controlador.tomarCartaMazo();
+                    }
+                });
+                cartaBocaArribaButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        controlador.tomarCartaDescarte();
+                    }
+                });
+                seleccionTiempo.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (seleccionTiempo.getModel().getSelectedItem().equals("60 segundos por turno")) {
+                            controlador.setTiempoTurno(60);
+                        } else if (seleccionTiempo.getModel().getSelectedItem().equals("120 segundos por turno")) {
+                            controlador.setTiempoTurno(120);
+                        } else if (seleccionTiempo.getModel().getSelectedItem().equals("Tiempo Por Turnos Desactivado")) {
+                            controlador.setTiempoTurno(0);
+                        }
+                    }
+                });
+                partidaCompetitivaCheck.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (partidaCompetitivaCheck.isSelected()){
+                            controlador.modificarPartidasCompetitivas();
+                        }else {
+                            controlador.modificarPartidasCompetitivas();
+                        }
+                    }
+                });
+                checkBoxChat.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (checkBoxChat.isSelected()){
+                            controlador.modificarOpcionChat();
+                        }else {
+                            controlador.modificarOpcionChat();
+                        }
+                    }
+                });
+                modoExpresCheckBox.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (modoExpresCheckBox.isSelected()){
+                            controlador.activarModoExpres();
+                            modoPorPuntosCheckBox.setSelected(false);
+                        }else {
+                            controlador.activarModoPuntos();
+                            modoPorPuntosCheckBox.setSelected(true);
+                        }
+                    }
+                });
+                modoPorPuntosCheckBox.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (modoPorPuntosCheckBox.isSelected()){
+                            controlador.activarModoPuntos();
+                            modoExpresCheckBox.setSelected(false);
+                        }else {
+                            controlador.activarModoExpres();
+                            modoExpresCheckBox.setSelected(true);
+                        }
+                    }
+                });
             }
         });
-        ListSelectionListener listenerCartas = new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                JList<String> cartas = (JList<String>) e.getSource();
-                cartasSeleccionadasPosicion.add(cartas.getSelectedIndex());
-                //verificar si esto funciona y explicarlo
-            }
-        };
-        listaAbajo.addListSelectionListener(listenerCartas);
-        cancelarSeleccionButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cartasSeleccionadasPosicion.clear();
-            }
-        });
-        agregarNuevaJugadaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (seleccionJugada.getModel().getSelectedItem().equals("Hacer una Escalera")){
-                    controlador.armarEscalera(cartasSeleccionadasPosicion);
-                } else if (seleccionJugada.getModel().getSelectedItem().equals("Combinacion de Cartas Iguales")){
-                    controlador.armarCombinacionIguales(cartasSeleccionadasPosicion);
-                } else if (seleccionJugada.getModel().getSelectedItem().equals("Hacer Rummy")) {
-                    controlador.armarRummy(cartasSeleccionadasPosicion);
-                }else {
-                    //podria setear un texto al asistente
-                }
-            }
-        });
-        agregarCartaAJugadaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //controlador.agregarCartasAJugada(cartasSeleccionadasPosicion,);
-                //agregar un checkbox por cada jugada?
-            }
-        });
-        asistenteCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (asistenteCheckBox.isSelected()){
-                    panelAsistente.setVisible(true);
-                }else {
-                    panelAsistente.setVisible(false);
-                }
-            }
-        });
-        terminarTurnoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controlador.terminarTurno(cartasSeleccionadasPosicion);
-            }
-        });
-        mazoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controlador.tomarCartaMazo();
-            }
-        });
-        cartaBocaArribaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controlador.tomarCartaDescarte();
-            }
-        });
-        seleccionTiempo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (seleccionTiempo.getModel().getSelectedItem().equals("60 segundos por turno")) {
-                    controlador.setTiempoTurno(60);
-                } else if (seleccionTiempo.getModel().getSelectedItem().equals("120 segundos por turno")) {
-                    controlador.setTiempoTurno(120);
-                } else if (seleccionTiempo.getModel().getSelectedItem().equals("Tiempo Por Turnos Desactivado")) {
-                    controlador.setTiempoTurno(0);
-                }
-            }
-        });
-        partidaCompetitivaCheck.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (partidaCompetitivaCheck.isSelected()){
-                    controlador.modificarPartidasCompetitivas();
-                }else {
-                    controlador.modificarPartidasCompetitivas();
-                }
-            }
-        });
-        checkBoxChat.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (checkBoxChat.isSelected()){
-                    controlador.modificarOpcionChat();
-                }else {
-                    controlador.modificarOpcionChat();
-                }
-            }
-        });
-        modoExpresCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (modoExpresCheckBox.isSelected()){
-                    controlador.activarModoExpres();
-                    modoPorPuntosCheckBox.setSelected(false);
-                }else {
-                    controlador.activarModoPuntos();
-                    modoPorPuntosCheckBox.setSelected(true);
-                }
-            }
-        });
-        modoPorPuntosCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (modoPorPuntosCheckBox.isSelected()){
-                    controlador.activarModoPuntos();
-                    modoExpresCheckBox.setSelected(false);
-                }else {
-                    controlador.activarModoExpres();
-                    modoExpresCheckBox.setSelected(true);
-                }
-            }
-        });
+
+    }
+
+    private void ocultarPanelUsuario() {
+        panelUsuario.setBorder(null);
+        panelUsuario.setBackground(new Color(4,18,48));
+        panelUsuario.setVisible(false);
     }
 
     private void asignarNombresJugadores() {
@@ -256,9 +304,10 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void pantallaEspera() {
+        obtenerNombre();
         panelInicio.setVisible(true);
         if (controlador.esAnfitrion()){
-            txtInfoInicio.setText("\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
+            txtInfoInicio.setText("Esperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores() +
                     "\nCuando este la cantidad necesaria presione el boton para iniciar.");
             actualizarBarra();
@@ -284,6 +333,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void iniciarTurno() {
+        asignarNombresJugadores();
         if (controlador.esTurnoJugador()){
             txtTurno.setText("Bienvenido, " + controlador.getNombreJugador() +". Es su turno");
             listaAbajo.setEnabled(true);
@@ -410,7 +460,9 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void obtenerNombre() {
-
+        panelUsuario.setVisible(true);
+        txtNombre.setEnabled(true);
+        iniciarSesionButton.setEnabled(true);
     }
 
     @Override

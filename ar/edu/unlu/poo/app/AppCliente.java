@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.vistas.IVista;
 import ar.edu.unlu.poo.vistas.VistaConsola;
+import ar.edu.unlu.poo.vistas.VistaGrafica;
 import ar.edu.unlu.rmimvc.RMIMVCException;
 import ar.edu.unlu.rmimvc.Util;
 import ar.edu.unlu.rmimvc.cliente.Cliente;
@@ -64,12 +65,11 @@ public class AppCliente {
             IVista vista = null;
             Controlador controlador;
             if (visualizacion.equals("Ventana Grafica")){
-                 //vista = new Ventana();
-            } else if (visualizacion.equals("Consola")) {
+                 vista = new VistaGrafica();
+            } else{
                 vista = new VistaConsola();
             }
             controlador = new Controlador(vista);
-            assert vista != null;
             vista.setControlador(controlador);
             Cliente c = new Cliente(ip, Integer.parseInt(port), ipServidor, Integer.parseInt(portServidor));
             c.iniciar(controlador);

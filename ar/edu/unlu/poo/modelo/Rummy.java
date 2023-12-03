@@ -26,6 +26,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     private boolean estadoCompetitivo;
 
     private boolean partidaFinalizada;
+    private int tiempoDeTurno;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -37,6 +38,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         limitePuntos = 300;
         solicitudDeAnularPartida = 0;
         estadoCompetitivo = true;
+        tiempoDeTurno = 0;
     }
 
     public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
@@ -363,6 +365,18 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     @Override
+    public String getNombreJefeMesa() throws RemoteException {
+        String nombreJefeMesa = null;
+        //nunca deberia de devolver null porque si o si un jugador debe ser jefe de mesa
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).getJefeMesa()){
+                nombreJefeMesa = jugadores.get(i).getNombre();
+            }
+        }
+        return nombreJefeMesa;
+}
+
+    @Override
     public void modificarCompetitivo() throws RemoteException {
         if (estadoCompetitivo){
             estadoCompetitivo = false;
@@ -379,6 +393,15 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public boolean getEstadoCompetitivo() throws RemoteException {
         return estadoCompetitivo;
+    }
+
+    @Override
+    public void cambiarTiempoTurno(int tiempoEstablecido) throws RemoteException {
+        tiempoDeTurno = tiempoEstablecido;
+    }
+
+    public int getCantidadTiempoTurno() throws RemoteException{
+        return tiempoDeTurno;
     }
 
 
