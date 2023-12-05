@@ -141,10 +141,10 @@ public class Controlador implements IControladorRemoto {
                 rummy.iniciarJuego();
                 resultado = true;
             }else {
-                if (vista instanceof VistaConsola){
+                /*if (vista instanceof VistaConsola){
                     JOptionPane.showMessageDialog(null,"ERROR: faltan jugadores para iniciar el juego");
-                }
-                //vista.errorCantidadJugadores();
+                }*/
+                vista.errorCantidadJugadores();
             }
         } catch (RemoteException e) {
             throw new RuntimeException(e);

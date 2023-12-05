@@ -36,7 +36,6 @@ public class VistaGrafica implements IVista{
     private JTextArea datosJugadorActual;
     private JTextArea datosJugadorDerecha;
     private JPanel panelCentral;
-    private JList listaJugadas;
     private JPanel panelOpciones;
     private JButton cartaBocaArribaButton;
     private JButton mazoButton;
@@ -54,13 +53,20 @@ public class VistaGrafica implements IVista{
     private JPanel panelUsuario;
     private JPanel panelPrincipal;
     private JPanel panelVacio;
+    private JPanel panelAbajo;
+    private JPanel panelJugadas;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
     private DefaultListModel<String> listaModeloArriba;
     private DefaultListModel<String> listaModeloDerecha;
     private DefaultListModel<String> listaModeloIzquierda;
     private Controlador controlador;
-    ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
+    private ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
+
+    private ArrayList<JCheckBox> checkJugada;
+    private GridBagConstraints tamanioJugada;
+
+
 
     public VistaGrafica() throws RemoteException {
         SwingUtilities.invokeLater(new Runnable() {
@@ -74,10 +80,18 @@ public class VistaGrafica implements IVista{
                 listaModeloDerecha = new DefaultListModel<>();
                 listaModeloArriba = new DefaultListModel<>();
                 listaModeloIzquierda = new DefaultListModel<>();
+                listaModeloAbajo.setSize(30);
                 listaAbajo.setModel(listaModeloAbajo);
                 listaDerecha.setModel(listaModeloDerecha);
                 listaIzquierda.setModel(listaModeloIzquierda);
                 listaArriba.setModel(listaModeloArriba);
+                listaAbajo.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+                listaAbajo.setVisibleRowCount(0);
+                //listaAbajo.setFixedCellWidth();
+                //listaArriba.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+                panelAbajo.setLayout(new BoxLayout(panelAbajo, BoxLayout.X_AXIS));
+                /*JScrollPane scrollPane = new JScrollPane(panelAbajo);
+                panelPartida.add(scrollPane, BorderLayout.SOUTH);*/
         /*Rummy moddelo = new Rummy();
         moddelo.agregarJugador(new Jugador("a"), true);
         moddelo.agregarJugador(new Jugador("un jugador"), false);
@@ -87,23 +101,34 @@ public class VistaGrafica implements IVista{
                 tabbedPane.remove(panelPartida);
                 iniciarPartidaButton.setVisible(false);
                 panelUsuario.setVisible(true);
+                checkJugada = new ArrayList<>();
+
+
+
+                //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
+
                 iniciarSesionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if (!txtNombre.getText().isEmpty()) {
-                            txtNombre.setVisible(false);
-                            iniciarSesionButton.setVisible(false);
-                            txtNombre.setEnabled(false);
-                            iniciarSesionButton.setEnabled(false);
+                            if (!controlador.estaEnElJuego(txtNombre.getText())){
+                                txtNombre.setVisible(false);
+                                iniciarSesionButton.setVisible(false);
+                                txtNombre.setEnabled(false);
+                                iniciarSesionButton.setEnabled(false);
                             //panelUsuario.setBackground(new Color(17048));
                             //panelUsuario.setBorder(null);
                             //panelUsuario.repaint();
-                            ocultarPanelUsuario();
-                            panelVacio.setVisible(false);
-                            panelUsuario.setVisible(false);
-                            panelUsuario.repaint();
-                            iniciarPartidaButton.setVisible(true);
-                            controlador.nuevoJugador(controlador.esAnfitrion(), txtNombre.getText());
+                                ocultarPanelUsuario();
+                                panelVacio.setVisible(false);
+                                panelUsuario.setVisible(false);
+                                panelUsuario.repaint();
+                                iniciarPartidaButton.setVisible(true);
+                                controlador.nuevoJugador(controlador.esAnfitrion(), txtNombre.getText());
+                            }else {
+                                txtNombre.setText("");
+                                errorNombreJugador();
+                            }
                         }else {
                             txtNombre.setText("");
                             //error en el asistente
@@ -113,19 +138,22 @@ public class VistaGrafica implements IVista{
                 iniciarPartidaButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        tabbedPane.remove(panelInicio);
-                        panelPartida.setToolTipText("Partida");
-                        tabbedPane.add(panelPartida,0);
                         controlador.iniciarJuego();
-                        tabbedPane.add(panelInicio);
-                        tabbedPane.remove(panelPartida);
                     }
                 });
                 ListSelectionListener listenerCartas = new ListSelectionListener() {
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
+
                         JList<String> cartas = (JList<String>) e.getSource();
-                        cartasSeleccionadasPosicion.add(cartas.getSelectedIndex());
+                        if (e.getValueIsAdjusting()) {
+                            int indiceSeleccionado = cartas.getSelectedIndex();
+                            if (indiceSeleccionado != -1) {
+                                System.out.println("seleccionado : " + indiceSeleccionado);
+                                cartasSeleccionadasPosicion.add(indiceSeleccionado);
+                            }
+                        }
+                        listaAbajo.clearSelection();
                         //verificar si esto funciona y explicarlo
                     }
                 };
@@ -161,9 +189,10 @@ public class VistaGrafica implements IVista{
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if (asistenteCheckBox.isSelected()){
-                            panelAsistente.setVisible(true);
+                            panelAsistente.setName("Asistente");
+                            tabbedPane.add(panelAsistente);
                         }else {
-                            panelAsistente.setVisible(false);
+                            tabbedPane.remove(panelAsistente);
                         }
                     }
                 });
@@ -176,12 +205,16 @@ public class VistaGrafica implements IVista{
                 mazoButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        mazoButton.setEnabled(false);
+                        cartaBocaArribaButton.setEnabled(false);
                         controlador.tomarCartaMazo();
                     }
                 });
                 cartaBocaArribaButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        mazoButton.setEnabled(false);
+                        cartaBocaArribaButton.setEnabled(false);
                         controlador.tomarCartaDescarte();
                     }
                 });
@@ -243,6 +276,10 @@ public class VistaGrafica implements IVista{
                 });
             }
         });
+
+    }
+
+    private void errorNombreJugador() {
 
     }
 
@@ -333,14 +370,22 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void iniciarTurno() {
+        if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
+            panelPartida.setName("Partida");
+            tabbedPane.add(panelPartida, 0);
+            tabbedPane.remove(panelInicio);
+        }
+        agregarCartaAJugadaButton.setEnabled(false);
+        terminarTurnoButton.setEnabled(false);
+        listaAbajo.setEnabled(false);
+        seleccionJugada.setEnabled(false);
+        cancelarSeleccionButton.setEnabled(false);
+        agregarNuevaJugadaButton.setEnabled(false);
         asignarNombresJugadores();
         if (controlador.esTurnoJugador()){
             txtTurno.setText("Bienvenido, " + controlador.getNombreJugador() +". Es su turno");
-            listaAbajo.setEnabled(true);
             mazoButton.setEnabled(true);
             cartaBocaArribaButton.setEnabled(true);
-            agregarCartaAJugadaButton.setEnabled(true);
-            terminarTurnoButton.setEnabled(true);
         }else {
             esperarTurno();
         }
@@ -349,11 +394,8 @@ public class VistaGrafica implements IVista{
     @Override
     public void esperarTurno() {
         txtTurno.setText("Espere su turno. Ahora mismo es el turno de " + controlador.getNombreTurnoActual());
-        listaAbajo.setEnabled(false);
         mazoButton.setEnabled(false);
         cartaBocaArribaButton.setEnabled(false);
-        agregarCartaAJugadaButton.setEnabled(false);
-        terminarTurnoButton.setEnabled(false);
     }
 
     @Override
@@ -364,6 +406,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void nuevoTurno() {
         actualizarCartas();
+        iniciarTurno();
     }
 
     private void actualizarCartas() {
@@ -390,6 +433,7 @@ public class VistaGrafica implements IVista{
             //a.setText(carta.toString());
             listaModeloAbajo.addElement(carta.toString());
         }
+
     }
 
     private void actualizarCartasJugadorIzquierda(int cantidadCartas) {
@@ -415,7 +459,14 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void continuarTurnoActual() {
-
+        cartasSeleccionadasPosicion.clear();
+        actualizarCartas();
+        listaAbajo.setEnabled(true);
+        agregarCartaAJugadaButton.setEnabled(true);
+        terminarTurnoButton.setEnabled(true);
+        agregarNuevaJugadaButton.setEnabled(true);
+        seleccionJugada.setEnabled(true);
+        cancelarSeleccionButton.setEnabled(true);
     }
 
     @Override
@@ -425,7 +476,36 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void actualizarJugadas() {
+        cartasSeleccionadasPosicion.clear();
+        JList<String> listaActual;
+        DefaultListModel<String> listaModeloActual;
+        JCheckBox checkJugadaActual;
+        actualizarCartas();
+        JPanel panelActual = new JPanel(new FlowLayout());
+        ITapete jugadasEnMesa = controlador.obtenerJugadas();
+        panelJugadas.removeAll();
+        for (int i = 0; i < jugadasEnMesa.getJugada().size(); i++) {
+            if (i%3 == 0){
+                panelActual = new JPanel(new FlowLayout());
+                panelJugadas.add(panelActual);
+            }
+            listaActual = new JList<>();
+            listaModeloActual = new DefaultListModel<>();
+            listaActual.setModel(listaModeloActual);
+            //listaActual.setName("Jugada " + (i + 1));
+            listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
+            checkJugada.add(checkJugadaActual);
+            panelActual.add(checkJugadaActual);
+            //panelActual.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+            panelActual.add(listaActual);
+            for (ICarta carta: jugadasEnMesa.getJugada().get(i).getCartasJugada()) {
+                listaModeloActual.addElement(carta.toString());
+            }
+        }
 
+
+//remover cartas de el jugador y agregar la jugada a la pantalla
     }
 
     @Override
@@ -478,5 +558,13 @@ public class VistaGrafica implements IVista{
     @Override
     public void mostrarErrorConexion() {
 
+    }
+
+    @Override
+    public void errorCantidadJugadores() {
+        panelInicio.setName("Inicio");
+        tabbedPane.add(panelInicio, 0);
+        tabbedPane.remove(panelPartida);
+        //ayuda.setText("la cantidad de jugadores no es suficiente");
     }
 }

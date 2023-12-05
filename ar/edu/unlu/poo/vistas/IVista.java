@@ -50,4 +50,6 @@ public interface IVista {
     void mostrarTablaPosiciones(ArrayList<IJugador> jugadores);
 
     void mostrarErrorConexion();
+
+    void errorCantidadJugadores();
 }
