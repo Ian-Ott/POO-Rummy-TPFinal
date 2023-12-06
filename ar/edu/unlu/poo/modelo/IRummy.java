@@ -112,7 +112,7 @@ public interface IRummy extends IObservableRemoto {
 
     void nuevoJuego() throws RemoteException;
 
-    void cerrarJuego() throws RemoteException;
+    //void cerrarJuego() throws RemoteException;
 
     ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException;
 

@@ -187,7 +187,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="eb70b" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="eb70b" binding="panelIzquierda" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="West"/>
                 <properties/>
@@ -201,7 +201,7 @@
                     </constraints>
                     <properties/>
                   </component>
-                  <component id="1e130" class="javax.swing.JTextArea" binding="datosJugadorIzquierda">
+                  <component id="25fdb" class="javax.swing.JTextPane" binding="datosJugadorIzquierda">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <preferred-size width="20" height="20"/>
@@ -213,7 +213,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="1bf52" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="1bf52" binding="panelDerecha" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="East"/>
                 <properties/>
@@ -227,7 +227,7 @@
                     </constraints>
                     <properties/>
                   </component>
-                  <component id="cf92" class="javax.swing.JTextArea" binding="datosJugadorDerecha">
+                  <component id="50366" class="javax.swing.JTextPane" binding="datosJugadorDerecha">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <preferred-size width="20" height="20"/>
@@ -245,7 +245,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="d36d1" class="javax.swing.JTextArea" binding="datosJugadorActual">
+                  <component id="7b0a9" class="javax.swing.JTextPane" binding="datosJugadorActual">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <minimum-size width="40" height="40"/>
@@ -279,7 +279,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="3b574" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="3b574" binding="panelArriba" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="North"/>
                 <properties/>
@@ -293,7 +293,7 @@
                     </constraints>
                     <properties/>
                   </component>
-                  <component id="80231" class="javax.swing.JTextArea" binding="datosJugadorArriba">
+                  <component id="dfd4e" class="javax.swing.JTextPane" binding="datosJugadorArriba">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <preferred-size width="20" height="20"/>
@@ -496,7 +496,7 @@
                   </model>
                 </properties>
               </component>
-              <component id="ada3a" class="javax.swing.JTextField" binding="seleccioneLasOpcionesDeTextField" default-binding="true">
+              <component id="ada3a" class="javax.swing.JTextField" binding="txtOpcionMesa">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>

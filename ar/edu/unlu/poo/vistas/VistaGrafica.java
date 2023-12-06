@@ -26,15 +26,15 @@ public class VistaGrafica implements IVista{
     private JCheckBox modoPorPuntosCheckBox;
     private JCheckBox checkBoxChat;
     private JComboBox seleccionTiempo;
-    private JTextField seleccioneLasOpcionesDeTextField;
+    private JTextField txtOpcionMesa;
     private JTextArea txtInfoInicio;
     private JButton iniciarPartidaButton;
     private JProgressBar cantidadJugadoresBar;
     private JPanel panelInicio;
-    private JTextArea datosJugadorArriba;
-    private JTextArea datosJugadorIzquierda;
-    private JTextArea datosJugadorActual;
-    private JTextArea datosJugadorDerecha;
+    private JTextPane datosJugadorArriba;
+    private JTextPane datosJugadorIzquierda;
+    private JTextPane datosJugadorActual;
+    private JTextPane datosJugadorDerecha;
     private JPanel panelCentral;
     private JPanel panelOpciones;
     private JButton cartaBocaArribaButton;
@@ -64,6 +64,9 @@ public class VistaGrafica implements IVista{
     private JButton salirButton;
     private JPanel panelTablaPosiciones;
     private JTextArea txtTablaPosiciones;
+    private JPanel panelArriba;
+    private JPanel panelDerecha;
+    private JPanel panelIzquierda;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
     private DefaultListModel<String> listaModeloArriba;
@@ -85,6 +88,7 @@ public class VistaGrafica implements IVista{
                 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 frame.setContentPane(panelPrincipal);
                 frame.pack();
+                tabbedPane.setIconAt(2,new ImageIcon("ar/edu/unlu/poo/images/opcionesMesaIcon.jpg"));
                 listaModeloAbajo = new DefaultListModel<>();
                 listaModeloDerecha = new DefaultListModel<>();
                 listaModeloArriba = new DefaultListModel<>();
@@ -117,8 +121,9 @@ public class VistaGrafica implements IVista{
 
                 iniciarNuevaPartidaButton.setVisible(false);
                 salirButton.setVisible(false);
-                //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
 
+                tabbedPane.remove(panelTablaPosiciones);
+                //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
                 iniciarSesionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -309,6 +314,20 @@ public class VistaGrafica implements IVista{
                 });
             }
         });
+        iniciarNuevaPartidaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                salirButton.setVisible(false);
+                iniciarNuevaPartidaButton.setVisible(false);
+                pantallaEspera();
+            }
+        });
+        salirButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cerrarJuego();
+            }
+        });
 
     }
 
@@ -349,11 +368,12 @@ public class VistaGrafica implements IVista{
         //si un jugador es eliminado deberia de llamar a esta funcion para cambiar los nombres
         //hacer un posible limpiar datos de texto?
         if (controlador.esAnfitrion()){
-            datosJugadorActual.setText(controlador.getNombreJugador() + "*");
+            datosJugadorActual.setText(controlador.getNombreJugador());
+            datosJugadorActual.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
         }else {
             datosJugadorActual.setText(controlador.getNombreJugador());
         }
-        datosJugadorActual.setText(datosJugadorActual.getText() + "\n| Modo " + controlador.getModoJuego() + " |"+
+        txtTurno.setText(txtTurno.getText() + "\n| Modo " + controlador.getModoJuego() + " |"+
                 "\nTus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
                 "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
                 "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
@@ -362,11 +382,23 @@ public class VistaGrafica implements IVista{
         for (int i = 0; i < controlador.cantJugadores() - 1;i++){
             oponenteActual = verificarAnfitrion(oponentes.get(i));
             if (i == 0){
-                datosJugadorDerecha.setText(oponenteActual);
+                if (oponenteActual.contains("*")){
+                    oponenteActual = oponenteActual.replace("*", "");
+                    datosJugadorDerecha.setText(oponenteActual);
+                    datosJugadorDerecha.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
+                }else {datosJugadorDerecha.setText(oponenteActual);}
             } else if (i == 1) {
+                if (oponenteActual.contains("*")){
+                oponenteActual = oponenteActual.replace("*", "");
                 datosJugadorArriba.setText(oponenteActual);
+                datosJugadorArriba.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
+                }else {datosJugadorArriba.setText(oponenteActual);}
             } else if (i == 2) {
-                datosJugadorIzquierda.setText(oponenteActual);
+                if (oponenteActual.contains("*")){
+                    oponenteActual = oponenteActual.replace("*", "");
+                    datosJugadorIzquierda.setText(oponenteActual);
+                    datosJugadorIzquierda.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
+                }else {datosJugadorIzquierda.setText(oponenteActual);}
             }
         }
     }
@@ -375,7 +407,7 @@ public class VistaGrafica implements IVista{
         //IDEA:si el jugador contiene una estrella de string entonces le agrego una imagen con forma de estrella a ese jugador
         // y luego borro la estrella de string
         if (controlador.getNombreAnfitrion().equals(oponenteActual)){
-            oponenteActual += "*";
+            oponenteActual += " *";
         }
         return oponenteActual;
     }
@@ -401,7 +433,9 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void pantallaEspera() {
-        obtenerNombre();
+        if (controlador.getNombreJugador() == null) {
+            obtenerNombre();
+        }
         panelInicio.setVisible(true);
         if (controlador.esAnfitrion()){
             txtInfoInicio.setText("Esperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
@@ -436,7 +470,19 @@ public class VistaGrafica implements IVista{
             tabbedPane.remove(panelInicio);
         }
         if (!controlador.esAnfitrion()){
-            tabbedPane.remove(panelOpcionesMesa);
+            seleccionTiempo.setVisible(false);
+            partidaCompetitivaCheck.setVisible(false);
+            modoExpresCheckBox.setVisible(false);
+            modoPorPuntosCheckBox.setVisible(false);
+            checkBoxChat.setVisible(false);
+            txtOpcionMesa.setText("No podes modificar las opciones de mesa por no ser anfitrion.");
+        }else {
+            seleccionTiempo.setVisible(true);
+            partidaCompetitivaCheck.setVisible(true);
+            modoExpresCheckBox.setVisible(true);
+            modoPorPuntosCheckBox.setVisible(true);
+            checkBoxChat.setVisible(true);
+            txtOpcionMesa.setText("Seleccione las opciones de Mesa que quiera cambiar");
         }
         agregarCartaAJugadaButton.setEnabled(false);
         terminarTurnoButton.setEnabled(false);
@@ -617,7 +663,7 @@ public class VistaGrafica implements IVista{
     private void eleccionNuevaPartida() {
         if (controlador.esAnfitrion()) {
             txtInfoInicio.setText("¿Desea Iniciar una nueva partida?");
-            iniciarPartidaButton.setVisible(true);
+            iniciarNuevaPartidaButton.setVisible(true);
             salirButton.setVisible(true);
         }
     }
@@ -635,7 +681,9 @@ public class VistaGrafica implements IVista{
     }
 
     @Override
-    public void solicitarCerrarVentana() {
+    public void cerrarJuego() {
+        controlador.eliminarJugador();
+        frame.dispose();
         //cambiar directamente sacar al anfitrion y hacerle la pregunta al siguiente anfitrion y si elige que no cerrarle su ventana
     }
 
@@ -665,5 +713,16 @@ public class VistaGrafica implements IVista{
         tabbedPane.add(panelInicio, 0);
         tabbedPane.remove(panelPartida);
         //ayuda.setText("la cantidad de jugadores no es suficiente");
+    }
+
+    @Override
+    public void mostrarJugadorSalioDelJuego() {
+        txtInfoInicio.setText("Un jugador Ha salido");
+        eleccionNuevaPartida();
+    }
+
+    @Override
+    public void avisarCambiosOpcionesMesa() {
+        panelOpcionesMesa.setForeground(new Color(229,11,9));
     }
 }

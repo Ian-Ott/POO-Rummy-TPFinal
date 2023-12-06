@@ -12,6 +12,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class VistaConsola implements IVista{
+    private boolean cambiosOpcionesMesa;
+
     enum EstadosPosibles{
         SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO
     }
@@ -52,6 +54,7 @@ public class VistaConsola implements IVista{
                 frame.pack();
                 frame.setVisible(true);
                 txtAreaMuestra.setEditable(false);
+                cambiosOpcionesMesa = false;
                 temporizador = new Timer();
                 TimerTask juegoAutomatico = new TimerTask() {
                     @Override
@@ -335,7 +338,7 @@ public class VistaConsola implements IVista{
             controlador.nuevoJuego();
             //la consola vuelve al primer estado original donde se esperan jugadores (de hecho podrian entrar nuevos jugadores)
         } else if (eleccion.equals("N")) {
-            controlador.cerrarJuego();
+            cerrarJuego();
         }else {
             opcionIncorrecta();
         }
@@ -481,12 +484,20 @@ public class VistaConsola implements IVista{
                 "\n3-hacer combinaciones de numeros iguales" +
                 "\n4-ver jugadas en mesa / agregar carta a una jugada" +
                 "\n5-ver cartas restantes jugadores" +
-                "\n6-Opciones de mesa (solo disponible para el jefe de mesa)" +
+                procesarCambiosMesa() +
                 "\n9-Anular Partida" +
                 "\n0-terminar turno" +
                 "\n----------------------------------------------------------"+
                 "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
                 "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
+    }
+
+    private String procesarCambiosMesa() {
+        String txtOpcionMesa = "\n6-Opciones de mesa (solo disponible para el jefe de mesa)";
+        if (cambiosOpcionesMesa){
+            //cambiar color a rojo del txt
+        }
+        return txtOpcionMesa;
     }
 
 
@@ -767,7 +778,9 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void solicitarCerrarVentana() {
+    public void cerrarJuego() {
+        controlador.eliminarJugador();
+        frame.dispose();
         txtAreaMuestra.setText("Se decidio no empezar una nueva partida. Por favor, cierre la ventana.");
     }
 
@@ -788,5 +801,24 @@ public class VistaConsola implements IVista{
     @Override
     public void mostrarErrorConexion() {
         System.out.println("error remoto");
+    }
+
+    @Override
+    public void errorCantidadJugadores() {
+
+    }
+
+    @Override
+    public void mostrarJugadorSalioDelJuego() {
+        txtAreaMuestra.setText("Un Jugador Ha salido Del Juego.");
+        eleccionNuevaPartida();
+    }
+
+    @Override
+    public void avisarCambiosOpcionesMesa() {
+        cambiosOpcionesMesa = true;
+        if (!controlador.esTurnoJugador()){
+            txtAreaMuestra.setText("\nEl anfitrion hizo cambios en las opciones de mesa!!!");
+        }
     }
 }

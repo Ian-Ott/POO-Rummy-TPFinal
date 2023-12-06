@@ -175,11 +175,13 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public void modoExpres() throws RemoteException {
         modo = modoDeJuego.EXPRES;
+        notificarObservadores("cambios en opciones de mesa");
     }
 
     @Override
     public void modoPuntos() throws RemoteException {
         modo = modoDeJuego.JUEGOAPUNTOS;
+        notificarObservadores("cambios en opciones de mesa");
     }
 
     @Override
@@ -323,11 +325,11 @@ public class Rummy extends ObservableRemoto implements IRummy {
         notificarObservadores("nuevo juego");
     }
 
-    @Override
+    /*@Override
     public void cerrarJuego() throws RemoteException {
         notificarObservadores("cerrar juego");
         System.exit(0);
-    }
+    }*/
 
     @Override
     public ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException{
@@ -351,7 +353,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
             //obligo anular la partida por la falta de un jugador
             anularPartida(true);
         }else {
-            notificarObservadores("jugador eliminado");
+            notificarObservadores("jugador sacado del juego");
         }
     }
 
@@ -383,11 +385,12 @@ public class Rummy extends ObservableRemoto implements IRummy {
         }else {
             estadoCompetitivo = true;
         }
-        if (juegoIniciado){
+        /*if (juegoIniciado){
             notificarObservadores("continuar turno jugador");
         }else {
             notificarObservadores("continuar espera");
-        }
+        }*/
+        notificarObservadores("cambios en opciones de mesa");
     }
 
     @Override
@@ -398,6 +401,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public void cambiarTiempoTurno(int tiempoEstablecido) throws RemoteException {
         tiempoDeTurno = tiempoEstablecido;
+        notificarObservadores("cambios en opciones de mesa");
     }
 
     public int getCantidadTiempoTurno() throws RemoteException{

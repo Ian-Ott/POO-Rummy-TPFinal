@@ -4,7 +4,6 @@ import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.ICarta;
 import ar.edu.unlu.poo.modelo.IJugador;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public interface IVista {
@@ -45,11 +44,15 @@ public interface IVista {
 
     void obtenerNombre();
 
-    void solicitarCerrarVentana();
+    void cerrarJuego();
 
     void mostrarTablaPosiciones(ArrayList<IJugador> jugadores);
 
     void mostrarErrorConexion();
 
     void errorCantidadJugadores();
+
+    void mostrarJugadorSalioDelJuego();
+
+    void avisarCambiosOpcionesMesa();
 }

@@ -8,7 +8,6 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
-import javax.swing.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
@@ -47,6 +46,8 @@ public class Controlador implements IControladorRemoto {
                 vista.actualizarCantJugadores();
             } else if (cambio.equals("jugador eliminado")) {
                 vista.actualizarCantJugadores();
+            } else if (cambio.equals("jugador sacado del juego")) {
+                vista.mostrarJugadorSalioDelJuego();
             } else if (cambio.equals("cartas agregadas")) {
                 vista.actualizarJugadas();
                 vista.continuarTurnoActual();
@@ -73,9 +74,11 @@ public class Controlador implements IControladorRemoto {
             } else if (cambio.equals("nuevo juego")) {
                 vista.pantallaEspera();
             } else if (cambio.equals("cerrar juego")) {
-                vista.solicitarCerrarVentana();
+                vista.cerrarJuego();
             } else if (cambio.equals("continuar espera")) {
                 vista.pantallaEspera();
+            } else if (cambio.equals("cambios en opciones de mesa")) {
+                vista.avisarCambiosOpcionesMesa();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -505,13 +508,13 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
-    public void cerrarJuego() {
+    /*public void cerrarJuego() {
         try {
             rummy.cerrarJuego();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-    }
+    }*/
 
     public void obtenerPosiciones() {
         ArrayList<IJugador> jugadores = new ArrayList<>();
