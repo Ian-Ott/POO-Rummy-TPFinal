@@ -55,6 +55,15 @@ public class VistaGrafica implements IVista{
     private JPanel panelVacio;
     private JPanel panelAbajo;
     private JPanel panelJugadas;
+    private JPanel panelOpcionesMesa;
+    private JPanel panelApuesta;
+    private JSpinner spinnerApuesta;
+    private JButton apostarButton;
+    private JButton anularPartidaButton;
+    private JButton iniciarNuevaPartidaButton;
+    private JButton salirButton;
+    private JPanel panelTablaPosiciones;
+    private JTextArea txtTablaPosiciones;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
     private DefaultListModel<String> listaModeloArriba;
@@ -63,7 +72,7 @@ public class VistaGrafica implements IVista{
     private Controlador controlador;
     private ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
 
-    private ArrayList<JCheckBox> checkJugada;
+    private ArrayList<JCheckBox> listaCheckJugada;
     private GridBagConstraints tamanioJugada;
 
 
@@ -101,10 +110,13 @@ public class VistaGrafica implements IVista{
                 tabbedPane.remove(panelPartida);
                 iniciarPartidaButton.setVisible(false);
                 panelUsuario.setVisible(true);
-                checkJugada = new ArrayList<>();
+                listaCheckJugada = new ArrayList<>();
 
+                spinnerApuesta.setForeground(new Color(24,224,229));
+                spinnerApuesta.setBackground(new Color(4,18,48));
 
-
+                iniciarNuevaPartidaButton.setVisible(false);
+                salirButton.setVisible(false);
                 //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
 
                 iniciarSesionButton.addActionListener(new ActionListener() {
@@ -132,6 +144,16 @@ public class VistaGrafica implements IVista{
                         }else {
                             txtNombre.setText("");
                             //error en el asistente
+                        }
+                    }
+                });
+                apostarButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if ((int)spinnerApuesta.getValue() == 0){
+                            controlador.cancelarApuesta();
+                        } else if ((int)spinnerApuesta.getValue() >= 250) {
+                            controlador.apostar((int)spinnerApuesta.getValue());
                         }
                     }
                 });
@@ -181,6 +203,10 @@ public class VistaGrafica implements IVista{
                 agregarCartaAJugadaButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        if (jugadasSeleccionadas() == 1){
+                            int posicionJugada = obtenerPosicionJugada();
+                            controlador.agregarCartasAJugada(cartasSeleccionadasPosicion, posicionJugada);
+                        }
                         //controlador.agregarCartasAJugada(cartasSeleccionadasPosicion,);
                         //agregar un checkbox por cada jugada?
                     }
@@ -216,6 +242,13 @@ public class VistaGrafica implements IVista{
                         mazoButton.setEnabled(false);
                         cartaBocaArribaButton.setEnabled(false);
                         controlador.tomarCartaDescarte();
+                    }
+                });
+                anularPartidaButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        anularPartidaButton.setEnabled(false);
+                        controlador.solicitarAnularPartida();
                     }
                 });
                 seleccionTiempo.addActionListener(new ActionListener() {
@@ -279,6 +312,29 @@ public class VistaGrafica implements IVista{
 
     }
 
+    private int obtenerPosicionJugada() {
+        JCheckBox checkBoxActual;
+        int posicionJugada = -1;
+        for (int i = 0; i < listaCheckJugada.size(); i++) {
+           checkBoxActual = listaCheckJugada.get(i);
+           if (checkBoxActual.isSelected()){
+               posicionJugada = i;
+               checkBoxActual.setSelected(false);
+           }
+        }
+        return posicionJugada;
+    }
+
+    private int jugadasSeleccionadas() {
+        int cantidadJugadasSeleccionadas = 0;
+        for (JCheckBox checkBox: listaCheckJugada) {
+            if (checkBox.isSelected()){
+                cantidadJugadasSeleccionadas++;
+            }
+        }
+        return  cantidadJugadasSeleccionadas;
+    }
+
     private void errorNombreJugador() {
 
     }
@@ -297,6 +353,10 @@ public class VistaGrafica implements IVista{
         }else {
             datosJugadorActual.setText(controlador.getNombreJugador());
         }
+        datosJugadorActual.setText(datosJugadorActual.getText() + "\n| Modo " + controlador.getModoJuego() + " |"+
+                "\nTus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
+                "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
+                "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
         ArrayList<String> oponentes = controlador.nombreOponentes(controlador.getNombreJugador());
         String oponenteActual;
         for (int i = 0; i < controlador.cantJugadores() - 1;i++){
@@ -372,8 +432,11 @@ public class VistaGrafica implements IVista{
     public void iniciarTurno() {
         if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
             panelPartida.setName("Partida");
-            tabbedPane.add(panelPartida, 0);
+            tabbedPane.add(panelPartida, 1);
             tabbedPane.remove(panelInicio);
+        }
+        if (!controlador.esAnfitrion()){
+            tabbedPane.remove(panelOpcionesMesa);
         }
         agregarCartaAJugadaButton.setEnabled(false);
         terminarTurnoButton.setEnabled(false);
@@ -471,7 +534,10 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void finalizarPartida() {
-
+        txtInfoInicio.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
+            " con " + controlador.getCantidadPuntosGanador()+" puntos");
+        eleccionNuevaPartida();
+        controlador.obtenerPosiciones();
     }
 
     @Override
@@ -495,7 +561,7 @@ public class VistaGrafica implements IVista{
             //listaActual.setName("Jugada " + (i + 1));
             listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
             checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
-            checkJugada.add(checkJugadaActual);
+            listaCheckJugada.add(checkJugadaActual);
             panelActual.add(checkJugadaActual);
             //panelActual.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
             panelActual.add(listaActual);
@@ -510,17 +576,29 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void cerrarPartida() {
-
+        if (controlador.getModoJuego().equals("EXPRES")){
+            txtInfoInicio.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+            if (!controlador.getEstadoCompetitivo()){
+                txtInfoInicio.setText(txtInfoInicio.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+            }
+            eleccionNuevaPartida();
+        }else {
+            txtInfoInicio.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+            controlador.iniciarNuevaRonda();
+        }
     }
 
     @Override
     public void mostrarErrorApuesta() {
-
+        txtInfoInicio.setText("\nApuestas Desactivadas!!!");
+        //asistenteCheckBox.setText(asistenteCheckBox.getText() +"| "+ LocalDateTime.now() +" |- Se cancelaron las apuestas!!!");
     }
 
     @Override
     public void avisarSobreApuesta() {
-
+        if (controlador.getcantidadApostada() != 0) {
+            txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas");
+        }
     }
 
     @Override
@@ -530,12 +608,23 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void finalizarPartidaAmistosamente() {
+        txtInfoInicio.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+        panelAbajo.setEnabled(false);
+        panelOpciones.setEnabled(false);
+        eleccionNuevaPartida();
+    }
 
+    private void eleccionNuevaPartida() {
+        if (controlador.esAnfitrion()) {
+            txtInfoInicio.setText("¿Desea Iniciar una nueva partida?");
+            iniciarPartidaButton.setVisible(true);
+            salirButton.setVisible(true);
+        }
     }
 
     @Override
     public void eleccionAnularPartida() {
-
+        anularPartidaButton.setForeground(new Color(229,213,7));
     }
 
     @Override
@@ -547,12 +636,22 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void solicitarCerrarVentana() {
-
+        //cambiar directamente sacar al anfitrion y hacerle la pregunta al siguiente anfitrion y si elige que no cerrarle su ventana
     }
 
     @Override
     public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
-
+        panelTablaPosiciones.setName("Tabla De Posiciones");
+        tabbedPane.add(panelTablaPosiciones);
+        txtTablaPosiciones.setText("\nTabla de posiciones (top 5 jugadores):");
+        IJugador jugadorAux;
+        for (int i = 0; i < 5; i++) {
+            if (i < jugadores.size()){
+                jugadorAux = jugadores.get(i);
+                txtTablaPosiciones.setText(txtTablaPosiciones.getText() +
+                        "\n" + (i + 1) + "- Nombre: " + jugadorAux.getNombre() + " | Puntos de XP: " + jugadorAux.getPuntosTotalesXP());
+            }
+        }
     }
 
     @Override
