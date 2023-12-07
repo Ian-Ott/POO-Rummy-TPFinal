@@ -67,6 +67,22 @@ public class VistaGrafica implements IVista{
     private JPanel panelArriba;
     private JPanel panelDerecha;
     private JPanel panelIzquierda;
+    private JButton reengancharseButton;
+    private JPanel panelFinRonda;
+    private JTextArea puntosJugador4;
+    private JTextArea puntosJugador3;
+    private JTextArea puntosJugador1;
+    private JTextArea puntosJugador2;
+    private JButton iniciarNuevaRondaButton;
+    private JTextArea nombreJugadorPuntos1;
+    private JTextArea nombreJugadorPuntos2;
+    private JTextArea nombreJugadorPuntos3;
+    private JTextArea nombreJugadorPuntos4;
+    private JTextArea txtPuntosPartida;
+    private JTextArea txtnombreJugaorTablaPosiciones;
+    private JTextArea txtPuntosJugadorTablaPosiciones;
+    private JTextArea puntosDeXPTextArea;
+    private JTextArea nombreTextArea;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
     private DefaultListModel<String> listaModeloArriba;
@@ -123,6 +139,8 @@ public class VistaGrafica implements IVista{
                 iniciarNuevaPartidaButton.setVisible(false);
                 salirButton.setVisible(false);
                 seleccionAnularPartida = false;
+
+                reengancharseButton.setEnabled(false);
 
                 tabbedPane.remove(panelTablaPosiciones);
                 //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
@@ -499,16 +517,28 @@ public class VistaGrafica implements IVista{
         cancelarSeleccionButton.setEnabled(false);
         agregarNuevaJugadaButton.setEnabled(false);
         asignarNombresJugadores();
-        if (controlador.esTurnoJugador()){
+        if (controlador.esTurnoJugador() && !controlador.isEliminado()){
             txtTurno.setText("Bienvenido al |" +controlador.getModoJuego() + "| , " + controlador.getNombreJugador() +". Es su turno.");
             mazoButton.setEnabled(true);
             cartaBocaArribaButton.setEnabled(true);
-        }else {
+        } else if (controlador.isEliminado()) {
+            mazoButton.setEnabled(false);
+            cartaBocaArribaButton.setEnabled(false);
+            if (controlador.apuestasActivadas()){
+                reengancharseButton.setEnabled(true);
+                txtTurno.setText("Has sido Eliminado. Si quiere puede reengancharse a la partida apostando la mitad de las fichas que aposto antes y volvera a jugar empezando el turno con los mismos puntos que el jugador que mas tiene.");
+            }else {
+                txtTurno.setText("Has sido Eliminado. No es posible reengancharse debido a que las apuestas no estan activadas");
+            }
+        } else {
             esperarTurno();
         }
         txtTurno.setText(txtTurno.getText() +  "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
         "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
                 ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
+        if (controlador.getModoJuego().equals("JUEGOAPUNTOS")){
+            txtTurno.setText("Tus puntos: "+ controlador.getpuntosJugador());
+        }
     }
 
     private void activarPartida() {

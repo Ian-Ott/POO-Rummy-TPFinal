@@ -614,4 +614,8 @@ public class Controlador implements IControladorRemoto {
             throw new RuntimeException(e);
         }
     }
+
+    public int getpuntosJugador() {
+        return 0;
+    }
 }

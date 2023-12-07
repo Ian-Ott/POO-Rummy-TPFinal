@@ -329,7 +329,7 @@
                         <constraints/>
                         <properties>
                           <minimumSize width="150" height="104"/>
-                          <preferredSize width="200" height="90"/>
+                          <preferredSize width="200" height="110"/>
                         </properties>
                         <border type="none"/>
                         <children>
@@ -357,6 +357,13 @@
                                 <item value="Hacer Rummy"/>
                               </model>
                               <preferredSize width="200" height="20"/>
+                            </properties>
+                          </component>
+                          <component id="51dbf" class="javax.swing.JButton" binding="reengancharseButton" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <preferredSize width="131" height="25"/>
+                              <text value="Reengancharse"/>
                             </properties>
                           </component>
                         </children>
@@ -537,21 +544,239 @@
               </component>
             </children>
           </grid>
-          <grid id="bbf85" binding="panelTablaPosiciones" layout-manager="CardLayout" hgap="0" vgap="0">
+          <grid id="86191" binding="panelFinRonda" layout-manager="GridLayoutManager" row-count="4" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <tabbedpane title="Resumen De Puntos De Partida"/>
+            </constraints>
+            <properties>
+              <background color="-16579837"/>
+              <foreground color="-131073"/>
+              <preferredSize width="700" height="169"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="c58e" class="javax.swing.JTextArea" binding="puntosJugador4">
+                <constraints>
+                  <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="eea7f" class="javax.swing.JTextArea" binding="puntosJugador3">
+                <constraints>
+                  <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="26834" class="javax.swing.JTextArea" binding="puntosJugador1">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <columns value="0"/>
+                </properties>
+              </component>
+              <component id="d7e83" class="javax.swing.JTextArea" binding="puntosJugador2">
+                <constraints>
+                  <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="98f66" class="javax.swing.JButton" binding="iniciarNuevaRondaButton" default-binding="true">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Iniciar Nueva Ronda"/>
+                </properties>
+              </component>
+              <grid id="c58fc" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="406db" class="javax.swing.JTextArea" binding="nombreJugadorPuntos1">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <grid id="3f1ed" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="b2380" class="javax.swing.JTextArea" binding="nombreJugadorPuntos2">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <grid id="80b11" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="575bc" class="javax.swing.JTextArea" binding="nombreJugadorPuntos3">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <grid id="15811" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="afe57" class="javax.swing.JTextArea" binding="nombreJugadorPuntos4">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <grid id="f3fda" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="4b4ba" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="2" column="5" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="1d670" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="6" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="9c8f4" class="javax.swing.JTextArea" binding="txtPuntosPartida">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties>
+                      <text value="La ronda ha finalizado. A continuacion se muestran los puntos actuales de la partida."/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <grid id="bbf85" binding="panelTablaPosiciones" layout-manager="GridLayoutManager" row-count="3" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <tabbedpane title="Tabla De Posiciones"/>
             </constraints>
-            <properties/>
+            <properties>
+              <background color="-16579837"/>
+            </properties>
             <border type="none"/>
             <children>
-              <component id="a8ca9" class="javax.swing.JTextArea" binding="txtTablaPosiciones">
+              <grid id="d3436" layout-manager="CardLayout" hgap="0" vgap="0">
                 <constraints>
-                  <card name="Card1"/>
+                  <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties>
-                  <editable value="false"/>
-                </properties>
+                <properties/>
+                <border type="none" title="Este es el top 5 Jugadores del Juego:"/>
+                <children/>
+              </grid>
+              <component id="d0811" class="javax.swing.JTextArea" binding="txtnombreJugaorTablaPosiciones">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties/>
               </component>
+              <component id="52efa" class="javax.swing.JTextArea" binding="txtPuntosJugadorTablaPosiciones">
+                <constraints>
+                  <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <grid id="dce3f" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="76d7e" class="javax.swing.JTextArea" binding="nombreTextArea" default-binding="true">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties>
+                      <text value="Nombre"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="27c54" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="72e2" class="javax.swing.JTextArea" binding="puntosDeXPTextArea" default-binding="true">
+                    <constraints>
+                      <card name="Card1"/>
+                    </constraints>
+                    <properties>
+                      <text value="Puntos De XP"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="f5cea" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+              <grid id="a5a6e" layout-manager="CardLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
             </children>
           </grid>
         </children>
