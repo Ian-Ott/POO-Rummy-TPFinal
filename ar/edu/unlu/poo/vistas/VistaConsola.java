@@ -222,7 +222,18 @@ public class VistaConsola implements IVista{
                 "\n1-60 segundos por turno" +
                 "\n2-120 segundos por turno" +
                 "\n3-desactivar tiempo por turnos" +
-                "\nTiempo actual: " + " ");
+                "\nTiempo actual: " + mostrarTiempoActual());
+    }
+
+    private String mostrarTiempoActual() {
+        int tiempoActual = controlador.getTiempoPorTurno();
+        String resultado;
+        if (tiempoActual == 0){
+            resultado = "DESACTIVADO";
+        }else {
+            resultado = tiempoActual + " segundos";
+        }
+        return resultado;
     }
 
     private void seleccionarOpcionesReenganche(String textoIngresado) {

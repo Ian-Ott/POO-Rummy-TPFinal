@@ -348,7 +348,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         if (jugadorBorrado.getJefeMesa() && !jugadores.isEmpty()){
             jugadores.get(0).setJefeMesa(true);
         }
-        if (juegoIniciado){
+        if (juegoIniciado && !partidaFinalizada){
             solicitudDeAnularPartida = jugadores.size() - 1;
             //obligo anular la partida por la falta de un jugador
             anularPartida(true);

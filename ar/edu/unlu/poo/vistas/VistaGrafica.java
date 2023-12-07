@@ -76,8 +76,7 @@ public class VistaGrafica implements IVista{
     private ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
 
     private ArrayList<JCheckBox> listaCheckJugada;
-    private GridBagConstraints tamanioJugada;
-
+    private boolean seleccionAnularPartida;
 
 
     public VistaGrafica() throws RemoteException {
@@ -100,6 +99,8 @@ public class VistaGrafica implements IVista{
                 listaArriba.setModel(listaModeloArriba);
                 listaAbajo.setLayoutOrientation(JList.HORIZONTAL_WRAP);
                 listaAbajo.setVisibleRowCount(0);
+                listaArriba.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+                listaArriba.setVisibleRowCount(0);
                 //listaAbajo.setFixedCellWidth();
                 //listaArriba.setLayoutOrientation(JList.HORIZONTAL_WRAP);
                 panelAbajo.setLayout(new BoxLayout(panelAbajo, BoxLayout.X_AXIS));
@@ -121,6 +122,7 @@ public class VistaGrafica implements IVista{
 
                 iniciarNuevaPartidaButton.setVisible(false);
                 salirButton.setVisible(false);
+                seleccionAnularPartida = false;
 
                 tabbedPane.remove(panelTablaPosiciones);
                 //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
@@ -252,8 +254,12 @@ public class VistaGrafica implements IVista{
                 anularPartidaButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        anularPartidaButton.setEnabled(false);
-                        controlador.solicitarAnularPartida();
+                        if (seleccionAnularPartida) {
+                            anularPartidaButton.setEnabled(false);
+                            controlador.tomarDecisionDePartida("Y");
+                        }else {
+                            controlador.solicitarAnularPartida();
+                        }
                     }
                 });
                 seleccionTiempo.addActionListener(new ActionListener() {
@@ -373,10 +379,10 @@ public class VistaGrafica implements IVista{
         }else {
             datosJugadorActual.setText(controlador.getNombreJugador());
         }
-        txtTurno.setText(txtTurno.getText() + "\n| Modo " + controlador.getModoJuego() + " |"+
+        /*txtAsistenteAyuda.setText(txtTurno.getText() + "\n| Modo " + controlador.getModoJuego() + " |"+
                 "\nTus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
                 "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
-                "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
+                "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());*/
         ArrayList<String> oponentes = controlador.nombreOponentes(controlador.getNombreJugador());
         String oponenteActual;
         for (int i = 0; i < controlador.cantJugadores() - 1;i++){
@@ -412,9 +418,6 @@ public class VistaGrafica implements IVista{
         return oponenteActual;
     }
 
-    private String obtenerNombreAnfitrion() {
-        return controlador.getNombreAnfitrion();
-    }
 
    /* public void mostrarResultadosBusqueda(List<Carta> cartasJugador) {
 
@@ -435,6 +438,9 @@ public class VistaGrafica implements IVista{
     public void pantallaEspera() {
         if (controlador.getNombreJugador() == null) {
             obtenerNombre();
+        }else if (controlador.esAnfitrion()){
+            //esto sucede solo si se esta iniciando una nueva partida en el mismo servidor
+            iniciarPartidaButton.setVisible(true);
         }
         panelInicio.setVisible(true);
         if (controlador.esAnfitrion()){
@@ -447,6 +453,9 @@ public class VistaGrafica implements IVista{
                     "\nCantidad de jugadores:" + controlador.cantJugadores());
             actualizarBarra();
             iniciarPartidaButton.setVisible(false);
+        }
+        if (controlador.apuestasActivadas()){
+            avisarSobreApuesta();
         }
     }
 
@@ -466,8 +475,7 @@ public class VistaGrafica implements IVista{
     public void iniciarTurno() {
         if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
             panelPartida.setName("Partida");
-            tabbedPane.add(panelPartida, 1);
-            tabbedPane.remove(panelInicio);
+            activarPartida();
         }
         if (!controlador.esAnfitrion()){
             seleccionTiempo.setVisible(false);
@@ -492,12 +500,21 @@ public class VistaGrafica implements IVista{
         agregarNuevaJugadaButton.setEnabled(false);
         asignarNombresJugadores();
         if (controlador.esTurnoJugador()){
-            txtTurno.setText("Bienvenido, " + controlador.getNombreJugador() +". Es su turno");
+            txtTurno.setText("Bienvenido al |" +controlador.getModoJuego() + "| , " + controlador.getNombreJugador() +". Es su turno.");
             mazoButton.setEnabled(true);
             cartaBocaArribaButton.setEnabled(true);
         }else {
             esperarTurno();
         }
+        txtTurno.setText(txtTurno.getText() +  "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
+        "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
+                ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
+    }
+
+    private void activarPartida() {
+        panelPartida.setName("Partida");
+        tabbedPane.add(panelPartida, 0);
+        tabbedPane.remove(panelInicio);
     }
 
     @Override
@@ -580,6 +597,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void finalizarPartida() {
+        volverAInicio();
         txtInfoInicio.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
             " con " + controlador.getCantidadPuntosGanador()+" puntos");
         eleccionNuevaPartida();
@@ -622,6 +640,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void cerrarPartida() {
+        volverAInicio();
         if (controlador.getModoJuego().equals("EXPRES")){
             txtInfoInicio.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
             if (!controlador.getEstadoCompetitivo()){
@@ -636,7 +655,9 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarErrorApuesta() {
+        pantallaEspera();
         txtInfoInicio.setText("\nApuestas Desactivadas!!!");
+        //cambiar esto si permito las apuestas en las opciones de mesa
         //asistenteCheckBox.setText(asistenteCheckBox.getText() +"| "+ LocalDateTime.now() +" |- Se cancelaron las apuestas!!!");
     }
 
@@ -654,15 +675,23 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void finalizarPartidaAmistosamente() {
+        volverAInicio();
         txtInfoInicio.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
         panelAbajo.setEnabled(false);
         panelOpciones.setEnabled(false);
         eleccionNuevaPartida();
     }
 
+    private void volverAInicio() {
+        panelInicio.setName("Inicio");
+        tabbedPane.add(panelInicio, 0);
+        tabbedPane.remove(panelPartida);
+    }
+
     private void eleccionNuevaPartida() {
+        controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()) {
-            txtInfoInicio.setText("¿Desea Iniciar una nueva partida?");
+            txtInfoInicio.setText(txtInfoInicio.getText() + "\n¿Desea Iniciar una nueva partida?");
             iniciarNuevaPartidaButton.setVisible(true);
             salirButton.setVisible(true);
         }
@@ -670,6 +699,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void eleccionAnularPartida() {
+        seleccionAnularPartida = true;
         anularPartidaButton.setForeground(new Color(229,213,7));
     }
 
@@ -683,7 +713,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void cerrarJuego() {
         controlador.eliminarJugador();
-        frame.dispose();
+        System.exit(0);
         //cambiar directamente sacar al anfitrion y hacerle la pregunta al siguiente anfitrion y si elige que no cerrarle su ventana
     }
 
@@ -709,20 +739,21 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void errorCantidadJugadores() {
-        panelInicio.setName("Inicio");
-        tabbedPane.add(panelInicio, 0);
-        tabbedPane.remove(panelPartida);
+        volverAInicio();
         //ayuda.setText("la cantidad de jugadores no es suficiente");
     }
 
     @Override
     public void mostrarJugadorSalioDelJuego() {
+        volverAInicio();
         txtInfoInicio.setText("Un jugador Ha salido");
+        actualizarBarra();
         eleccionNuevaPartida();
     }
 
     @Override
     public void avisarCambiosOpcionesMesa() {
-        panelOpcionesMesa.setForeground(new Color(229,11,9));
+        tabbedPane.setForegroundAt(1,new Color(229,11,9));
+        //panelOpcionesMesa.setForeground(new Color(229,11,9));
     }
 }

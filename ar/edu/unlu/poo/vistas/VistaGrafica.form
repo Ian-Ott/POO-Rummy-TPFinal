@@ -16,7 +16,9 @@
             <preferred-size width="200" height="200"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <foreground color="-131073"/>
+        </properties>
         <border type="none"/>
         <children>
           <grid id="9e121" binding="panelInicio" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -34,7 +36,7 @@
                   <background color="-16510416"/>
                   <editable value="false"/>
                   <foreground color="-131073"/>
-                  <preferredSize width="49" height="60"/>
+                  <preferredSize width="80" height="80"/>
                 </properties>
               </component>
               <component id="5be65" class="javax.swing.JButton" binding="iniciarPartidaButton" default-binding="true">
@@ -163,12 +165,18 @@
                           <component id="5b4c" class="javax.swing.JButton" binding="iniciarNuevaPartidaButton" default-binding="true">
                             <constraints/>
                             <properties>
+                              <background color="-16510416"/>
+                              <borderPainted value="false"/>
+                              <foreground color="-10882817"/>
                               <text value="Iniciar Nueva Partida"/>
                             </properties>
                           </component>
                           <component id="b9137" class="javax.swing.JButton" binding="salirButton" default-binding="true">
                             <constraints/>
                             <properties>
+                              <background color="-16510416"/>
+                              <borderPainted value="false"/>
+                              <foreground color="-1765872"/>
                               <text value="Salir"/>
                             </properties>
                           </component>
@@ -441,7 +449,9 @@
             <constraints>
               <tabbedpane title="Opciones de Mesa"/>
             </constraints>
-            <properties/>
+            <properties>
+              <foreground color="-131073"/>
+            </properties>
             <border type="none"/>
             <children>
               <component id="a8290" class="javax.swing.JCheckBox" binding="partidaCompetitivaCheck">
