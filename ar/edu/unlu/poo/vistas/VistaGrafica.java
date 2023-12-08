@@ -17,9 +17,9 @@ public class VistaGrafica implements IVista{
     private JTabbedPane tabbedPane;
     private JList listaAbajo;
     private JPanel panelPartida;
-    private JList<String> listaDerecha;
-    private JList listaIzquierda;
-    private JList listaArriba;
+    private JList<ImageIcon> listaDerecha;
+    private JList<ImageIcon> listaIzquierda;
+    private JList<ImageIcon> listaArriba;
 
     private JCheckBox partidaCompetitivaCheck;
     private JCheckBox modoExpresCheckBox;
@@ -63,7 +63,6 @@ public class VistaGrafica implements IVista{
     private JButton iniciarNuevaPartidaButton;
     private JButton salirButton;
     private JPanel panelTablaPosiciones;
-    private JTextArea txtTablaPosiciones;
     private JPanel panelArriba;
     private JPanel panelDerecha;
     private JPanel panelIzquierda;
@@ -79,15 +78,16 @@ public class VistaGrafica implements IVista{
     private JTextArea nombreJugadorPuntos3;
     private JTextArea nombreJugadorPuntos4;
     private JTextArea txtPuntosPartida;
-    private JTextArea txtnombreJugaorTablaPosiciones;
+    private JTextArea txtnombreJugadorTablaPosiciones;
     private JTextArea txtPuntosJugadorTablaPosiciones;
     private JTextArea puntosDeXPTextArea;
     private JTextArea nombreTextArea;
+    private JPanel txt;
     private JCheckBox a;
     private DefaultListModel<String> listaModeloAbajo;
-    private DefaultListModel<String> listaModeloArriba;
-    private DefaultListModel<String> listaModeloDerecha;
-    private DefaultListModel<String> listaModeloIzquierda;
+    private DefaultListModel<ImageIcon> listaModeloArriba;
+    private DefaultListModel<ImageIcon> listaModeloDerecha;
+    private DefaultListModel<ImageIcon> listaModeloIzquierda;
     private Controlador controlador;
     private ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
 
@@ -120,6 +120,7 @@ public class VistaGrafica implements IVista{
                 //listaAbajo.setFixedCellWidth();
                 //listaArriba.setLayoutOrientation(JList.HORIZONTAL_WRAP);
                 panelAbajo.setLayout(new BoxLayout(panelAbajo, BoxLayout.X_AXIS));
+                panelArriba.setLayout(new BoxLayout(panelArriba, BoxLayout.X_AXIS));
                 /*JScrollPane scrollPane = new JScrollPane(panelAbajo);
                 panelPartida.add(scrollPane, BorderLayout.SOUTH);*/
         /*Rummy moddelo = new Rummy();
@@ -350,6 +351,14 @@ public class VistaGrafica implements IVista{
             @Override
             public void actionPerformed(ActionEvent e) {
                 cerrarJuego();
+            }
+        });
+
+        iniciarNuevaRondaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane.remove(panelFinRonda);
+                controlador.iniciarNuevaRonda();
             }
         });
 
@@ -594,22 +603,25 @@ public class VistaGrafica implements IVista{
 
     private void actualizarCartasJugadorIzquierda(int cantidadCartas) {
         listaModeloIzquierda.clear();
+        ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reversoCarta.png");
         for (int i = 0; i < cantidadCartas; i++) {
-            listaModeloIzquierda.addElement("|carta dada vuelta|");
+            listaModeloIzquierda.addElement(reversoCarta);
         }
     }
 
     private void actulizarCartasJugadorArriba(int cantidadCartas) {
         listaModeloArriba.clear();
+        ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reversoCarta.png");
         for (int i = 0; i < cantidadCartas; i++) {
-            listaModeloArriba.addElement("|carta dada vuelta|");
+            listaModeloArriba.addElement(reversoCarta);
         }
     }
 
     private void actualizarCartasJugadorDerecha(int cantidadCartas) {
         listaModeloDerecha.clear();
+        ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reversoCarta.png");
         for (int i = 0; i < cantidadCartas; i++) {
-            listaModeloDerecha.addElement("|carta dada vuelta|");
+            listaModeloDerecha.addElement(reversoCarta);
         }
     }
 
@@ -700,7 +712,8 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarResultadosPuntos() {
-
+        panelFinRonda.setName("Resumen de Partida");
+        tabbedPane.add(panelFinRonda);
     }
 
     @Override
@@ -751,13 +764,16 @@ public class VistaGrafica implements IVista{
     public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
         panelTablaPosiciones.setName("Tabla De Posiciones");
         tabbedPane.add(panelTablaPosiciones);
-        txtTablaPosiciones.setText("\nTabla de posiciones (top 5 jugadores):");
+        //txtTablaPosiciones.setText("\nTabla de posiciones (top 5 jugadores):");
         IJugador jugadorAux;
+        txtnombreJugadorTablaPosiciones.setText("");
+        txtPuntosJugadorTablaPosiciones.setText("");
         for (int i = 0; i < 5; i++) {
             if (i < jugadores.size()){
                 jugadorAux = jugadores.get(i);
-                txtTablaPosiciones.setText(txtTablaPosiciones.getText() +
-                        "\n" + (i + 1) + "- Nombre: " + jugadorAux.getNombre() + " | Puntos de XP: " + jugadorAux.getPuntosTotalesXP());
+                txtnombreJugadorTablaPosiciones.setText(txtnombreJugadorTablaPosiciones.getText() +
+                       i + "- " + jugadorAux.getNombre() +  "\n");
+                txtPuntosJugadorTablaPosiciones.setText(txtPuntosJugadorTablaPosiciones.getText() + jugadorAux.getPuntosTotalesXP() + "\n");
             }
         }
     }

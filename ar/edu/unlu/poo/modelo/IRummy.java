@@ -13,7 +13,9 @@ public interface IRummy extends IObservableRemoto {
 
     void iniciarJuego() throws RemoteException;
 
-    void iniciarOtraRonda() throws RemoteException;
+    void iniciarNuevaRonda() throws RemoteException;
+
+    void reiniciarEstados() throws RemoteException;
 
     void sacarCartaMazo(String jugador) throws RemoteException;
 

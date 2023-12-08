@@ -54,23 +54,18 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     public void iniciarJuego() throws RemoteException {
-        try {
-            iniciarOtraRonda();
-            juegoIniciado = true;
-            if (jugadores.size() == 2){
-                repartirCartasJugadores(10);
-            } else if (jugadores.size() >= 3) {
-                repartirCartasJugadores(7);
-            }
-            elegirJugadorMano();
-            //notificarObservadores("cartas repartidas");
-        }catch (RemoteException e){
-            e.printStackTrace();
+        reiniciarEstados();
+        juegoIniciado = true;
+        if (jugadores.size() == 2){
+            repartirCartasJugadores(10);
+        } else if (jugadores.size() >= 3) {
+            repartirCartasJugadores(7);
         }
-
+        elegirJugadorMano();
+        //notificarObservadores("cartas repartidas");
     }
 
-    public void iniciarOtraRonda() throws RemoteException {
+    public void reiniciarEstados() throws RemoteException {
         ganador = null;
         solicitudDeAnularPartida = 0;
         reiniciarEstadosJugadores();
@@ -79,19 +74,23 @@ public class Rummy extends ObservableRemoto implements IRummy {
         mezclarMazo();
     }
 
+    public void iniciarNuevaRonda() throws RemoteException {
+        iniciarJuego();
+    }
+
     private void reiniciarEstadosJugadores() {
         for (Jugador jugadorActual:jugadores) {
             jugadorActual.setAgregoJugada(false);
             if (modo.equals(modoDeJuego.JUEGOAPUNTOS) && partidaFinalizada){
                 jugadorActual.setEliminado(false);
                 jugadorActual.setCantApostada(0);
+                jugadorActual.setPuntosDePartida(0);
                 partidaFinalizada = false;
             } else if (modo.equals(modoDeJuego.EXPRES)) {
                 jugadorActual.setCantApostada(0);
             }
             jugadorActual.setHizoRummy(false);
-            jugadorActual.setPuntosDePartida(0);
-            jugadorActual.setFichasGanadasPartida(0);
+            jugadorActual.setFichasGanadasPartida(0); //dejar esto?
         }
     }
 
@@ -829,6 +828,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
          if (!estadoCompetitivo){
             contarPuntosTotales();
          }
+         if (jugadorActual.getCartasEnMano().isEmpty() && modo.equals(modoDeJuego.JUEGOAPUNTOS) && !quedaUnJugador() && !todosEliminados()){
+             notificarObservadores("fin ronda");
+         }
         if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
             if (quedaUnJugador() || todosEliminados()){
@@ -849,9 +851,6 @@ public class Rummy extends ObservableRemoto implements IRummy {
                 //si llega aca significa que la ronda fue cerrada por lo que se iniciara una nueva
                 notificarObservadores("partida cerrada");
             }
-        }else {
-            iniciarOtraRonda();
-            notificarObservadores("nueva ronda");
         }
     }
 
