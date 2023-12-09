@@ -3,10 +3,10 @@
   <grid id="27dc6" binding="panelPrincipal" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="187" y="9" width="1099" height="694"/>
+      <xy x="187" y="9" width="1328" height="774"/>
     </constraints>
     <properties>
-      <preferredSize width="900" height="500"/>
+      <preferredSize width="1000" height="600"/>
     </properties>
     <border type="none"/>
     <children>
@@ -198,16 +198,20 @@
               <grid id="eb70b" binding="panelIzquierda" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="West"/>
-                <properties/>
+                <properties>
+                  <minimumSize width="75" height="182"/>
+                </properties>
                 <border type="none"/>
                 <children>
                   <component id="11d0a" class="javax.swing.JList" binding="listaIzquierda">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="150" height="150"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="75" height="150"/>
                       </grid>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <layoutOrientation value="1"/>
+                    </properties>
                   </component>
                   <component id="25fdb" class="javax.swing.JTextPane" binding="datosJugadorIzquierda">
                     <constraints>
@@ -229,16 +233,18 @@
                 <children>
                   <component id="463c1" class="javax.swing.JList" binding="listaDerecha">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="150"/>
                       </grid>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <layoutOrientation value="1"/>
+                    </properties>
                   </component>
                   <component id="50366" class="javax.swing.JTextPane" binding="datosJugadorDerecha">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="20" height="20"/>
+                        <preferred-size width="20" height="5"/>
                       </grid>
                     </constraints>
                     <properties>
@@ -250,7 +256,9 @@
               <grid id="536dc" binding="panelAbajo" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="South"/>
-                <properties/>
+                <properties>
+                  <preferredSize width="954" height="120"/>
+                </properties>
                 <border type="none"/>
                 <children>
                   <component id="7b0a9" class="javax.swing.JTextPane" binding="datosJugadorActual">
@@ -269,7 +277,7 @@
                   <component id="6999d" class="javax.swing.JList" binding="listaAbajo">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
-                        <preferred-size width="3" height="3"/>
+                        <preferred-size width="900" height="90"/>
                       </grid>
                     </constraints>
                     <properties>
@@ -287,30 +295,40 @@
                   </component>
                 </children>
               </grid>
-              <grid id="3b574" binding="panelArriba" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="3b574" binding="panelArriba" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="North"/>
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="2d07" class="javax.swing.JList" binding="listaArriba">
-                    <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="150" height="50"/>
-                      </grid>
-                    </constraints>
-                    <properties/>
-                  </component>
                   <component id="dfd4e" class="javax.swing.JTextPane" binding="datosJugadorArriba">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="20" height="20"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="5" height="20"/>
                       </grid>
                     </constraints>
                     <properties>
                       <editable value="false"/>
                     </properties>
                   </component>
+                  <component id="2d07" class="javax.swing.JList" binding="listaArriba">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="600" height="50"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <grid id="9c01e" layout-manager="CardLayout" hgap="0" vgap="0">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="1" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="100" height="30"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
                 </children>
               </grid>
               <grid id="e6d7c" binding="panelCentral" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -420,25 +438,21 @@
                       <component id="ceb6c" class="javax.swing.JButton" binding="cartaBocaArribaButton" default-binding="true">
                         <constraints/>
                         <properties>
-                          <preferredSize width="60" height="80"/>
-                          <text value="cartaBocaArriba"/>
+                          <preferredSize width="60" height="90"/>
+                          <text value=""/>
                         </properties>
                       </component>
                       <component id="8e74d" class="javax.swing.JButton" binding="mazoButton" default-binding="true">
                         <constraints/>
                         <properties>
-                          <preferredSize width="60" height="80"/>
-                          <text value="mazo"/>
+                          <borderPainted value="false"/>
+                          <icon value="ar/edu/unlu/poo/images/cartas/reverso/reversoCartaMazo.png"/>
+                          <preferredSize width="60" height="90"/>
+                          <text value=""/>
                         </properties>
                       </component>
                     </children>
                   </grid>
-                  <component id="9d57c" class="javax.swing.JTextArea" binding="txtTurno">
-                    <constraints border-constraint="North"/>
-                    <properties>
-                      <editable value="false"/>
-                    </properties>
-                  </component>
                   <grid id="37c81" binding="panelJugadas" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                     <constraints border-constraint="Center"/>
                     <properties>
@@ -447,6 +461,27 @@
                     </properties>
                     <border type="none"/>
                     <children/>
+                  </grid>
+                  <grid id="a98fb" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                    <constraints border-constraint="North"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="9d57c" class="javax.swing.JTextArea" binding="txtTurno">
+                        <constraints/>
+                        <properties>
+                          <editable value="false"/>
+                          <preferredSize width="650" height="20"/>
+                        </properties>
+                      </component>
+                      <component id="18439" class="javax.swing.JTextArea" binding="txtTemporizador">
+                        <constraints/>
+                        <properties>
+                          <preferredSize width="80" height="20"/>
+                          <text value=""/>
+                        </properties>
+                      </component>
+                    </children>
                   </grid>
                 </children>
               </grid>

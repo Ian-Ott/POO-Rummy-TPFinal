@@ -36,7 +36,8 @@ public interface IVista {
 
     void avisarSobreApuesta();
 
-    void mostrarResultadosPuntos();
+
+    void mostrarResultadosPuntosRonda(ArrayList<IJugador> jugadores);
 
     void finalizarPartidaAmistosamente();
 

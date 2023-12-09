@@ -378,6 +378,15 @@ public class Rummy extends ObservableRemoto implements IRummy {
 }
 
     @Override
+    public ArrayList<IJugador> getIJugadores() throws RemoteException {
+        ArrayList<IJugador> iJugadores = new ArrayList<>();
+        for (Jugador jugador: jugadores) {
+            iJugadores.add((IJugador) jugador);
+        }
+        return iJugadores;
+    }
+
+    @Override
     public void modificarCompetitivo() throws RemoteException {
         if (estadoCompetitivo){
             estadoCompetitivo = false;

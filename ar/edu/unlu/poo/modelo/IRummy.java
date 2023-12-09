@@ -131,6 +131,8 @@ public interface IRummy extends IObservableRemoto {
     int getCantidadTiempoTurno() throws RemoteException;
 
     String getNombreJefeMesa() throws RemoteException;
+
+    ArrayList<IJugador> getIJugadores() throws RemoteException;
     //boolean esAnfitrion(String nombreJugador);
 
     //IRummy getInstancia();

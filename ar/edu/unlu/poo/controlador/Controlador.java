@@ -69,7 +69,7 @@ public class Controlador implements IControladorRemoto {
             } else if (cambio.equals("finalizo partida amistosamente")) {
                 vista.finalizarPartidaAmistosamente();
             } else if (cambio.equals("fin ronda")) {
-                vista.mostrarResultadosPuntos();
+                resultadoRonda();
                 //vista.pantallaEspera();
             } else if (cambio.equals("nuevo juego")) {
                 vista.pantallaEspera();
@@ -83,6 +83,16 @@ public class Controlador implements IControladorRemoto {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    private void resultadoRonda() {
+        ArrayList<IJugador> jugadores;
+        try {
+            jugadores =  rummy.getIJugadores();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+        vista.mostrarResultadosPuntosRonda(jugadores);
     }
 
     public boolean esAnfitrion() {
