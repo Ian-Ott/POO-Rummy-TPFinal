@@ -759,7 +759,7 @@ public class VistaConsola implements IVista{
     }
 
     @Override
-    public void mostrarResultadosPuntos() {
+    public void mostrarResultadosPuntosRonda(ArrayList<IJugador> jugadores) {
         txtAreaMuestra.setText("\nPuntos de los jugadores (el limite es 300):");
         for (int i = 0; i < controlador.cantJugadores(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n" + controlador.obtenerJugador(i));
