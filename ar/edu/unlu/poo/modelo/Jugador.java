@@ -14,8 +14,8 @@ public class Jugador implements Serializable, IJugador {
     private int fichasTotales;
     private boolean agregoJugada;
     private boolean eliminado;
-
     private boolean hizoRummy;
+    private boolean enAutomatico;
 
     public Jugador(String nombreJugador) {
         cartasEnMano = new ArrayList<>();
@@ -176,6 +176,13 @@ public class Jugador implements Serializable, IJugador {
         }
         return cartaATirar;
     }*/
+    public void setModoAutomatico(boolean estado){
+        enAutomatico = estado;
+    }
+
+    public boolean isEnAutomatico() {
+        return enAutomatico;
+    }
 
     @Override
     public Carta tirarCarta(Integer posicion){

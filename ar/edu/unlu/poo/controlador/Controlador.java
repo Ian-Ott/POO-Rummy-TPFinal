@@ -241,7 +241,7 @@ public class Controlador implements IControladorRemoto {
     public void terminarTurno(ArrayList<Integer> posicionesSeleccionadas){
         try {
             if (posicionesSeleccionadas.size() == 1){
-                rummy.terminarTurno(posicionesSeleccionadas,nombreJugador);
+                rummy.terminarTurno(posicionesSeleccionadas.get(0),nombreJugador);
 
             } else if (posicionesSeleccionadas.isEmpty()) {
                 rummy.finalizarPartida(nombreJugador);
@@ -627,5 +627,13 @@ public class Controlador implements IControladorRemoto {
 
     public int getpuntosJugador() {
         return 0;
+    }
+
+    public void iniciarJuegoAutomatico() {
+        try {
+            rummy.juegoAutomatico(nombreJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

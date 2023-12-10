@@ -27,6 +27,8 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     private boolean partidaFinalizada;
     private int tiempoDeTurno;
+
+    private boolean tomoCartaJugadorTurno;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -116,6 +118,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
                 posicionTurnoActual = (int) (random() * (posiciones));
             }
         }
+        tomoCartaJugadorTurno = false;
         System.out.println("posicion turno: " + posicionTurnoActual);
         notificarObservadores("nuevo turno");
     }
@@ -144,6 +147,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     public void sacarCartaMazo(String jugador) throws RemoteException{
         Jugador jugadorAux = buscarJugador(jugador);
         mazoDeJuego.sacarCartaMazo(jugadorAux);
+        tomoCartaJugadorTurno = true;
         notificarObservadores("continuar turno jugador");
     }
 
@@ -151,6 +155,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
     public void agarrarCartaBocaArriba(String nombreJugador) throws RemoteException{
         Jugador jugadorAux = buscarJugador(nombreJugador);
         if (mazoDeJuego.sacarCartaBocaArriba(jugadorAux)){
+            tomoCartaJugadorTurno = true;
             //si pudo sacar la carta notifica el cambio a los observadores
             notificarObservadores("continuar turno jugador");
         }
@@ -384,6 +389,52 @@ public class Rummy extends ObservableRemoto implements IRummy {
             iJugadores.add((IJugador) jugador);
         }
         return iJugadores;
+    }
+
+    @Override
+    public void juegoAutomatico(String nombreJugador) throws RemoteException {
+        //ArrayList<Carta> posibleRummy;
+        ArrayList<Carta> posibleEscalera;
+        ArrayList<Carta> posibleCombinacion;
+        if (!tomoCartaJugadorTurno){
+            sacarCartaMazo(nombreJugador);
+        }
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+
+        obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(),jugadorActual);
+        if (esRummy(jugadorActual.getCartasEnMano())){
+            agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(),false);
+            jugadorActual.getCartasEnMano().clear();
+            //como las cartas se agregaron a la jugada las elimino
+            finalizarPartida(nombreJugador);
+        }
+        //a partir de aca las cartas deberian de seguir ordenadas por lo que solo se comprueba el palo y si el numero es continuo
+        posibleEscalera = obtenerCartasPaloMasRepetido(jugadorActual.getCartasEnMano());
+        if (esEscalera(posibleEscalera)){
+            agregarJugada(nombreJugador,posibleEscalera,false);
+        }else {
+            devolverCartas(jugadorActual, posibleEscalera);
+        }
+        posibleCombinacion = obtenerCartasNumeroMasRepetido(jugadorActual.getCartasEnMano());
+        if (esCombinacion(posibleCombinacion)){
+            agregarJugada(nombreJugador,posibleCombinacion,false);
+        }else {
+            devolverCartas(jugadorActual,posibleCombinacion);
+        }
+        if (jugadorActual.getCartasEnMano().isEmpty()){
+            finalizarPartida(nombreJugador);
+        }else {
+            int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size());
+            terminarTurno(posicionCarta,nombreJugador);
+        }
+
+    }
+
+    private ArrayList<Carta> obtenerCartasNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
+        //hacer un remove y luego devolver las cartas si no era
+    }
+
+    private ArrayList<Carta> obtenerCartasPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
     }
 
     @Override
@@ -754,9 +805,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     @Override
-    public void terminarTurno(ArrayList<Integer> cartasSeleccionadas, String nombreJugador)throws RemoteException{
+    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador)throws RemoteException{
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        Carta cartaTirada = jugadorActual.tirarCarta(cartasSeleccionadas.get(0));
+        Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
         //le saca la carta que selecciono
         if (jugadorActual.getCartasEnMano().isEmpty()){
             mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
@@ -1048,6 +1099,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         for (int i = 0; i < jugadores.size(); i++) {
             if (jugadores.get(i).equals(jugadorIzquierda)){
                 posicionTurnoActual = i;
+                tomoCartaJugadorTurno = false;
                 notificarObservadores("nuevo turno");
             }
         }

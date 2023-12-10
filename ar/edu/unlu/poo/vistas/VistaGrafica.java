@@ -97,6 +97,10 @@ public class VistaGrafica implements IVista{
     private ArrayList<JCheckBox> listaCheckJugada;
     private boolean seleccionAnularPartida;
     Timer temporizador;
+    Timer tiempoTurno;
+    int tiempoRestante;
+    TimerTask juegoAutomatico;
+    TimerTask mostrarTiempoActual;
 
 
     public VistaGrafica() throws RemoteException {
@@ -150,6 +154,8 @@ public class VistaGrafica implements IVista{
                 tabbedPane.remove(panelTablaPosiciones);
                 //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
                 temporizador = new Timer();
+                tiempoTurno = new Timer();
+                tiempoRestante = 0;
                 iniciarSesionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -366,11 +372,22 @@ public class VistaGrafica implements IVista{
                 controlador.iniciarNuevaRonda();
             }
         });
-        TimerTask juegoAutomatico = new TimerTask() {
+        juegoAutomatico = new TimerTask() {
             @Override
             public void run() {
-                System.out.println("se acabo el tiempo se ejecuta solo el turno");
-                temporizador.cancel();
+                tiempoTurno.cancel();
+                txtTurno.setText("Se acabo el tiempo!!! Tu turno se jugara automaticamente.");
+                controlador.iniciarJuegoAutomatico();
+            }
+        };
+        mostrarTiempoActual = new TimerTask() {
+            @Override
+            public void run() {
+                txtTemporizador.setText("Tiempo: " + tiempoRestante);
+                tiempoRestante--;
+                if (tiempoRestante == -1){
+                    temporizador.cancel();
+                }
             }
         };
 
@@ -561,6 +578,7 @@ public class VistaGrafica implements IVista{
             txtTurno.setText("Bienvenido al |" +controlador.getModoJuego() + "| , " + controlador.getNombreJugador() +". Es su turno.");
             mazoButton.setEnabled(true);
             cartaBocaArribaButton.setEnabled(true);
+            comprobarTiempoTurno();
         } else if (controlador.isEliminado()) {
             mazoButton.setEnabled(false);
             cartaBocaArribaButton.setEnabled(false);
@@ -578,6 +596,20 @@ public class VistaGrafica implements IVista{
                 ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
         if (controlador.getModoJuego().equals("JUEGOAPUNTOS")){
             txtTurno.setText("Tus puntos: "+ controlador.getpuntosJugador());
+        }
+    }
+
+    private void comprobarTiempoTurno() {
+        if (controlador.getTiempoPorTurno() != 0){
+            temporizador = new Timer();
+            tiempoTurno = new Timer();
+            if (controlador.getTiempoPorTurno() == 60) {
+                temporizador.schedule(mostrarTiempoActual,0,60000);
+                tiempoTurno.schedule(juegoAutomatico,60000);
+            }else {
+                temporizador.schedule(mostrarTiempoActual,0,120000);
+                tiempoTurno.schedule(juegoAutomatico,120000);
+            }
         }
     }
 
