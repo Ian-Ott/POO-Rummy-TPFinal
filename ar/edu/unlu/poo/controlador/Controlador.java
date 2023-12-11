@@ -115,6 +115,7 @@ public class Controlador implements IControladorRemoto {
             vista.actualizarCartas(cartasJugador);
         }
         return  cartasJugador;
+        //comprobar si esto es necesario
     }
 
     private ArrayList<ICarta> cambiarTipoCartas(ArrayList<Carta> cartasJugadorAux) {

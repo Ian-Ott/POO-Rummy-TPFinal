@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,7 +50,6 @@ public class VistaGrafica implements IVista{
     private JButton cancelarSeleccionButton;
     private JButton agregarNuevaJugadaButton;
     private JComboBox seleccionJugada;
-    private JPanel panelAsistente;
     private JTextArea txtNombre;
     private JButton iniciarSesionButton;
     private JPanel panelUsuario;
@@ -87,14 +87,13 @@ public class VistaGrafica implements IVista{
     private JPanel txt;
     private JTextArea txtTemporizador;
     private JButton desactivarJuegoAutomaticoButton;
-    private JCheckBox a;
+    private JScrollPane scrollpanelAsistente;
     private DefaultListModel<ImageIcon> listaModeloAbajo;
     private DefaultListModel<ImageIcon> listaModeloArriba;
     private DefaultListModel<ImageIcon> listaModeloDerecha;
     private DefaultListModel<ImageIcon> listaModeloIzquierda;
     private Controlador controlador;
     private ArrayList<Integer> cartasSeleccionadasPosicion = new ArrayList<>();
-
     private ArrayList<JCheckBox> listaCheckJugada;
     private boolean seleccionAnularPartida;
     Timer temporizador;
@@ -258,10 +257,10 @@ public class VistaGrafica implements IVista{
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if (asistenteCheckBox.isSelected()){
-                            panelAsistente.setName("Asistente");
-                            tabbedPane.add(panelAsistente);
+                            scrollpanelAsistente.setName("Asistente");
+                            tabbedPane.add(scrollpanelAsistente);
                         }else {
-                            tabbedPane.remove(panelAsistente);
+                            tabbedPane.remove(scrollpanelAsistente);
                         }
                     }
                 });
@@ -387,6 +386,8 @@ public class VistaGrafica implements IVista{
                 txtInfoInicio.setText("Se te activo el juego automatico por no terminar tu turno a tiempo. En cualquier momento lo podes desactivar." +
                         "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente.");
                 desactivarJuegoAutomaticoButton.setVisible(true);
+                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() +"|-Se te habilito el modo de juego automatico por no llegar a terminar a tiempo tu turno. Debes ir al inicio si queres cancelar el modo automatico." +
+                        "\nsolo RECORDA: si todos los jugadores estan en modo automatico la partida sera finalizada amistosamente");
                 controlador.iniciarJuegoAutomatico();
             }
         };
@@ -403,6 +404,7 @@ public class VistaGrafica implements IVista{
         desactivarJuegoAutomaticoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Juego Automatico Desactivado!!!");
                 desactivarJuegoAutomaticoButton.setVisible(false);
                 tabbedPane.remove(panelInicio);
                 controlador.desactivarJuegoAutomatico();
@@ -413,7 +415,6 @@ public class VistaGrafica implements IVista{
     private int obtenerPosicionJugada() {
         JCheckBox checkBoxActual;
         int posicionJugada = -1;
-        int posicionJugadaActual = -1;
         for (int i = 0; i < listaCheckJugada.size(); i++) {
            checkBoxActual = listaCheckJugada.get(i);
            if (checkBoxActual.isSelected()){
@@ -436,6 +437,7 @@ public class VistaGrafica implements IVista{
 
     private void errorNombreJugador() {
         txtInfoInicio.setText("Error el nombre debe estar dentro del juego o su nombre esta vacio");
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-El nombre no fue aceptado es posible que ese nombre ya se encuentre en el juego o que escribiste un nombre vacio");
         //cambiar
     }
 
@@ -493,17 +495,6 @@ public class VistaGrafica implements IVista{
         return oponenteActual;
     }
 
-
-   /* public void mostrarResultadosBusqueda(List<Carta> cartasJugador) {
-
-
-        //cbLibroDevolucion.removeAllItems();
-        for (Libro libro: librosEncontrados) {
-            if (libro.hayPrestados()) {
-                cbLibroDevolucion.addItem(libro);
-            }
-        }
-    }*/
     @Override
     public void setControlador(Controlador controlador) {
         this.controlador = controlador;
@@ -523,11 +514,18 @@ public class VistaGrafica implements IVista{
                     "\nCantidad de jugadores:" + controlador.cantJugadores() +
                     "\nCuando este la cantidad necesaria presione el boton para iniciar.");
             actualizarBarra();
+            txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida podes iniciar la partida apretando el boton del mismo nombre." +
+                    "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas.");
+            txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Tambien tenes disponible las opciones de mesa que te permiten cambiar el tiempo por cada turno, cambiar el modo de juego (ya sea expres o por puntos), activar o desactivar las partidas competitivas y por ultimo podes activar el publico el cual se puede unir una vez este iniciada la partida." +
+                    "\nQue disfrutes el juego!!!");
         }else {
             txtInfoInicio.setText("\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores());
             actualizarBarra();
             iniciarPartidaButton.setVisible(false);
+            txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida el anfitrion iniciara la partida." +
+                    "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas." +
+                    "\nQue disfrutes el juego!!!");
         }
         if (controlador.apuestasActivadas()){
             avisarSobreApuesta();
@@ -565,7 +563,6 @@ public class VistaGrafica implements IVista{
     @Override
     public void iniciarTurno() {
         if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
-            panelPartida.setName("Partida");
             activarPartida();
         }
         if (!controlador.esAnfitrion()){
@@ -596,9 +593,10 @@ public class VistaGrafica implements IVista{
             if (controlador.jugadorEnAutomatico()){
                 controlador.iniciarJuegoAutomatico();
             }
-            txtTurno.setText("Bienvenido al |" +controlador.getModoJuego() + "| , " + controlador.getNombreJugador() +". Es su turno.");
+            txtTurno.setText("Bienvenido al | modo" +controlador.getModoJuego() + " | , " + controlador.getNombreJugador() +". Es su turno.");
             mazoButton.setEnabled(true);
             cartaBocaArribaButton.setEnabled(true);
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Ahora mismo es tu turno. Para comenzar debes decidir si agarrar una carta del mazo o la carta que esta boca arriba al lado del mazo.");
             comprobarTiempoTurno();
         } else if (controlador.isEliminado()) {
             mazoButton.setEnabled(false);
@@ -606,15 +604,17 @@ public class VistaGrafica implements IVista{
             if (controlador.apuestasActivadas()){
                 reengancharseButton.setEnabled(true);
                 txtTurno.setText("Has sido Eliminado. Si quiere puede reengancharse a la partida apostando la mitad de las fichas que aposto antes y volvera a jugar empezando el turno con los mismos puntos que el jugador que mas tiene.");
+                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() +"|-Fuiste elminado por sobrepasar el limite de puntos pero tenes la chance reengancharte a la partida con los puntos del jugador que mas tiene." +
+                        "\nPara eso dirigite al panel de partida y presiona reengancharse.");
             }else {
                 txtTurno.setText("Has sido Eliminado. No es posible reengancharse debido a que las apuestas no estan activadas");
+                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() +"|-Fuiste elminado por sobrepasar el limite de puntos pero no podes reengancharte a la partida porque las apuestas no estan actvadas. Debes esperar a que la partida termine :(");
             }
         } else {
             esperarTurno();
         }
         txtTurno.setText(txtTurno.getText() +  "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
-        "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
-                ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
+        "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() + ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
         if (controlador.getModoJuego().equals("JUEGOAPUNTOS")){
             txtTurno.setText("Tus puntos: "+ controlador.getpuntosJugador());
         }
@@ -622,6 +622,8 @@ public class VistaGrafica implements IVista{
 
     private void comprobarTiempoTurno() {
         if (controlador.getTiempoPorTurno() != 0){
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-CUIDADO: Tenes " + controlador.getTiempoPorTurno() + " segundos para poder terminar tu turno sino se realizara automaticamente." +
+                    "\nPodes ver el tiempo actual en el panel de partida.");
             temporizador = new Timer();
             tiempoTurno = new Timer();
             if (controlador.getTiempoPorTurno() == 60) {
@@ -651,13 +653,14 @@ public class VistaGrafica implements IVista{
     @Override
     public void esperarTurno() {
         txtTurno.setText("Espere su turno. Ahora mismo es el turno de " + controlador.getNombreTurnoActual());
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|- Solo debes esperar a que sea tu turno. Mientras piensa en una buena jugada!");
         mazoButton.setEnabled(false);
         cartaBocaArribaButton.setEnabled(false);
     }
 
     @Override
     public void actualizarCartas(ArrayList<ICarta> cartasJugador) {
-
+        //?
     }
 
     @Override
@@ -689,18 +692,9 @@ public class VistaGrafica implements IVista{
         ImageIcon cartaActual;
         for (ICarta carta: cartasJugador) {
             imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo()+ ".png";
-            //JLabel a = new JLabel();
-            if (carta == null){
-                System.out.println("carta nula");
-            }
-            //a.setText(carta.toString());
             cartaActual = new ImageIcon(imagenActual);
-            if (cartaActual == null){
-                System.out.println(" imagen carta nula");
-            }
             listaModeloAbajo.addElement(cartaActual);
         }
-
     }
 
     private void actualizarCartasJugadorIzquierda(int cantidadCartas) {
@@ -736,6 +730,12 @@ public class VistaGrafica implements IVista{
     @Override
     public void continuarTurnoActual() {
         if (controlador.esTurnoJugador()) {
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada o incluso termnar tu turno." +
+                    "\nA continuacion te dejo algunos tips sobre cada una:" +
+                    "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una y una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada. Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
+                    "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas y luego ponerle un tilde presonando la casilla de la jugada que necesites" +
+                    "\n-Para terminar el turno debes seleccionar una unica carta y presonar el boton con el mismo nombre." +
+                    "\n-En el caso que hayas seleccionado mal tus cartas puedes seleccionar el boton cancelar seleccion para deseleccionarlas");
             cartasSeleccionadasPosicion.clear();
             actualizarCartas();
             listaAbajo.setEnabled(true);
@@ -753,6 +753,7 @@ public class VistaGrafica implements IVista{
         volverAInicio();
         txtInfoInicio.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
             " con " + controlador.getCantidadPuntosGanador()+" puntos");
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-La partido ha finalizado y ha ganado " + controlador.getGanador() + " con " + controlador.getCantidadPuntosGanador()+" puntos");
         eleccionNuevaPartida();
         controlador.obtenerPosiciones();
     }
@@ -791,9 +792,7 @@ public class VistaGrafica implements IVista{
                 listaModeloActual.addElement(cartaActual);
             }
         }
-
-
-//remover cartas de el jugador y agregar la jugada a la pantalla
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Hay nuevas jugadas en la mesa!!!");
     }
 
     @Override
@@ -801,12 +800,15 @@ public class VistaGrafica implements IVista{
         volverAInicio();
         if (controlador.getModoJuego().equals("EXPRES")){
             txtInfoInicio.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Se cerro la partida porque no se pueden hacer nuevas jugadas y las jugadas en mesa estan llenas.");
             if (!controlador.getEstadoCompetitivo()){
                 txtInfoInicio.setText(txtInfoInicio.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Las partidas competitivas estan desactivas por lo que tampoco se ganaron puntos ni fichas :c");
             }
             eleccionNuevaPartida();
         }else {
             txtInfoInicio.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-La ronda quedo cerrada por tener jugadas llenas y por no poder hacer nuevas jugadas. Pronto iniciara una nueva ronda!");
             controlador.iniciarNuevaRonda();
         }
     }
@@ -815,19 +817,20 @@ public class VistaGrafica implements IVista{
     public void mostrarErrorApuesta() {
         pantallaEspera();
         txtInfoInicio.setText("\nApuestas Desactivadas!!!");
-        //cambiar esto si permito las apuestas en las opciones de mesa
-        //asistenteCheckBox.setText(asistenteCheckBox.getText() +"| "+ LocalDateTime.now() +" |- Se cancelaron las apuestas!!!");
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Se cancelaron las apuestas!!!");
     }
 
     @Override
     public void avisarSobreApuesta() {
         if (controlador.getcantidadApostada() != 0) {
             txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas");
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Las apuestas fueron activadas. En el caso que quieras desactivarlas puedes apostar 0 fichas y se cancelaran y en caso contrario todos apostaran " + controlador.getcantidadApostada() + " fichas.");
         }
     }
 
     @Override
     public void mostrarResultadosPuntosRonda(ArrayList<IJugador> jugadores) {
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Ahora mismo podes visualizar los resultados en puntos de la ronda actual en el panel resumen de partida mientras se prepara la nueva ronda.");
         panelFinRonda.setName("Resumen de Partida");
         tabbedPane.add(panelFinRonda);
         for (int i = 0; i < jugadores.size(); i++) {
@@ -851,6 +854,7 @@ public class VistaGrafica implements IVista{
     public void finalizarPartidaAmistosamente() {
         volverAInicio();
         txtInfoInicio.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-La partida finalizo amistosamente por lo que se devolvieron las apuestas si estaban activas y no contaron los puntos.");
         panelAbajo.setEnabled(false);
         panelOpciones.setEnabled(false);
         eleccionNuevaPartida();
@@ -865,9 +869,12 @@ public class VistaGrafica implements IVista{
     private void eleccionNuevaPartida() {
         controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()) {
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Si deseas volver a jugar una nueva partida ve al menu de inicio y presiona nueva partida. \nEn caso contrario, espero tengas un buen dia!! :D ");
             txtInfoInicio.setText(txtInfoInicio.getText() + "\n¿Desea Iniciar una nueva partida?");
             iniciarNuevaPartidaButton.setVisible(true);
             salirButton.setVisible(true);
+        }else {
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Espera a que el anfitrion decida si quiere una nueva partida. En caso que abandone el juego esta la posibilidad de que uno del resto de jugadores se convierta en el nuevo anfitrion.");
         }
     }
 
@@ -879,6 +886,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void obtenerNombre() {
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Solo escribe tu nombre e inicia sesion");
         panelUsuario.setVisible(true);
         txtNombre.setEnabled(true);
         iniciarSesionButton.setEnabled(true);
@@ -893,6 +901,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Puedes visualizar la tabla de posiciones en el panel del mismo nombre. En caso que no aparezcas es porque no alcanzaste el top de jugadores :(");
         panelTablaPosiciones.setName("Tabla De Posiciones");
         tabbedPane.add(panelTablaPosiciones);
         //txtTablaPosiciones.setText("\nTabla de posiciones (top 5 jugadores):");
@@ -911,19 +920,21 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarErrorConexion() {
-
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Parece que has tenido un problema con tu conexion :(");
+        txtTurno.setText("Hubo un problema con tu conexion.");
     }
 
     @Override
     public void errorCantidadJugadores() {
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-ERROR: cantidad de jugadores insuficiente.");
         volverAInicio();
-        //ayuda.setText("la cantidad de jugadores no es suficiente");
     }
 
     @Override
     public void mostrarJugadorSalioDelJuego() {
         volverAInicio();
         txtInfoInicio.setText("Un jugador Ha salido");
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now()+ "|-Un jugador ha salido del juego.");
         actualizarBarra();
         eleccionNuevaPartida();
     }
@@ -931,6 +942,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void avisarCambiosOpcionesMesa() {
         tabbedPane.setForegroundAt(1,new Color(229,11,9));
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-El anfitrion realizo cambios en las opciones de mesa del juego.");
         //panelOpcionesMesa.setForeground(new Color(229,11,9));
     }
 }

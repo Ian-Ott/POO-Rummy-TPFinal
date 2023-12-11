@@ -489,7 +489,7 @@
                         <constraints/>
                         <properties>
                           <editable value="false"/>
-                          <preferredSize width="650" height="20"/>
+                          <preferredSize width="650" height="30"/>
                         </properties>
                       </component>
                       <component id="18439" class="javax.swing.JTextArea" binding="txtTemporizador">
@@ -580,23 +580,21 @@
               </component>
             </children>
           </grid>
-          <grid id="954b1" binding="panelAsistente" layout-manager="CardLayout" hgap="0" vgap="0">
+          <scrollpane id="9939c" binding="scrollpanelAsistente">
             <constraints>
-              <tabbedpane title="asistente"/>
+              <tabbedpane title="Asistente"/>
             </constraints>
             <properties/>
             <border type="none"/>
             <children>
               <component id="61147" class="javax.swing.JTextArea" binding="txtAsistenteAyuda">
-                <constraints>
-                  <card name="Card1"/>
-                </constraints>
+                <constraints/>
                 <properties>
                   <editable value="false"/>
                 </properties>
               </component>
             </children>
-          </grid>
+          </scrollpane>
           <grid id="86191" binding="panelFinRonda" layout-manager="GridLayoutManager" row-count="4" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
