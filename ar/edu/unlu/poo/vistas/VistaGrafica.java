@@ -214,6 +214,7 @@ public class VistaGrafica implements IVista{
                             int indiceSeleccionado = cartas.getSelectedIndex();
                             if (indiceSeleccionado != -1 && !cartasSeleccionadasPosicion.contains(indiceSeleccionado)) {
                                 System.out.println("seleccionado : " + indiceSeleccionado);
+                                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|" + LocalDateTime.now() + "|-Se selecciono la carta " + (indiceSeleccionado + 1));
                                 cartasSeleccionadasPosicion.add(indiceSeleccionado);
                             }
                         }
@@ -225,6 +226,7 @@ public class VistaGrafica implements IVista{
                 cancelarSeleccionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|" + LocalDateTime.now() + "|-Se deseleccionaron las cartas.");
                         cartasSeleccionadasPosicion.clear();
                     }
                 });
