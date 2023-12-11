@@ -86,6 +86,7 @@ public class VistaGrafica implements IVista{
     private JTextArea nombreTextArea;
     private JPanel txt;
     private JTextArea txtTemporizador;
+    private JButton desactivarJuegoAutomaticoButton;
     private JCheckBox a;
     private DefaultListModel<ImageIcon> listaModeloAbajo;
     private DefaultListModel<ImageIcon> listaModeloArriba;
@@ -151,11 +152,16 @@ public class VistaGrafica implements IVista{
 
                 reengancharseButton.setEnabled(false);
 
+
                 tabbedPane.remove(panelTablaPosiciones);
+                tabbedPane.remove(panelFinRonda);
                 //panelJugadas.setLayout(new BoxLayout(panelJugadas, BoxLayout.LINE_AXIS));
                 temporizador = new Timer();
                 tiempoTurno = new Timer();
                 tiempoRestante = 0;
+                txtTemporizador.setEditable(false);
+
+                desactivarJuegoAutomaticoButton.setVisible(false);
                 iniciarSesionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -207,7 +213,7 @@ public class VistaGrafica implements IVista{
                         JList<String> cartas = (JList<String>) e.getSource();
                         if (e.getValueIsAdjusting()) {
                             int indiceSeleccionado = cartas.getSelectedIndex();
-                            if (indiceSeleccionado != -1) {
+                            if (indiceSeleccionado != -1 && !cartasSeleccionadasPosicion.contains(indiceSeleccionado)) {
                                 System.out.println("seleccionado : " + indiceSeleccionado);
                                 cartasSeleccionadasPosicion.add(indiceSeleccionado);
                             }
@@ -377,6 +383,10 @@ public class VistaGrafica implements IVista{
             public void run() {
                 tiempoTurno.cancel();
                 txtTurno.setText("Se acabo el tiempo!!! Tu turno se jugara automaticamente.");
+                tabbedPane.add(panelInicio,0);
+                txtInfoInicio.setText("Se te activo el juego automatico por no terminar tu turno a tiempo. En cualquier momento lo podes desactivar." +
+                        "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente.");
+                desactivarJuegoAutomaticoButton.setVisible(true);
                 controlador.iniciarJuegoAutomatico();
             }
         };
@@ -390,12 +400,20 @@ public class VistaGrafica implements IVista{
                 }
             }
         };
-
+        desactivarJuegoAutomaticoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                desactivarJuegoAutomaticoButton.setVisible(false);
+                tabbedPane.remove(panelInicio);
+                controlador.desactivarJuegoAutomatico();
+            }
+        });
     }
 
     private int obtenerPosicionJugada() {
         JCheckBox checkBoxActual;
         int posicionJugada = -1;
+        int posicionJugadaActual = -1;
         for (int i = 0; i < listaCheckJugada.size(); i++) {
            checkBoxActual = listaCheckJugada.get(i);
            if (checkBoxActual.isSelected()){
@@ -575,6 +593,9 @@ public class VistaGrafica implements IVista{
         //establecerColorJugadores();
         actualizarCartaBocaArriba();
         if (controlador.esTurnoJugador() && !controlador.isEliminado()){
+            if (controlador.jugadorEnAutomatico()){
+                controlador.iniciarJuegoAutomatico();
+            }
             txtTurno.setText("Bienvenido al |" +controlador.getModoJuego() + "| , " + controlador.getNombreJugador() +". Es su turno.");
             mazoButton.setEnabled(true);
             cartaBocaArribaButton.setEnabled(true);
@@ -669,47 +690,62 @@ public class VistaGrafica implements IVista{
         for (ICarta carta: cartasJugador) {
             imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo()+ ".png";
             //JLabel a = new JLabel();
+            if (carta == null){
+                System.out.println("carta nula");
+            }
             //a.setText(carta.toString());
             cartaActual = new ImageIcon(imagenActual);
+            if (cartaActual == null){
+                System.out.println(" imagen carta nula");
+            }
             listaModeloAbajo.addElement(cartaActual);
         }
 
     }
 
     private void actualizarCartasJugadorIzquierda(int cantidadCartas) {
-        listaModeloIzquierda.clear();
-        ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reverso/reversoCartaJugadorIzquierda.png");
-        for (int i = 0; i < cantidadCartas; i++) {
-            listaModeloIzquierda.addElement(reversoCarta);
+        if (listaModeloIzquierda.size() != cantidadCartas) {
+            listaModeloIzquierda.clear();
+            ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reverso/reversoCartaJugadorIzquierda.png");
+            for (int i = 0; i < cantidadCartas; i++) {
+                listaModeloIzquierda.addElement(reversoCarta);
+            }
         }
     }
 
     private void actulizarCartasJugadorArriba(int cantidadCartas) {
-        listaModeloArriba.clear();
-        ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reverso/reversoCartaJugadorArriba.png");
-        for (int i = 0; i < cantidadCartas; i++) {
-            listaModeloArriba.addElement(reversoCarta);
+        if (listaModeloArriba.size() != cantidadCartas) {
+            listaModeloArriba.clear();
+            ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reverso/reversoCartaJugadorArriba.png");
+            for (int i = 0; i < cantidadCartas; i++) {
+                listaModeloArriba.addElement(reversoCarta);
+            }
         }
     }
 
     private void actualizarCartasJugadorDerecha(int cantidadCartas) {
-        listaModeloDerecha.clear();
-        ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reverso/reversoCartaJugadorDerecha.png");
-        for (int i = 0; i < cantidadCartas; i++) {
-            listaModeloDerecha.addElement(reversoCarta);
+        if (listaModeloDerecha.size() != cantidadCartas) {
+            listaModeloDerecha.clear();
+            ImageIcon reversoCarta = new ImageIcon("ar/edu/unlu/poo/images/cartas/reverso/reversoCartaJugadorDerecha.png");
+            for (int i = 0; i < cantidadCartas; i++) {
+                listaModeloDerecha.addElement(reversoCarta);
+            }
         }
     }
 
     @Override
     public void continuarTurnoActual() {
-        cartasSeleccionadasPosicion.clear();
-        actualizarCartas();
-        listaAbajo.setEnabled(true);
-        agregarCartaAJugadaButton.setEnabled(true);
-        terminarTurnoButton.setEnabled(true);
-        agregarNuevaJugadaButton.setEnabled(true);
-        seleccionJugada.setEnabled(true);
-        cancelarSeleccionButton.setEnabled(true);
+        if (controlador.esTurnoJugador()) {
+            cartasSeleccionadasPosicion.clear();
+            actualizarCartas();
+            listaAbajo.setEnabled(true);
+            agregarCartaAJugadaButton.setEnabled(true);
+            terminarTurnoButton.setEnabled(true);
+            agregarNuevaJugadaButton.setEnabled(true);
+            seleccionJugada.setEnabled(true);
+            cancelarSeleccionButton.setEnabled(true);
+        }
+        actualizarCartaBocaArriba();
     }
 
     @Override
@@ -724,6 +760,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void actualizarJugadas() {
         cartasSeleccionadasPosicion.clear();
+        listaCheckJugada.clear();
         JList<ImageIcon> listaActual;
         DefaultListModel<ImageIcon> listaModeloActual;
         JCheckBox checkJugadaActual;

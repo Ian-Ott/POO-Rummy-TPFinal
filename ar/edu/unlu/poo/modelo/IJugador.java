@@ -49,6 +49,10 @@ public interface IJugador {
 
     int getFichasGanadasPartida();
 
+    void setModoAutomatico(boolean estado);
+
+    boolean isEnAutomatico();
+
     Carta tirarCarta(Integer posicion);
 
     @Override

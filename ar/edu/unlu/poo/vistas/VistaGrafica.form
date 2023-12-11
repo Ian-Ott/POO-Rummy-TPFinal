@@ -184,6 +184,24 @@
                       </grid>
                     </children>
                   </grid>
+                  <grid id="96083" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                    <constraints border-constraint="East"/>
+                    <properties>
+                      <background color="-16510416"/>
+                    </properties>
+                    <border type="none"/>
+                    <children>
+                      <component id="3dee1" class="javax.swing.JButton" binding="desactivarJuegoAutomaticoButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <background color="-16510416"/>
+                          <borderPainted value="false"/>
+                          <foreground color="-1765872"/>
+                          <text value="Desactivar Juego Automatico"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
                 </children>
               </grid>
             </children>
@@ -605,7 +623,9 @@
                     <preferred-size width="150" height="50"/>
                   </grid>
                 </constraints>
-                <properties/>
+                <properties>
+                  <editable value="false"/>
+                </properties>
               </component>
               <component id="26834" class="javax.swing.JTextArea" binding="puntosJugador1">
                 <constraints>
@@ -615,6 +635,7 @@
                 </constraints>
                 <properties>
                   <columns value="0"/>
+                  <editable value="false"/>
                 </properties>
               </component>
               <component id="d7e83" class="javax.swing.JTextArea" binding="puntosJugador2">
@@ -623,7 +644,9 @@
                     <preferred-size width="150" height="50"/>
                   </grid>
                 </constraints>
-                <properties/>
+                <properties>
+                  <editable value="false"/>
+                </properties>
               </component>
               <component id="98f66" class="javax.swing.JButton" binding="iniciarNuevaRondaButton" default-binding="true">
                 <constraints>
@@ -644,7 +667,9 @@
                     <constraints>
                       <card name="Card1"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                 </children>
               </grid>
@@ -659,7 +684,9 @@
                     <constraints>
                       <card name="Card1"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                 </children>
               </grid>
@@ -674,7 +701,9 @@
                     <constraints>
                       <card name="Card1"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                 </children>
               </grid>
@@ -721,6 +750,7 @@
                       <card name="Card1"/>
                     </constraints>
                     <properties>
+                      <editable value="false"/>
                       <text value="La ronda ha finalizado. A continuacion se muestran los puntos actuales de la partida."/>
                     </properties>
                   </component>
@@ -752,7 +782,9 @@
                     <preferred-size width="150" height="50"/>
                   </grid>
                 </constraints>
-                <properties/>
+                <properties>
+                  <editable value="false"/>
+                </properties>
               </component>
               <component id="52efa" class="javax.swing.JTextArea" binding="txtPuntosJugadorTablaPosiciones">
                 <constraints>
@@ -760,7 +792,9 @@
                     <preferred-size width="150" height="50"/>
                   </grid>
                 </constraints>
-                <properties/>
+                <properties>
+                  <editable value="false"/>
+                </properties>
               </component>
               <grid id="dce3f" layout-manager="CardLayout" hgap="0" vgap="0">
                 <constraints>
@@ -774,6 +808,7 @@
                       <card name="Card1"/>
                     </constraints>
                     <properties>
+                      <editable value="false"/>
                       <text value="Nombre"/>
                     </properties>
                   </component>
@@ -791,6 +826,7 @@
                       <card name="Card1"/>
                     </constraints>
                     <properties>
+                      <editable value="false"/>
                       <text value="Puntos De XP"/>
                     </properties>
                   </component>

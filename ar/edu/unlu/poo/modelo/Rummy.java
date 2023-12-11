@@ -91,6 +91,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
             } else if (modo.equals(modoDeJuego.EXPRES)) {
                 jugadorActual.setCantApostada(0);
             }
+            jugadorActual.setModoAutomatico(false);
             jugadorActual.setHizoRummy(false);
             jugadorActual.setFichasGanadasPartida(0); //dejar esto?
         }
@@ -136,7 +137,6 @@ public class Rummy extends ObservableRemoto implements IRummy {
 
     @Override //
     public void repartirCartasJugadores(int cantidadCartas) throws RemoteException {
-        Carta cartaAux;
         for (int i = 0; i < jugadores.size(); i++){
             mazoDeJuego.repartir(cantidadCartas, jugadores.get(i));
         }
@@ -400,7 +400,10 @@ public class Rummy extends ObservableRemoto implements IRummy {
             sacarCartaMazo(nombreJugador);
         }
         Jugador jugadorActual = buscarJugador(nombreJugador);
-
+        jugadorActual.setModoAutomatico(true);
+        if (todosEnAutomatico()){
+            finalizarPartidaAmistosamente();
+        }
         obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(),jugadorActual);
         if (esRummy(jugadorActual.getCartasEnMano())){
             agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(),false);
@@ -424,17 +427,96 @@ public class Rummy extends ObservableRemoto implements IRummy {
         if (jugadorActual.getCartasEnMano().isEmpty()){
             finalizarPartida(nombreJugador);
         }else {
-            int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size());
+            int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
             terminarTurno(posicionCarta,nombreJugador);
         }
+    }
 
+    @Override
+    public boolean isJugadorEnAutomatico(String nombreJugador) throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.isEnAutomatico();
+    }
+
+    @Override
+    public void desactivarJuegoAutomatico(String nombreJugador) throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        jugadorActual.setModoAutomatico(false);
+    }
+
+    private boolean todosEnAutomatico() {
+        boolean resultado = true;
+        for (Jugador jugador: jugadores) {
+            if (!jugador.isEnAutomatico()){
+                resultado = false;
+            }
+        }
+        return resultado;
     }
 
     private ArrayList<Carta> obtenerCartasNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
         //hacer un remove y luego devolver las cartas si no era
+        ArrayList<Carta> cartasMismoNumero;
+        int numeroMasRepetido = buscarNumeroMasRepetido(cartasEnMano);
+        cartasMismoNumero = new ArrayList<>();
+        for (Carta carta:cartasEnMano) {
+            if (carta.getNumero() == numeroMasRepetido){
+                cartasMismoNumero.add(carta);
+            }
+        }
+        quitarCartasSeleccionadas(cartasEnMano, cartasMismoNumero);
+        return  cartasMismoNumero;
+    }
+
+    private int buscarNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
+        int numeroMayor = 0;
+        int repeticionesCarta = 0;
+        int repeticiones = 0;
+        for (int i = 1; i < 14; i++) {
+            //compruebo en los 13 numeros de carta a ver cual se repite mas
+            for (Carta carta:cartasEnMano) {
+                if (carta.getNumero() == i){
+                    repeticiones++;
+                }
+            }
+            if (repeticiones > repeticionesCarta){
+                numeroMayor = i;
+                repeticionesCarta = repeticiones;
+            }
+            repeticiones = 0;
+        }
+        return numeroMayor;
     }
 
     private ArrayList<Carta> obtenerCartasPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
+        Palo paloRepetido = buscarPaloMasRepetido(cartasEnMano);
+        ArrayList<Carta> cartasMismoPalo = new ArrayList<>();
+        for (Carta carta:cartasEnMano) {
+            if (carta.getPalo().equals(paloRepetido)){
+                cartasMismoPalo.add(carta);
+            }
+        }
+        quitarCartasSeleccionadas(cartasEnMano, cartasMismoPalo);
+        return cartasMismoPalo;
+    }
+
+    private Palo buscarPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
+        Palo paloMasRepetido = null;
+        int repeticionesPalo = 0;
+        int repeticiones = 0;
+        for (Palo paloActual: Palo.values()) {
+            System.out.println(paloActual);
+            for (Carta carta:cartasEnMano) {
+                if (carta.getPalo().equals(paloActual)){
+                    repeticiones++;
+                }
+            }
+            if (repeticiones > repeticionesPalo){
+                paloMasRepetido = paloActual;
+                repeticionesPalo = repeticiones;
+            }
+        }
+        return  paloMasRepetido;
     }
 
     @Override
@@ -772,9 +854,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
         }
     }
 
-    private void quitarCartasSeleccionadas(ArrayList<Carta> jugada, ArrayList<Carta> cartasSeleccionadas) {
+    private void quitarCartasSeleccionadas(ArrayList<Carta> cartasActuales, ArrayList<Carta> cartasSeleccionadas) {
         for (Carta carta:cartasSeleccionadas) {
-            jugada.remove(carta);
+            cartasActuales.remove(carta);
         }
     }
 
@@ -807,6 +889,12 @@ public class Rummy extends ObservableRemoto implements IRummy {
     @Override
     public void terminarTurno(Integer cartaSeleccionada, String nombreJugador)throws RemoteException{
         Jugador jugadorActual = buscarJugador(nombreJugador);
+        if (jugadorActual.getCartasEnMano().isEmpty() && cartaSeleccionada == -1){
+            finalizarPartida(nombreJugador);
+        }else if (cartaSeleccionada == -1){
+            //excepcion
+            return;
+        }
         Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
         //le saca la carta que selecciono
         if (jugadorActual.getCartasEnMano().isEmpty()){

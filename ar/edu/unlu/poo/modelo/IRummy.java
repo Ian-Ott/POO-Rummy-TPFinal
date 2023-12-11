@@ -135,6 +135,10 @@ public interface IRummy extends IObservableRemoto {
     ArrayList<IJugador> getIJugadores() throws RemoteException;
 
     void juegoAutomatico(String nombreJugador) throws RemoteException;
+
+    boolean isJugadorEnAutomatico(String nombreJugador) throws RemoteException;
+
+    void desactivarJuegoAutomatico(String nombreJugador) throws RemoteException;
     //boolean esAnfitrion(String nombreJugador);
 
     //IRummy getInstancia();
