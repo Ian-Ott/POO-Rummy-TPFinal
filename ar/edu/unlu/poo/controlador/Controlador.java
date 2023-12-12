@@ -111,9 +111,9 @@ public class Controlador implements IControladorRemoto {
             throw new RuntimeException(e);
         }
         ArrayList<ICarta> cartasJugador = cambiarTipoCartas(cartasJugadorAux);
-        if (vista instanceof VistaConsola){
+        /*if (vista instanceof VistaConsola){
             vista.actualizarCartas(cartasJugador);
-        }
+        }*/
         return  cartasJugador;
         //comprobar si esto es necesario
     }

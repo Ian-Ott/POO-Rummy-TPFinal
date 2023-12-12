@@ -7,6 +7,7 @@ import ar.edu.unlu.poo.modelo.ITapete;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,7 +16,7 @@ public class VistaConsola implements IVista{
     private boolean cambiosOpcionesMesa;
 
     enum EstadosPosibles{
-        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO
+        SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO, JUEGO_AUTOMATICO
     }
 
     enum EstadosJugadas{
@@ -42,6 +43,11 @@ public class VistaConsola implements IVista{
     private EstadosPosibles estadoActual;
     private boolean finTurno = false;
     private Timer temporizador;
+    private Timer tiempoTurno;
+    private int tiempoRestante;
+    private String txtActual;
+    private TimerTask juegoAutomatico;
+    private TimerTask mostrarTiempoActual;
 
 
     public VistaConsola() {
@@ -55,14 +61,10 @@ public class VistaConsola implements IVista{
                 frame.setVisible(true);
                 txtAreaMuestra.setEditable(false);
                 cambiosOpcionesMesa = false;
-                temporizador = new Timer();
-                TimerTask juegoAutomatico = new TimerTask() {
-                    @Override
-                    public void run() {
-                        System.out.println("se acabo el tiempo se ejecuta solo el turno");
-                        temporizador.cancel();
-                    }
-                };
+
+                tiempoRestante = 0;
+                estadoActual = EstadosPosibles.SIN_ESTADO;
+
                 enterButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -131,7 +133,11 @@ public class VistaConsola implements IVista{
         String textoIngresado = txtConsola.getText().toLowerCase();
         txtConsola.setText("");
         if (controlador.juegoIniciado()){
-            if (estadoActual.equals(EstadosPosibles.PRIMERAS_OPCIONES)){
+            if (estadoActual.equals(EstadosPosibles.JUEGO_AUTOMATICO)){
+                if(textoIngresado.equals("1")){
+                    controlador.desactivarJuegoAutomatico();
+                }
+            }else if (estadoActual.equals(EstadosPosibles.PRIMERAS_OPCIONES)){
                 seleccionarPrimerasOpciones(textoIngresado);
             } else if (estadoActual.equals(EstadosPosibles.SELECCION_CARTAS)) {
                 seleccionarCartas(textoIngresado);
@@ -194,18 +200,21 @@ public class VistaConsola implements IVista{
             mostrarOpcionesDeTiempo();
         } else if (textoIngresado.equals("2")) {
             controlador.modificarPartidasCompetitivas();
+            continuarEnEstadoAnterior();
         } else if (textoIngresado.equals("3")) {
             controlador.modificarOpcionChat();
+            continuarEnEstadoAnterior();
         } else if (textoIngresado.equals("4")) {
             controlador.activarModoExpres();
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Expres!!!");
+            continuarEnEstadoAnterior();
         } else if (textoIngresado.equals("5")) {
             controlador.activarModoPuntos();
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe activo el modo Juego por Puntos!!!");
+            continuarEnEstadoAnterior();
         } else if (textoIngresado.equals("0")) {
             continuarEnEstadoAnterior();
         }
-        continuarEnEstadoAnterior();
     }
 
     private void continuarEnEstadoAnterior() {
@@ -319,6 +328,7 @@ public class VistaConsola implements IVista{
         }else {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo podes modificar las opciones de mesa solo esta disponible para el anfitrion.");
         }
+        txtActual = txtAreaMuestra.getText();
     }
 
     private String obtenerEstado(boolean estado) {
@@ -414,6 +424,7 @@ public class VistaConsola implements IVista{
                     }
                     posicionesSeleccionadas.clear();
                 } else if (finTurno && controlador.getCartasSize() == 0) {
+                    cancelarTemporizador();
                     finTurno = false;
                     estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
                     controlador.terminarTurno(posicionesSeleccionadas);
@@ -425,10 +436,12 @@ public class VistaConsola implements IVista{
                 agregarPosicion(numero - 1);
                 txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nPosicion " + numero + " seleccionada!!!");
                 if (finTurno){
+                    cancelarTemporizador();
                     finTurno = false;
                     estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
-                    controlador.terminarTurno(posicionesSeleccionadas);
                     posicionesSeleccionadas.clear();
+                    controlador.terminarTurno(posicionesSeleccionadas);
+
                 }
             }else {
                 opcionIncorrecta();
@@ -436,6 +449,13 @@ public class VistaConsola implements IVista{
         } else {
             opcionIncorrecta();
             //excepcion
+        }
+    }
+
+    private void cancelarTemporizador() {
+        if (controlador.getTiempoPorTurno() != 0){
+            temporizador.cancel();
+            tiempoTurno.cancel();
         }
     }
 
@@ -471,6 +491,7 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText(txtAreaMuestra.getText() +
                 "\n seleccione las cartas segun su POSICION (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
             estadoActual = EstadosPosibles.SELECCION_CARTAS;
+        txtActual = txtAreaMuestra.getText();
     }
 
     public void opcionIncorrecta(){
@@ -578,10 +599,12 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada a la que quiera agregar una carta \n(si desea la agregar cartas a la jugada 1 solo seleccione el 1 y asi con las demas) \n\npresione 0 para cancelar");
         estadoActual = EstadosPosibles.SELECCION_JUGADA;
+        txtActual = txtAreaMuestra.getText();
     }
     private void terminarTurno(){
         txtAreaMuestra.setText("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
         mostrarSeleccionCartas();
+        txtActual = txtAreaMuestra.getText();
     }
 
 
@@ -589,9 +612,57 @@ public class VistaConsola implements IVista{
 
     @Override
     public void iniciarTurno(){
-        estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
+        if (estadoActual.equals(EstadosPosibles.JUEGO_AUTOMATICO)) {
+            System.out.println("entro a juego automatico aca");
+            controlador.iniciarJuegoAutomatico();
+        }else {
+            estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
+        }
+        if (controlador.getTiempoPorTurno() != 0){
+            activarTiempoDeTurno();
+        }
         mostrarPrimerasOpciones();
         txtConsola.setEnabled(true);
+    }
+
+    private void activarTiempoDeTurno() {
+        tiempoTurno = new Timer();
+        temporizador = new Timer();
+        crearJuegoAutomatico();
+        crearTareaTemporizador();
+        tiempoRestante = controlador.getTiempoPorTurno();
+        temporizador.schedule(mostrarTiempoActual,0,1000);
+        if (controlador.getTiempoPorTurno() == 60){
+            tiempoTurno.schedule(juegoAutomatico,0,60000);
+        }else {
+            tiempoTurno.schedule(juegoAutomatico,0,120000);
+        }
+    }
+
+    private void crearTareaTemporizador() {
+        mostrarTiempoActual = new TimerTask() {
+            @Override
+            public void run() {
+                txtAreaMuestra.setText(txtActual + "\nTiempo restante: " + tiempoRestante);
+                tiempoRestante--;
+                if (tiempoRestante == -1){
+                    temporizador.cancel();
+                }
+            }
+        };
+    }
+
+    private void crearJuegoAutomatico() {
+        juegoAutomatico = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Se acabo el tiempo :(");
+                estadoActual = EstadosPosibles.JUEGO_AUTOMATICO;
+                tiempoTurno.cancel();
+                txtAreaMuestra.setText("Se acabo el tiempo!!! Tu turno se jugara automaticamente.");
+                controlador.iniciarJuegoAutomatico();
+            }
+        };
     }
 
     private void mostrarPrimerasOpciones(){
@@ -602,6 +673,7 @@ public class VistaConsola implements IVista{
                 "\nCarta disponible en la pila de descartes:" + controlador.getCartaDescarte()+
                 "\nTus cartas:\n");
         mostrarCartas();
+        txtActual = txtAreaMuestra.getText();
     }
 
 
@@ -644,7 +716,14 @@ public class VistaConsola implements IVista{
                     "\nHa iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno..." +
                     "\n______________________________________________");
             txtConsola.setEnabled(false);
+            if (estadoActual.equals(EstadosPosibles.JUEGO_AUTOMATICO)){
+                txtConsola.setEnabled(true);
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe te activo el juego automatico por no terminar tu turno a tiempo." +
+                        "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente." +
+                        "\nSi quiere desactivar esta opcion solo presione 1");
+            }
         }
+        txtActual = txtAreaMuestra.getText();
         //else que continue el turno?
     }
 
@@ -678,8 +757,10 @@ public class VistaConsola implements IVista{
                 txtAreaMuestra.setText(txtAreaMuestra.getText() +
                         "\n\nHay nuevas jugadas disponibles en la mesa!!!");
             }
+            txtActual = txtAreaMuestra.getText();
         }else {
             esperarTurno();
+
         }
     }
 
@@ -763,6 +844,7 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText("\nPuntos de los jugadores (el limite es 300):");
         for (int i = 0; i < controlador.cantJugadores(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n" + controlador.obtenerJugador(i));
+            //cambiar?
         }
         controlador.iniciarNuevaRonda();
     }
@@ -791,8 +873,7 @@ public class VistaConsola implements IVista{
     @Override
     public void cerrarJuego() {
         controlador.eliminarJugador();
-        frame.dispose();
-        txtAreaMuestra.setText("Se decidio no empezar una nueva partida. Por favor, cierre la ventana.");
+        System.exit(0);
     }
 
     @Override

@@ -10,7 +10,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -214,7 +216,8 @@ public class VistaGrafica implements IVista{
                             int indiceSeleccionado = cartas.getSelectedIndex();
                             if (indiceSeleccionado != -1 && !cartasSeleccionadasPosicion.contains(indiceSeleccionado)) {
                                 System.out.println("seleccionado : " + indiceSeleccionado);
-                                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|" + LocalDateTime.now() + "|-Se selecciono la carta " + (indiceSeleccionado + 1));
+                                String mensajeActual = "|-Se selecciono la carta " + (indiceSeleccionado + 1);
+                                mostrarMensajeAsistente(mensajeActual);
                                 cartasSeleccionadasPosicion.add(indiceSeleccionado);
                             }
                         }
@@ -379,30 +382,6 @@ public class VistaGrafica implements IVista{
                 controlador.iniciarNuevaRonda();
             }
         });
-        juegoAutomatico = new TimerTask() {
-            @Override
-            public void run() {
-                tiempoTurno.cancel();
-                txtTurno.setText("Se acabo el tiempo!!! Tu turno se jugara automaticamente.");
-                tabbedPane.add(panelInicio,0);
-                txtInfoInicio.setText("Se te activo el juego automatico por no terminar tu turno a tiempo. En cualquier momento lo podes desactivar." +
-                        "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente.");
-                desactivarJuegoAutomaticoButton.setVisible(true);
-                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() +"|-Se te habilito el modo de juego automatico por no llegar a terminar a tiempo tu turno. Debes ir al inicio si queres cancelar el modo automatico." +
-                        "\nsolo RECORDA: si todos los jugadores estan en modo automatico la partida sera finalizada amistosamente");
-                controlador.iniciarJuegoAutomatico();
-            }
-        };
-        mostrarTiempoActual = new TimerTask() {
-            @Override
-            public void run() {
-                txtTemporizador.setText("Tiempo: " + tiempoRestante);
-                tiempoRestante--;
-                if (tiempoRestante == -1){
-                    temporizador.cancel();
-                }
-            }
-        };
         desactivarJuegoAutomaticoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -412,6 +391,10 @@ public class VistaGrafica implements IVista{
                 controlador.desactivarJuegoAutomatico();
             }
         });
+    }
+
+    private void mostrarMensajeAsistente(String txtIngresado) {
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|"+ LocalDate.now() + "-"+ LocalTime.now() + txtIngresado);
     }
 
     private int obtenerPosicionJugada() {
@@ -628,14 +611,46 @@ public class VistaGrafica implements IVista{
                     "\nPodes ver el tiempo actual en el panel de partida.");
             temporizador = new Timer();
             tiempoTurno = new Timer();
+            crearTareaJuegoAutomatico();
+            crearTareaTemporizador();
+            tiempoRestante = controlador.getTiempoPorTurno();
             if (controlador.getTiempoPorTurno() == 60) {
-                temporizador.schedule(mostrarTiempoActual,0,60000);
                 tiempoTurno.schedule(juegoAutomatico,60000);
             }else {
-                temporizador.schedule(mostrarTiempoActual,0,120000);
                 tiempoTurno.schedule(juegoAutomatico,120000);
             }
+            temporizador.schedule(mostrarTiempoActual,0,1000);
         }
+    }
+
+    private void crearTareaTemporizador() {
+        mostrarTiempoActual = new TimerTask() {
+            @Override
+            public void run() {
+                txtTemporizador.setText("Tiempo: " + tiempoRestante);
+                tiempoRestante--;
+                if (tiempoRestante == -1){
+                    temporizador.cancel();
+                }
+            }
+        };
+    }
+
+    private void crearTareaJuegoAutomatico() {
+        juegoAutomatico = new TimerTask() {
+            @Override
+            public void run() {
+                tiempoTurno.cancel();
+                txtTurno.setText("Se acabo el tiempo!!! Tu turno se jugara automaticamente.");
+                tabbedPane.add(panelInicio,0);
+                txtInfoInicio.setText("Se te activo el juego automatico por no terminar tu turno a tiempo. En cualquier momento lo podes desactivar." +
+                        "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente.");
+                desactivarJuegoAutomaticoButton.setVisible(true);
+                txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() +"|-Se te habilito el modo de juego automatico por no llegar a terminar a tiempo tu turno. Debes ir al inicio si queres cancelar el modo automatico." +
+                        "\nsolo RECORDA: si todos los jugadores estan en modo automatico la partida sera finalizada amistosamente");
+                controlador.iniciarJuegoAutomatico();
+            }
+        };
     }
 
     private void actualizarCartaBocaArriba() {
@@ -753,6 +768,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void finalizarPartida() {
         volverAInicio();
+        desactivarJuegoAutomaticoButton.setVisible(false);
         txtInfoInicio.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
             " con " + controlador.getCantidadPuntosGanador()+" puntos");
         txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-La partido ha finalizado y ha ganado " + controlador.getGanador() + " con " + controlador.getCantidadPuntosGanador()+" puntos");
