@@ -84,9 +84,18 @@ public class Mazo implements Serializable {
 
     public void mezclarMazo(){
         Carta cartaAux;
+        Carta cartaEnMesaActual = null;
+        if (cartaBocaArribaActual() != null) {
+            cartaEnMesaActual = cartaBocaArribaActual();
+        }
         while(!cartasEnMesa.isEmpty()){
             cartaAux = cartasEnMesa.remove((int) (random() * (cartasEnMesa.size() - 1)));
             mazoDeCartas.add(cartaAux);
+        }
+        //le devuelvo la carta en mesa para que no quede vacio
+        if (cartaEnMesaActual != null) {
+            cartasEnMesa.add(cartaEnMesaActual);
+            mazoDeCartas.remove(cartaEnMesaActual);
         }
     }
 

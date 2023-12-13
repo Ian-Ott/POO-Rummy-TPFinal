@@ -192,7 +192,6 @@ public class VistaConsola implements IVista{
         } else if (textoIngresado.equals("3")) {
             controlador.setTiempoTurno(0);
         }
-        continuarEnEstadoAnterior();
     }
 
     private void seleccionarOpcionesDeMesa(String textoIngresado) {
@@ -912,5 +911,6 @@ public class VistaConsola implements IVista{
         if (!controlador.esTurnoJugador()){
             txtAreaMuestra.setText("\nEl anfitrion hizo cambios en las opciones de mesa!!!");
         }
+        continuarEnEstadoAnterior();
     }
 }

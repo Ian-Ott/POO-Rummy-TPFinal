@@ -27,6 +27,8 @@ public class Jugador implements Serializable, IJugador {
         hizoRummy = false;
         fichasGanadasPartida = 0;
         puntosTotalesXP = 0;
+        enAutomatico = false;
+        cantApostada = 0;
     }
 
 

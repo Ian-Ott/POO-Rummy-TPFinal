@@ -234,7 +234,7 @@
                   <component id="25fdb" class="javax.swing.JTextPane" binding="datosJugadorIzquierda">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="20" height="20"/>
+                        <preferred-size width="5" height="10"/>
                       </grid>
                     </constraints>
                     <properties>
@@ -262,7 +262,7 @@
                   <component id="50366" class="javax.swing.JTextPane" binding="datosJugadorDerecha">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="20" height="5"/>
+                        <preferred-size width="5" height="5"/>
                       </grid>
                     </constraints>
                     <properties>

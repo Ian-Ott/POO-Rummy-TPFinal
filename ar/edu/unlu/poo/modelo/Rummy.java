@@ -63,6 +63,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         } else if (jugadores.size() >= 3) {
             repartirCartasJugadores(7);
         }
+        mezclarMazo();
         elegirJugadorMano();
         //notificarObservadores("cartas repartidas");
     }
@@ -73,7 +74,6 @@ public class Rummy extends ObservableRemoto implements IRummy {
         reiniciarEstadosJugadores();
         devolverCartasAMesa();
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
-        mezclarMazo();
     }
 
     public void iniciarNuevaRonda() throws RemoteException {
@@ -973,7 +973,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
              //vuelve a comprobar los eliminados despues de contar los puntos
              comprobarEliminados();
          }
-         if (!estadoCompetitivo){
+         if (estadoCompetitivo){
             contarPuntosTotales();
          }
          if (jugadorActual.getCartasEnMano().isEmpty() && modo.equals(modoDeJuego.JUEGOAPUNTOS) && !quedaUnJugador() && !todosEliminados()){

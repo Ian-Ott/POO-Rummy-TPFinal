@@ -9,6 +9,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -196,7 +198,7 @@ public class VistaGrafica implements IVista{
                     public void actionPerformed(ActionEvent e) {
                         if ((int)spinnerApuesta.getValue() == 0){
                             controlador.cancelarApuesta();
-                        } else if ((int)spinnerApuesta.getValue() >= 250) {
+                        } else if ((int)spinnerApuesta.getValue() >= 250 && (int) spinnerApuesta.getValue() <= controlador.cantFichas()) {
                             controlador.apostar((int)spinnerApuesta.getValue());
                         }
                     }
@@ -391,6 +393,43 @@ public class VistaGrafica implements IVista{
                 controlador.desactivarJuegoAutomatico();
             }
         });
+        frame.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                //sin uso
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                controlador.eliminarJugador();
+                System.exit(0);
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                //sin uso
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                //sin uso
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                //sin uso
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+                //sin uso
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                //sin uso
+            }
+        });
     }
 
     private void mostrarMensajeAsistente(String txtIngresado) {
@@ -489,15 +528,23 @@ public class VistaGrafica implements IVista{
     public void pantallaEspera() {
         if (controlador.getNombreJugador() == null) {
             obtenerNombre();
+            apostarButton.setVisible(false);
+            spinnerApuesta.setVisible(false);
         }else if (controlador.esAnfitrion()){
+            apostarButton.setVisible(true);
+            spinnerApuesta.setVisible(true);
             //esto sucede solo si se esta iniciando una nueva partida en el mismo servidor
             iniciarPartidaButton.setVisible(true);
+        }else {
+            apostarButton.setVisible(true);
+            spinnerApuesta.setVisible(true);
         }
         panelInicio.setVisible(true);
         if (controlador.esAnfitrion()){
             txtInfoInicio.setText("Esperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores() +
                     "\nCuando este la cantidad necesaria presione el boton para iniciar.");
+            mostrarFichas();
             actualizarBarra();
             txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida podes iniciar la partida apretando el boton del mismo nombre." +
                     "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas.");
@@ -506,14 +553,24 @@ public class VistaGrafica implements IVista{
         }else {
             txtInfoInicio.setText("\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores());
+            mostrarFichas();
             actualizarBarra();
             iniciarPartidaButton.setVisible(false);
             txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida el anfitrion iniciara la partida." +
                     "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas." +
                     "\nQue disfrutes el juego!!!");
         }
-        if (controlador.apuestasActivadas()){
-            avisarSobreApuesta();
+        if (controlador.apuestasActivadas() && controlador.getNombreJugador() != null){
+            if (controlador.getcantidadApostada() == 0) {
+                controlador.restarFichas();
+                avisarSobreApuesta();
+            }
+        }
+    }
+
+    private void mostrarFichas() {
+        if (controlador.getNombreJugador() != null){
+            txtInfoInicio.setText(txtInfoInicio.getText() + "\nTus fichas: " + controlador.cantFichas());
         }
     }
 
@@ -654,11 +711,16 @@ public class VistaGrafica implements IVista{
     }
 
     private void actualizarCartaBocaArriba() {
-        ICarta cartaDescarteActual = controlador.getCartaDescarte();
-        String imagenActual = "ar/edu/unlu/poo/images/cartas/" + cartaDescarteActual.getNumero() + cartaDescarteActual.getPalo()+ ".png";
-        ImageIcon cartaActual = new ImageIcon(imagenActual);
-        cartaBocaArribaButton.setIcon(cartaActual);
-        cartaBocaArribaButton.setBorderPainted(false);
+        if (controlador.getCartaDescarte() != null) {
+            ICarta cartaDescarteActual = controlador.getCartaDescarte();
+            String imagenActual = "ar/edu/unlu/poo/images/cartas/" + cartaDescarteActual.getNumero() + cartaDescarteActual.getPalo() + ".png";
+            ImageIcon cartaActual = new ImageIcon(imagenActual);
+            cartaBocaArribaButton.setIcon(cartaActual);
+            cartaBocaArribaButton.setBorderPainted(false);
+            cartaBocaArribaButton.setVisible(true);
+        }else {
+            cartaBocaArribaButton.setVisible(false);
+        }
     }
 
     private void activarPartida() {
@@ -704,13 +766,15 @@ public class VistaGrafica implements IVista{
 
     private void actualizarCartasJugadorActual() {
         ArrayList<ICarta> cartasJugador = controlador.obtenerCartas();
-        listaModeloAbajo.clear();
         String imagenActual;
         ImageIcon cartaActual;
-        for (ICarta carta: cartasJugador) {
-            imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo()+ ".png";
-            cartaActual = new ImageIcon(imagenActual);
-            listaModeloAbajo.addElement(cartaActual);
+        if (listaModeloAbajo.size() != cartasJugador.size()) {
+            listaModeloAbajo.clear();
+            for (ICarta carta : cartasJugador) {
+                imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo() + ".png";
+                cartaActual = new ImageIcon(imagenActual);
+                listaModeloAbajo.addElement(cartaActual);
+            }
         }
     }
 
@@ -786,28 +850,34 @@ public class VistaGrafica implements IVista{
         actualizarCartas();
         String imagenActual;
         ImageIcon cartaActual;
-        JPanel panelActual = new JPanel(new FlowLayout());
+        JScrollPane panelScrollActual = null;
         ITapete jugadasEnMesa = controlador.obtenerJugadas();
-        panelJugadas.removeAll();
-        for (int i = 0; i < jugadasEnMesa.getJugada().size(); i++) {
-            if (i%3 == 0){
-                panelActual = new JPanel(new FlowLayout());
-                panelJugadas.add(panelActual);
-            }
-            listaActual = new JList<>();
-            listaModeloActual = new DefaultListModel<>();
-            listaActual.setModel(listaModeloActual);
-            //listaActual.setName("Jugada " + (i + 1));
-            listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-            checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
-            listaCheckJugada.add(checkJugadaActual);
-            panelActual.add(checkJugadaActual);
-            //panelActual.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-            panelActual.add(listaActual);
-            for (ICarta carta: jugadasEnMesa.getJugada().get(i).getCartasJugada()) {
-                imagenActual = "ar/edu/unlu/poo/images/cartas/jugada/" + carta.getNumero() + carta.getPalo()+ ".png";
-                cartaActual = new ImageIcon(imagenActual);
-                listaModeloActual.addElement(cartaActual);
+        JPanel panelActual = new JPanel(new FlowLayout());
+        if (listaCheckJugada.size() != jugadasEnMesa.getJugada().size()) {
+            panelJugadas.removeAll();
+            for (int i = 0; i < jugadasEnMesa.getJugada().size(); i++) {
+                if (i % 3 == 0) {
+                    panelActual = new JPanel(new FlowLayout());
+                    panelJugadas.add(panelActual);
+                }
+                listaActual = new JList<>();
+                listaModeloActual = new DefaultListModel<>();
+                listaActual.setModel(listaModeloActual);
+                //listaActual.setName("Jugada " + (i + 1));
+                listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+                panelScrollActual = new JScrollPane(listaActual);
+                //60 y 60 para jugadas mas grandes
+                panelScrollActual.setPreferredSize(new Dimension(80, 100));
+                checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
+                listaCheckJugada.add(checkJugadaActual);
+                panelActual.add(checkJugadaActual);
+                panelScrollActual.setViewportView(listaActual);
+                panelActual.add(panelScrollActual);
+                for (ICarta carta : jugadasEnMesa.getJugada().get(i).getCartasJugada()) {
+                    imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo() + ".png";
+                    cartaActual = new ImageIcon(imagenActual);
+                    listaModeloActual.addElement(cartaActual);
+                }
             }
         }
         txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Hay nuevas jugadas en la mesa!!!");
@@ -841,7 +911,8 @@ public class VistaGrafica implements IVista{
     @Override
     public void avisarSobreApuesta() {
         if (controlador.getcantidadApostada() != 0) {
-            txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas");
+            txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas" +
+                    "\nTu total de fichas ahora seria de: " + controlador.cantFichas());
             txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Las apuestas fueron activadas. En el caso que quieras desactivarlas puedes apostar 0 fichas y se cancelaran y en caso contrario todos apostaran " + controlador.getcantidadApostada() + " fichas.");
         }
     }
