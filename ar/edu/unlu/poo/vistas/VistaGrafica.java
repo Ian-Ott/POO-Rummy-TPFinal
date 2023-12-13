@@ -199,7 +199,11 @@ public class VistaGrafica implements IVista{
                         if ((int)spinnerApuesta.getValue() == 0){
                             controlador.cancelarApuesta();
                         } else if ((int)spinnerApuesta.getValue() >= 250 && (int) spinnerApuesta.getValue() <= controlador.cantFichas()) {
-                            controlador.apostar((int)spinnerApuesta.getValue());
+                            if (!controlador.apuestasActivadas()) {
+                                controlador.apostar((int) spinnerApuesta.getValue());
+                            }else {
+                                mostrarErrorApuesta();
+                            }
                         }
                     }
                 });
@@ -526,6 +530,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void pantallaEspera() {
+        controlador.comprobarAnfitrion();
         if (controlador.getNombreJugador() == null) {
             obtenerNombre();
             apostarButton.setVisible(false);
@@ -544,7 +549,6 @@ public class VistaGrafica implements IVista{
             txtInfoInicio.setText("Esperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores() +
                     "\nCuando este la cantidad necesaria presione el boton para iniciar.");
-            mostrarFichas();
             actualizarBarra();
             txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida podes iniciar la partida apretando el boton del mismo nombre." +
                     "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas.");
@@ -553,7 +557,6 @@ public class VistaGrafica implements IVista{
         }else {
             txtInfoInicio.setText("\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores());
-            mostrarFichas();
             actualizarBarra();
             iniciarPartidaButton.setVisible(false);
             txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida el anfitrion iniciara la partida." +
@@ -566,6 +569,7 @@ public class VistaGrafica implements IVista{
                 avisarSobreApuesta();
             }
         }
+        mostrarFichas();
     }
 
     private void mostrarFichas() {
@@ -904,8 +908,13 @@ public class VistaGrafica implements IVista{
     @Override
     public void mostrarErrorApuesta() {
         pantallaEspera();
-        txtInfoInicio.setText("\nApuestas Desactivadas!!!");
-        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Se cancelaron las apuestas!!!");
+        if (controlador.apuestasActivadas()) {
+            txtInfoInicio.setText("\nApuestas Desactivadas!!!");
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Se cancelaron las apuestas!!!");
+        }else {
+            txtInfoInicio.setText("\nYa hay una apuesta activa.");
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-No se puedo apostar porque ya hay una apuesta activa.");
+        }
     }
 
     @Override
@@ -962,9 +971,11 @@ public class VistaGrafica implements IVista{
             txtInfoInicio.setText(txtInfoInicio.getText() + "\n¿Desea Iniciar una nueva partida?");
             iniciarNuevaPartidaButton.setVisible(true);
             salirButton.setVisible(true);
+            iniciarPartidaButton.setVisible(false);
         }else {
             txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Espera a que el anfitrion decida si quiere una nueva partida. En caso que abandone el juego esta la posibilidad de que uno del resto de jugadores se convierta en el nuevo anfitrion.");
         }
+        actualizarBarra();
     }
 
     @Override
@@ -1025,7 +1036,11 @@ public class VistaGrafica implements IVista{
         txtInfoInicio.setText("Un jugador Ha salido");
         txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now()+ "|-Un jugador ha salido del juego.");
         actualizarBarra();
-        eleccionNuevaPartida();
+        if (controlador.juegoIniciado()) {
+            eleccionNuevaPartida();
+        }else {
+            pantallaEspera();
+        }
     }
 
     @Override

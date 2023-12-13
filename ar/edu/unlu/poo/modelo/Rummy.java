@@ -71,8 +71,10 @@ public class Rummy extends ObservableRemoto implements IRummy {
     public void reiniciarEstados() throws RemoteException {
         ganador = null;
         solicitudDeAnularPartida = 0;
-        reiniciarEstadosJugadores();
-        devolverCartasAMesa();
+        if (partidaFinalizada) {
+            reiniciarEstadosJugadores();
+            devolverCartasAMesa();
+        }
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
     }
 
@@ -201,6 +203,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         // y si no aceptan apostar luego se puede cancelar y devolver las fichas
         for (Jugador jugador: jugadores) {
             jugador.setCantApostada(cantFichas);
+            System.out.println(jugador.getCantApostada() + " - " + cantFichas);
             jugador.restarFichasTotales(cantFichas);
             mesaDeJuego.agregarApuesta(cantFichas);
         }
@@ -304,6 +307,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
             mesaDeJuego.sacarApuesta(jugador.getCantApostada());
             jugador.setCantApostada(0);
         }
+        System.out.println("finalizo amistosamente");
         partidaFinalizada = true;
         //pongo de ganador al anfitrion aunque no gana nada para reiniciar los estados del juego
         apuestasActivas = false;
@@ -403,32 +407,33 @@ public class Rummy extends ObservableRemoto implements IRummy {
         jugadorActual.setModoAutomatico(true);
         if (todosEnAutomatico()){
             finalizarPartidaAmistosamente();
-        }
-        obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(),jugadorActual);
-        if (esRummy(jugadorActual.getCartasEnMano())){
-            agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(),false);
-            jugadorActual.getCartasEnMano().clear();
-            //como las cartas se agregaron a la jugada las elimino
-            finalizarPartida(nombreJugador);
-        }
-        //a partir de aca las cartas deberian de seguir ordenadas por lo que solo se comprueba el palo y si el numero es continuo
-        posibleEscalera = obtenerCartasPaloMasRepetido(jugadorActual.getCartasEnMano());
-        if (esEscalera(posibleEscalera)){
-            agregarJugada(nombreJugador,posibleEscalera,false);
         }else {
-            devolverCartas(jugadorActual, posibleEscalera);
-        }
-        posibleCombinacion = obtenerCartasNumeroMasRepetido(jugadorActual.getCartasEnMano());
-        if (esCombinacion(posibleCombinacion)){
-            agregarJugada(nombreJugador,posibleCombinacion,false);
-        }else {
-            devolverCartas(jugadorActual,posibleCombinacion);
-        }
-        if (jugadorActual.getCartasEnMano().isEmpty()){
-            finalizarPartida(nombreJugador);
-        }else {
-            int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
-            terminarTurno(posicionCarta,nombreJugador);
+            obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(), jugadorActual);
+            if (esRummy(jugadorActual.getCartasEnMano())) {
+                agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(), false);
+                jugadorActual.getCartasEnMano().clear();
+                //como las cartas se agregaron a la jugada las elimino
+                finalizarPartida(nombreJugador);
+            }
+            //a partir de aca las cartas deberian de seguir ordenadas por lo que solo se comprueba el palo y si el numero es continuo
+            posibleEscalera = obtenerCartasPaloMasRepetido(jugadorActual.getCartasEnMano());
+            if (esEscalera(posibleEscalera)) {
+                agregarJugada(nombreJugador, posibleEscalera, false);
+            } else {
+                devolverCartas(jugadorActual, posibleEscalera);
+            }
+            posibleCombinacion = obtenerCartasNumeroMasRepetido(jugadorActual.getCartasEnMano());
+            if (esCombinacion(posibleCombinacion)) {
+                agregarJugada(nombreJugador, posibleCombinacion, false);
+            } else {
+                devolverCartas(jugadorActual, posibleCombinacion);
+            }
+            if (jugadorActual.getCartasEnMano().isEmpty()) {
+                finalizarPartida(nombreJugador);
+            } else {
+                int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
+                terminarTurno(posicionCarta, nombreJugador);
+            }
         }
     }
 
@@ -448,6 +453,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         boolean resultado = true;
         for (Jugador jugador: jugadores) {
             if (!jugador.isEnAutomatico()){
+                System.out.println("hay alguno que no esta en automatico");
                 resultado = false;
             }
         }

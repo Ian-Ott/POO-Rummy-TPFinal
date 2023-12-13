@@ -611,17 +611,17 @@ public class VistaConsola implements IVista{
 
     @Override
     public void iniciarTurno(){
-        if (estadoActual.equals(EstadosPosibles.JUEGO_AUTOMATICO)) {
+        if (controlador.jugadorEnAutomatico()) {
             System.out.println("entro a juego automatico aca");
             controlador.iniciarJuegoAutomatico();
         }else {
             estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
         }
+        mostrarPrimerasOpciones();
+        txtConsola.setEnabled(true);
         if (controlador.getTiempoPorTurno() != 0){
             activarTiempoDeTurno();
         }
-        mostrarPrimerasOpciones();
-        txtConsola.setEnabled(true);
     }
 
     private void activarTiempoDeTurno() {
@@ -632,9 +632,9 @@ public class VistaConsola implements IVista{
         tiempoRestante = controlador.getTiempoPorTurno();
         temporizador.schedule(mostrarTiempoActual,0,1000);
         if (controlador.getTiempoPorTurno() == 60){
-            tiempoTurno.schedule(juegoAutomatico,0,60000);
+            tiempoTurno.schedule(juegoAutomatico,60000);
         }else {
-            tiempoTurno.schedule(juegoAutomatico,0,120000);
+            tiempoTurno.schedule(juegoAutomatico,120000);
         }
     }
 
@@ -656,7 +656,6 @@ public class VistaConsola implements IVista{
             @Override
             public void run() {
                 System.out.println("Se acabo el tiempo :(");
-                estadoActual = EstadosPosibles.JUEGO_AUTOMATICO;
                 tiempoTurno.cancel();
                 txtAreaMuestra.setText("Se acabo el tiempo!!! Tu turno se jugara automaticamente.");
                 controlador.iniciarJuegoAutomatico();
@@ -715,11 +714,12 @@ public class VistaConsola implements IVista{
                     "\nHa iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno..." +
                     "\n______________________________________________");
             txtConsola.setEnabled(false);
-            if (estadoActual.equals(EstadosPosibles.JUEGO_AUTOMATICO)){
+            if (controlador.jugadorEnAutomatico()){
                 txtConsola.setEnabled(true);
                 txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe te activo el juego automatico por no terminar tu turno a tiempo." +
                         "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente." +
                         "\nSi quiere desactivar esta opcion solo presione 1");
+                estadoActual = EstadosPosibles.JUEGO_AUTOMATICO;
             }
         }
         txtActual = txtAreaMuestra.getText();

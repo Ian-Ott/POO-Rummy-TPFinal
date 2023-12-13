@@ -553,8 +553,12 @@ public class Controlador implements IControladorRemoto {
 
     public void eliminarJugador() {
         try {
-            rummy.removerObservador(this);
-            rummy.eliminarJugador(nombreJugador);
+            if (nombreJugador != null) {
+                rummy.removerObservador(this);
+                rummy.eliminarJugador(nombreJugador);
+            }else {
+                rummy.removerObservador(this);
+            }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
