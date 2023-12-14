@@ -628,7 +628,12 @@ public class Controlador implements IControladorRemoto {
     }
 
     public int getpuntosJugador() {
-        return 0;//escribir
+        try {
+            return rummy.getPuntosJugador(nombreJugador);
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+        return 0;
     }
 
     public void iniciarJuegoAutomatico() {

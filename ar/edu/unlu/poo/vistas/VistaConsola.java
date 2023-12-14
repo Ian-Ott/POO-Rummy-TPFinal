@@ -4,6 +4,7 @@ import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.ICarta;
 import ar.edu.unlu.poo.modelo.IJugador;
 import ar.edu.unlu.poo.modelo.ITapete;
+import ar.edu.unlu.poo.vistas.consola.Flujo;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -48,6 +49,8 @@ public class VistaConsola implements IVista{
     private String txtActual;
     private TimerTask juegoAutomatico;
     private TimerTask mostrarTiempoActual;
+
+    private Flujo flujoActual;
 
 
     public VistaConsola() {
@@ -161,7 +164,7 @@ public class VistaConsola implements IVista{
                 estadoActual = EstadosPosibles.SIN_ESTADO;
                 controlador.nuevoJugador(controlador.esAnfitrion(), textoIngresado);
             }else {
-                JOptionPane.showMessageDialog(null,"Error: hay alguien con ese nombre en la partida!!!");
+                txtAreaMuestra.setText("Error: hay alguien con ese nombre en la partida!!!");
                 obtenerNombre();
             }
         }else if (estadoActual.equals(EstadosPosibles.OPCIONES_DE_MESA)) {
@@ -183,6 +186,10 @@ public class VistaConsola implements IVista{
             }
         }
     }
+
+    /*public void print(String txtActual){
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + txtActual + "\n");
+    }*/
 
     private void seleccionarOpcionesTiempo(String textoIngresado) {
         if (textoIngresado.equals("1")) {
@@ -521,6 +528,9 @@ public class VistaConsola implements IVista{
                 "\n----------------------------------------------------------"+
                 "\nCantidad de fichas en el bote de apuestas: " + controlador.getcantidadFichasBote() +
                 "\nJugadores Restantes en la partida: " + controlador.getCantDisponibles());
+        if (controlador.getModoJuego().equals("JUEGOAPUNTOS")){
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nTus puntos de partida: "+ controlador.getpuntosJugador());
+        }
     }
 
     private String procesarCambiosMesa() {
@@ -892,11 +902,12 @@ public class VistaConsola implements IVista{
     @Override
     public void mostrarErrorConexion() {
         System.out.println("error remoto");
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "Error: hubo un problema con la coneion remota");
     }
 
     @Override
     public void errorCantidadJugadores() {
-
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "Error: faltan jugadores para comenzar la partida.");
     }
 
     @Override

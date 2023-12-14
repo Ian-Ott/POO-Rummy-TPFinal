@@ -662,7 +662,7 @@ public class VistaGrafica implements IVista{
         txtTurno.setText(txtTurno.getText() +  "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
         "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() + ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
         if (controlador.getModoJuego().equals("JUEGOAPUNTOS")){
-            txtTurno.setText("Tus puntos: "+ controlador.getpuntosJugador());
+            txtTurno.setText("Tus puntos de partida: "+ controlador.getpuntosJugador());
         }
     }
 

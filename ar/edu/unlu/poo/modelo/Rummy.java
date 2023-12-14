@@ -449,6 +449,12 @@ public class Rummy extends ObservableRemoto implements IRummy {
         jugadorActual.setModoAutomatico(false);
     }
 
+    @Override
+    public int getPuntosJugador(String nombreJugador) throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.getPuntosDePartida();
+    }
+
     private boolean todosEnAutomatico() {
         boolean resultado = true;
         for (Jugador jugador: jugadores) {
