@@ -41,6 +41,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         solicitudDeAnularPartida = 0;
         estadoCompetitivo = true;
         tiempoDeTurno = 0;
+        partidaFinalizada = false;
     }
 
     public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
@@ -92,6 +93,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
                 partidaFinalizada = false;
             } else if (modo.equals(modoDeJuego.EXPRES)) {
                 jugadorActual.setCantApostada(0);
+                partidaFinalizada = false;
             }
             jugadorActual.setModoAutomatico(false);
             jugadorActual.setHizoRummy(false);

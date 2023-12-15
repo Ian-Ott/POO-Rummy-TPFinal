@@ -62,7 +62,7 @@ public class Controlador implements IControladorRemoto {
                 vista.cerrarPartida();
             } else if (cambio.equals("partida cerrada modo expres")) {
                 vista.cerrarPartida();
-                vista.finalizarPartida();
+                vista.finalizarPartida();//revisar
             } else if (cambio.equals("pedido anular partida")) {
                 vista.eleccionAnularPartida();
             } else if (cambio.equals("finalizo partida amistosamente")) {
@@ -81,7 +81,7 @@ public class Controlador implements IControladorRemoto {
             }
     }
 
-    private void resultadoRonda() {
+    public void resultadoRonda() {
         ArrayList<IJugador> jugadores;
         try {
             jugadores =  rummy.getIJugadores();
@@ -153,9 +153,6 @@ public class Controlador implements IControladorRemoto {
                 rummy.iniciarJuego();
                 resultado = true;
             }else {
-                /*if (vista instanceof VistaConsola){
-                    JOptionPane.showMessageDialog(null,"ERROR: faltan jugadores para iniciar el juego");
-                }*/
                 vista.errorCantidadJugadores();
             }
         } catch (RemoteException e) {
@@ -660,4 +657,5 @@ public class Controlador implements IControladorRemoto {
             vista.mostrarErrorConexion();
         }
     }
+
 }

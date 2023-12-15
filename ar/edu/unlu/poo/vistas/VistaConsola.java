@@ -3,18 +3,45 @@ package ar.edu.unlu.poo.vistas;
 import ar.edu.unlu.poo.controlador.Controlador;
 import ar.edu.unlu.poo.modelo.ICarta;
 import ar.edu.unlu.poo.modelo.IJugador;
-import ar.edu.unlu.poo.modelo.ITapete;
 import ar.edu.unlu.poo.vistas.consola.Flujo;
+import ar.edu.unlu.poo.vistas.consola.FlujoEsperaNuevaRonda;
+import ar.edu.unlu.poo.vistas.consola.FlujoResumenRonda;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class VistaConsola implements IVista{
     private boolean cambiosOpcionesMesa;
+
+    public boolean esNumero(String txtIngresado) {
+        boolean resultado;
+        try{
+            Integer.parseInt(txtIngresado);
+            resultado = true;
+        }catch (NumberFormatException e){
+            resultado = false;
+        }
+        return resultado;
+    }
+
+    public void errorRangoNumerico() {
+        print("Numero fuera de rango.");
+    }
+
+    public boolean hayJugadasSinVer() {
+        return jugadasSinVer;
+    }
+
+    public void reiniciarTablaRonda() {
+        String jugadorActual;
+        for (int i = 0; i < controlador.cantJugadores(); i++) {
+            jugadorActual = controlador.obtenerJugador(i);
+            acumuladorTablaFinRonda = "| " + jugadorActual + " | Puntos";
+        }
+    }
 
     enum EstadosPosibles{
         SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO, JUEGO_AUTOMATICO
@@ -51,6 +78,7 @@ public class VistaConsola implements IVista{
     private TimerTask mostrarTiempoActual;
 
     private Flujo flujoActual;
+    private String acumuladorTablaFinRonda;
 
 
     public VistaConsola() {
@@ -187,9 +215,9 @@ public class VistaConsola implements IVista{
         }
     }
 
-    /*public void print(String txtActual){
+    public void print(String txtActual){
         txtAreaMuestra.setText(txtAreaMuestra.getText() + txtActual + "\n");
-    }*/
+    }
 
     private void seleccionarOpcionesTiempo(String textoIngresado) {
         if (textoIngresado.equals("1")) {
@@ -230,6 +258,18 @@ public class VistaConsola implements IVista{
             pantallaEspera();
         }
     }
+    public Flujo mostrarOpcionesNuevaPartida(String txtIngresado, Flujo flujoActual) {
+        txtIngresado = txtIngresado.toUpperCase();
+        if (txtIngresado.equals("Y")){
+            controlador.nuevoJuego();
+        }else if (txtIngresado.equals("N")){
+            controlador.eliminarJugador();
+            System.exit(0);
+        }else {
+            opcionIncorrecta();
+        }
+        return flujoActual;
+    }
 
     private void mostrarOpcionesDeTiempo() {
         estadoActual = EstadosPosibles.OPCIONES_TIEMPO;
@@ -240,7 +280,7 @@ public class VistaConsola implements IVista{
                 "\nTiempo actual: " + mostrarTiempoActual());
     }
 
-    private String mostrarTiempoActual() {
+    public String mostrarTiempoActual() {
         int tiempoActual = controlador.getTiempoPorTurno();
         String resultado;
         if (tiempoActual == 0){
@@ -305,9 +345,9 @@ public class VistaConsola implements IVista{
             mostrarSeleccionCartas();
         } else if (textoIngresado.equals("4")) {
             jugadasSinVer = false;
-            mostrarJugadasEnMesa();
+            //mostrarJugadasEnMesa();
         } else if (textoIngresado.equals("5")) {
-            mostrarCantidadCartas();
+            //mostrarCantidadCartas();
         } else if (textoIngresado.equals("6")) {
             mostrarOpcionesDeMesa();
         } else if (textoIngresado.equals("9")) {
@@ -334,10 +374,10 @@ public class VistaConsola implements IVista{
         }else {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo podes modificar las opciones de mesa solo esta disponible para el anfitrion.");
         }
-        txtActual = txtAreaMuestra.getText();
+        guardarTxtActual();
     }
 
-    private String obtenerEstado(boolean estado) {
+    public String obtenerEstado(boolean estado) {
         String resultado;
         if (estado){
             resultado = "ACTIVADO";
@@ -475,33 +515,25 @@ public class VistaConsola implements IVista{
         }
     }
 
-    private void mostrarCantidadCartas(){
-        continuarTurnoActual();
-        ArrayList<String> oponentes = controlador.nombreOponentes(controlador.getNombreJugador());
-        for (int i = 0; i < controlador.cantJugadores() - 1;i++){
-            txtAreaMuestra.setText(txtAreaMuestra.getText()+"\nJugador " + oponentes.get(i) +
-                    "\nCantidad de cartas: " + controlador.cantCartasOponente(oponentes.get(i)));
-        }
-    }
+
 
     private void agregarPosicion(int numero) {
         if (!posicionesSeleccionadas.contains(numero)){
             posicionesSeleccionadas.add(numero);
         }else {
-            JOptionPane.showMessageDialog(null, "posicion ya seleccionada!!!");
+            print("posicion ya seleccionada!!!");
         }
     }
 
-    private void mostrarSeleccionCartas(){
+    public void mostrarSeleccionCartas(){
         mostrarCartas();
-        txtAreaMuestra.setText(txtAreaMuestra.getText() +
-                "\n seleccione las cartas segun su POSICION (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
-            estadoActual = EstadosPosibles.SELECCION_CARTAS;
-        txtActual = txtAreaMuestra.getText();
+        print("\n seleccione las cartas segun su POSICION (empezando por la 1) \nuna vez finalizado presione 0 para continuar");
+        estadoActual = EstadosPosibles.SELECCION_CARTAS;
+        guardarTxtActual();
     }
 
     public void opcionIncorrecta(){
-        JOptionPane.showMessageDialog(null, "Opcion incorrecta!!!");
+        print("Opcion incorrecta!!!");
     }
 
     private void mostrarMenu() {
@@ -533,8 +565,8 @@ public class VistaConsola implements IVista{
         }
     }
 
-    private String procesarCambiosMesa() {
-        String txtOpcionMesa = "\n6-Opciones de mesa (solo disponible para el jefe de mesa)";
+    public String procesarCambiosMesa() {
+        String txtOpcionMesa = "4-Opciones de mesa (solo disponible para el jefe de mesa)";
         if (cambiosOpcionesMesa){
             //cambiar color a rojo del txt
         }
@@ -592,7 +624,7 @@ public class VistaConsola implements IVista{
                 }
     }
 
-    private void limpiarPantalla(){
+    public void limpiarPantalla(){
         txtAreaMuestra.setText(" ");
     }
 
@@ -602,18 +634,11 @@ public class VistaConsola implements IVista{
     }
 
 
-    private void mostrarJugadasEnMesa(){
-        ITapete jugadasEnMesa = controlador.obtenerJugadas();
-        txtAreaMuestra.setText("\n");
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + jugadasEnMesa);
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSeleccione la jugada a la que quiera agregar una carta \n(si desea la agregar cartas a la jugada 1 solo seleccione el 1 y asi con las demas) \n\npresione 0 para cancelar");
-        estadoActual = EstadosPosibles.SELECCION_JUGADA;
-        txtActual = txtAreaMuestra.getText();
-    }
+
     private void terminarTurno(){
         txtAreaMuestra.setText("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
         mostrarSeleccionCartas();
-        txtActual = txtAreaMuestra.getText();
+        guardarTxtActual();
     }
 
 
@@ -628,13 +653,17 @@ public class VistaConsola implements IVista{
             estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
         }
         mostrarPrimerasOpciones();
-        txtConsola.setEnabled(true);
+        cambiarEstadoConsola(true);
         if (controlador.getTiempoPorTurno() != 0){
             activarTiempoDeTurno();
         }
     }
 
-    private void activarTiempoDeTurno() {
+    public void cambiarEstadoConsola(boolean estado) {
+        txtConsola.setEnabled(estado);
+    }
+
+    public void activarTiempoDeTurno() {
         tiempoTurno = new Timer();
         temporizador = new Timer();
         crearJuegoAutomatico();
@@ -681,14 +710,18 @@ public class VistaConsola implements IVista{
                 "\nCarta disponible en la pila de descartes:" + controlador.getCartaDescarte()+
                 "\nTus cartas:\n");
         mostrarCartas();
+        guardarTxtActual();
+    }
+
+    public void guardarTxtActual() {
         txtActual = txtAreaMuestra.getText();
     }
 
 
-    private void mostrarCartas(){
+    public void mostrarCartas(){
         ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
         mostrarPosiciones(cartasActuales);
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nTus cartas:");
         for (int i = 0; i < cartasActuales.size(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + cartasActuales.get(i));
             if (i == 10 || i == 20){
@@ -732,7 +765,7 @@ public class VistaConsola implements IVista{
                 estadoActual = EstadosPosibles.JUEGO_AUTOMATICO;
             }
         }
-        txtActual = txtAreaMuestra.getText();
+        guardarTxtActual();
         //else que continue el turno?
     }
 
@@ -766,7 +799,7 @@ public class VistaConsola implements IVista{
                 txtAreaMuestra.setText(txtAreaMuestra.getText() +
                         "\n\nHay nuevas jugadas disponibles en la mesa!!!");
             }
-            txtActual = txtAreaMuestra.getText();
+            guardarTxtActual();
         }else {
             esperarTurno();
 
@@ -791,10 +824,10 @@ public class VistaConsola implements IVista{
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
         }
         controlador.obtenerPosiciones();
-        eleccionNuevaPartida();
+        mostrarOpcionesNuevaPartida();
     }
 
-    private void eleccionNuevaPartida() {
+    public void mostrarOpcionesNuevaPartida() {
         //comprueba cual es el anfitrion antes de dar la eleccion por si hubo un cambio inesperado
         controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()){
@@ -802,9 +835,7 @@ public class VistaConsola implements IVista{
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
         }else {
             txtConsola.setEnabled(false);
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nEl anfitrion esta decidiendo si iniciar una nueva partida..."
-                            //+ "\n(AVISO:En caso que se cierre el juego significa que no hay una nueva partida)"
-            );
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nEl anfitrion esta decidiendo si iniciar una nueva partida...");
         }
     }
 
@@ -842,20 +873,20 @@ public class VistaConsola implements IVista{
         if (!controlador.esAnfitrion()){
             hayApuesta = true;
             txtConsola.setEnabled(true);
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nAVISO:"+
-                    "\nLas apuestas han sido activadas. (en el caso que quiera cancelar la apuesta presione 0)" +
-                    "\nTu apuesta seria de: " + controlador.getcantidadApostada() + " fichas.");
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + " ");
         }
     }
 
     @Override
     public void mostrarResultadosPuntosRonda(ArrayList<IJugador> jugadores) {
-        txtAreaMuestra.setText("\nPuntos de los jugadores (el limite es 300):");
+        print("Puntos de los jugadores (el limite es 300):");
+        acumuladorTablaFinRonda += "\n";
         for (int i = 0; i < controlador.cantJugadores(); i++) {
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n" + controlador.obtenerJugador(i));
-            //cambiar?
+            acumuladorTablaFinRonda += jugadores.get(i).getNombre() + "\t" + jugadores.get(i).getPuntosDePartida() + "\t";
         }
-        controlador.iniciarNuevaRonda();
+        print(acumuladorTablaFinRonda);
+        flujoActual = new FlujoEsperaNuevaRonda(this, controlador);
+        flujoActual.mostrarSiguienteTexto();
     }
 
     @Override
@@ -863,7 +894,7 @@ public class VistaConsola implements IVista{
         limpiarPantalla();
         txtAreaMuestra.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
         controlador.obtenerPosiciones();
-        eleccionNuevaPartida();
+        mostrarOpcionesNuevaPartida();
     }
 
     @Override
@@ -913,7 +944,7 @@ public class VistaConsola implements IVista{
     @Override
     public void mostrarJugadorSalioDelJuego() {
         txtAreaMuestra.setText("Un Jugador Ha salido Del Juego.");
-        eleccionNuevaPartida();
+        mostrarOpcionesNuevaPartida();
     }
 
     @Override
