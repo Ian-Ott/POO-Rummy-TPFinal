@@ -12,6 +12,7 @@ public class FlujoObtenerNombre extends Flujo{
     public Flujo procesarEntrada(String txtIngresado) {
         if (!controlador.estaEnElJuego(txtIngresado)){
             controlador.nuevoJugador(controlador.esAnfitrion(), txtIngresado);
+            return vistaConsola.flujoActual();
         }else {
             vistaConsola.print("Error: hay alguien con ese nombre en la partida!!!");
         }

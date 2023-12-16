@@ -17,8 +17,20 @@ public class FlujoOpcionesDeMesa extends Flujo{
                 }
                 case "2" -> controlador.modificarPartidasCompetitivas();
                 case "3" -> controlador.modificarOpcionChat();
-                case "4" -> controlador.activarModoExpres();
-                case "5" -> controlador.activarModoPuntos();
+                case "4" -> {
+                    if (!controlador.getModoJuego().equals("EXPRES")) {
+                        controlador.activarModoExpres();
+                    }else {
+                        vistaConsola.print("El modo ya esta activo.");
+                    }
+                }
+                case "5" -> {
+                    if (!controlador.getModoJuego().equals("JUEGOAPUNTOS")) {
+                        controlador.activarModoPuntos();
+                    }else {
+                        vistaConsola.print("El modo ya esta activo.");
+                    }
+                }
                 case "0" -> {
                     return continuarEnFlujoAnterior();
                 }
@@ -50,7 +62,7 @@ public class FlujoOpcionesDeMesa extends Flujo{
         vistaConsola.print("<Opciones de Mesa>");
         if (controlador.esAnfitrion()){
             vistaConsola.print("Seleccione las opciones que quiera cambiar: ");
-            vistaConsola.print("1-Cambiar tiempo por cada turno (tiempo actual: " + vistaConsola.mostrarTiempoActual());
+            vistaConsola.print("1-Cambiar tiempo por cada turno (tiempo actual: " + vistaConsola.mostrarTiempoActual() + ")");
             vistaConsola.print("2-Activar/Desactivar partidas competitivas, Estado actual: " + vistaConsola.obtenerEstado(controlador.getEstadoCompetitivo()) + "(al desactivar esta opcion no se cuentan las fichas y los puntos obtenidos)");
             vistaConsola.print("3-Permitir publico y chat, Estado Actual: " + " ");
             vistaConsola.print("4-Activar Ronda Expres (es una partida rapida de una ronda en la que gana el jugador que cierra antes)");

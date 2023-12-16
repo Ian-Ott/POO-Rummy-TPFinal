@@ -18,8 +18,10 @@ public class FlujoTerminarTurno extends Flujo{
                 ArrayList<Integer> posicionSeleccionada = new ArrayList<>();
                 posicionSeleccionada.add(posicion - 1);
                 controlador.terminarTurno(posicionSeleccionada);
+                return vistaConsola.flujoActual();
             } else if (posicion == 0) {
                 controlador.terminarTurno(new ArrayList<>());
+                return vistaConsola.flujoActual();
             } else {
                 vistaConsola.errorRangoNumerico();
             }

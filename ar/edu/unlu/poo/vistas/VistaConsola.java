@@ -41,6 +41,10 @@ public class VistaConsola implements IVista{
         }
     }
 
+    public Flujo flujoActual() {
+        return flujoActual;
+    }
+
     enum EstadosPosibles{
         SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO, JUEGO_AUTOMATICO
     }
@@ -159,6 +163,8 @@ public class VistaConsola implements IVista{
     }
 
     private void procesarTexto(String txtIngresado){
+        print(txtIngresado);
+        txtConsola.setText("");
         txtIngresado = txtIngresado.trim();
         flujoActual = flujoActual.procesarEntrada(txtIngresado);
         flujoActual.mostrarSiguienteTexto();
@@ -637,7 +643,8 @@ public class VistaConsola implements IVista{
     @Override
     public void actualizarCantJugadores(){
         flujoActual = new FlujoEsperaPartida(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        print("Se ha unido un nuevo jugador a la partida!!!");
+        //flujoActual.mostrarSiguienteTexto();
     }
 
 
@@ -827,7 +834,7 @@ public class VistaConsola implements IVista{
         //comprueba cual es el anfitrion antes de dar la eleccion por si hubo un cambio inesperado
         controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()){
-            estadoActual = EstadosPosibles.FIN_PARTIDA;
+            //estadoActual = EstadosPosibles.FIN_PARTIDA;
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
         }else {
             txtConsola.setEnabled(false);
@@ -934,13 +941,15 @@ public class VistaConsola implements IVista{
 
     @Override
     public void mostrarErrorConexion() {
-        System.out.println("error remoto");
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "Error: hubo un problema con la coneion remota");
+        System.out.println("Error remoto");
+        limpiarPantalla();
+        txtAreaMuestra.setText(txtAreaMuestra.getText() + "Error: hubo un problema con la conexion remota");
     }
 
     @Override
     public void errorCantidadJugadores() {
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "Error: faltan jugadores para comenzar la partida.");
+        limpiarPantalla();
+        print("Error: faltan jugadores para comenzar la partida.");
     }
 
     @Override
@@ -958,6 +967,6 @@ public class VistaConsola implements IVista{
         if (!controlador.esTurnoJugador()){
             print("\nEl anfitrion hizo cambios en las opciones de mesa!!!");
         }
-        continuarEnEstadoAnterior();
+        //continuarEnEstadoAnterior();
     }
 }

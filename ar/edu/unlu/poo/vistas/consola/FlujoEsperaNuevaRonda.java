@@ -12,6 +12,7 @@ public class FlujoEsperaNuevaRonda extends Flujo{
     public Flujo procesarEntrada(String txtIngresado) {
         if (controlador.esAnfitrion()){
             controlador.iniciarNuevaRonda();
+            return vistaConsola.flujoActual();
         }
         return this;
     }

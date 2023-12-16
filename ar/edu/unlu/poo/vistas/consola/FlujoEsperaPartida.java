@@ -18,6 +18,7 @@ public class FlujoEsperaPartida extends Flujo{
                 } else if (numeroIngresado == 1) {
                     vistaConsola.reiniciarTablaRonda();
                     controlador.iniciarJuego();
+                    return vistaConsola.flujoActual();
                 } else if (numeroIngresado == 2) {
                     return new FlujoOpcionesDeMesa(vistaConsola, controlador);
                 } else if (numeroIngresado == 0) {
@@ -40,6 +41,7 @@ public class FlujoEsperaPartida extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        //vistaConsola.limpiarPantalla();
         if (controlador.esAnfitrion()){
             mostrarEsperaAnfitrion();
         }else {
@@ -63,6 +65,7 @@ public class FlujoEsperaPartida extends Flujo{
             vistaConsola.print("\nApuestas Activadas!!!");
             vistaConsola.print("Si las quiere desactivar seleccione la opcion 0.");
         }
+        vistaConsola.cambiarEstadoConsola(true);
     }
 
     private void mostrarEspera(){

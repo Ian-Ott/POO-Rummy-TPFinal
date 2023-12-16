@@ -11,8 +11,14 @@ public class FlujoInicioTurno extends Flujo{
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
         switch (txtIngresado){
-            case "1" -> controlador.tomarCartaMazo();
-            case "2" -> controlador.tomarCartaDescarte();
+            case "1" -> {
+                controlador.tomarCartaMazo();
+                return vistaConsola.flujoActual();
+            }
+            case "2" -> {
+                controlador.tomarCartaDescarte();
+                return vistaConsola.flujoActual();
+            }
             default -> vistaConsola.opcionIncorrecta();
         }
         return this;

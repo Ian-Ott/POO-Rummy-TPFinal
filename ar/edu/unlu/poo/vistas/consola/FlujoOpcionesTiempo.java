@@ -11,9 +11,27 @@ public class FlujoOpcionesTiempo extends Flujo{
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
         switch (txtIngresado){
-            case "1" -> controlador.setTiempoTurno(60);
-            case "2" -> controlador.setTiempoTurno(120);
-            case "3" -> controlador.setTiempoTurno(0);
+            case "1" -> {
+                if (controlador.getTiempoPorTurno() != 60) {
+                    controlador.setTiempoTurno(60);
+                }else {
+                    vistaConsola.print("Opcion ya Activa.");
+                }
+            }
+            case "2" ->{
+                if (controlador.getTiempoPorTurno() != 60) {
+                    controlador.setTiempoTurno(120);
+                }else {
+                    vistaConsola.print("Opcion ya Activa.");
+                }
+            }
+            case "3" -> {
+                if (controlador.getTiempoPorTurno() != 0){
+                    controlador.setTiempoTurno(0);
+                }else {
+                    vistaConsola.print("Opcion ya Activa.");
+                }
+            }
             case "0" -> {
                 return new FlujoOpcionesDeMesa(vistaConsola, controlador);
             }
@@ -24,6 +42,7 @@ public class FlujoOpcionesTiempo extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("<Opciones de Tiempo>");
         vistaConsola.print("Seleccione la cantidad de tiempo que quiere por cada turno:");
         vistaConsola.print("1- 60 segundos por turno");

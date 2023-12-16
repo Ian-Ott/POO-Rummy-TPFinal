@@ -12,7 +12,7 @@ public class FlujoEsperaTurno extends Flujo{
     public Flujo procesarEntrada(String txtIngresado) {
         if (controlador.isEliminado() && controlador.apuestasActivadas()){
             if (txtIngresado.equals("1")){
-                controlador.cancelarApuesta();
+                controlador.hacerReenganche();
             }else {
                 vistaConsola.opcionIncorrecta();
             }
