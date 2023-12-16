@@ -141,4 +141,5 @@ public interface IRummy extends IObservableRemoto {
     void desactivarJuegoAutomatico(String nombreJugador) throws RemoteException;
 
     int getPuntosJugador(String nombreJugador) throws RemoteException;
+
 }

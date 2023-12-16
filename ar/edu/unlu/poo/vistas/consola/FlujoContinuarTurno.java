@@ -38,12 +38,6 @@ public class FlujoContinuarTurno extends Flujo{
                 }
                 default -> vistaConsola.opcionIncorrecta();
             }
-        } else if (!controlador.esTurnoJugador() && controlador.jugadorEnAutomatico()) {
-            if (txtIngresado.equals("1")){
-                controlador.desactivarJuegoAutomatico();
-            }else {
-                vistaConsola.opcionIncorrecta();
-            }
         }
         return this;
     }
@@ -52,15 +46,7 @@ public class FlujoContinuarTurno extends Flujo{
     public void mostrarSiguienteTexto() {
         vistaConsola.limpiarPantalla();
         if (controlador.isEliminado()){
-            if (controlador.apuestasActivadas()) {
-                vistaConsola.print("Usted ha sido eliminado de la partida por sobrepasar la cantidad de puntos.");
-                vistaConsola.print("¿Quiere reengancharse? (si acepta debe apostar la mitad de lo que aposto en un inicio)");
-                vistaConsola.print("Tus fichas: " + controlador.cantFichas() + " | Cantidad apostada: " + controlador.getcantidadApostada());
-                vistaConsola.print("1-Para Reengancharse");
-            }else {
-                vistaConsola.print("Usted ha sido eliminado de la partida por sobrepasar la cantidad de puntos.");
-                vistaConsola.print("No puede reengancharse porque no hay apuestas activas :(");
-            }
+            vistaConsola.mostrarAvisoEliminado();
         } else if (controlador.esTurnoJugador()){
             mostrarMenuTurnoActual();
             vistaConsola.mostrarCartas();
@@ -68,8 +54,6 @@ public class FlujoContinuarTurno extends Flujo{
                 vistaConsola.print("\nHay nuevas jugadas disponibles en la mesa!!!");
             }
             vistaConsola.guardarTxtActual();
-        }else {
-            esperarTurno();
         }
     }
 
@@ -105,20 +89,7 @@ public class FlujoContinuarTurno extends Flujo{
         return bienvenida;
     }
 
-    private void esperarTurno() {
-        vistaConsola.print("______________________________________________");
-        vistaConsola.print("Ha iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno...");
-        vistaConsola.print("______________________________________________");
 
-        if (controlador.jugadorEnAutomatico()){
-            vistaConsola.cambiarEstadoConsola(true);
-            vistaConsola.print("\nSe te activo el juego automatico por no terminar tu turno a tiempo.");
-            vistaConsola.print("\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente.");
-            vistaConsola.print("1-Para cancelar el juego automatico sino siga esperando su turno.");
-        }else {
-            vistaConsola.cambiarEstadoConsola(false);
-        }
-    }
 
     private void mostrarCantidadCartas(){
         ArrayList<String> oponentes = controlador.nombreOponentes(controlador.getNombreJugador());

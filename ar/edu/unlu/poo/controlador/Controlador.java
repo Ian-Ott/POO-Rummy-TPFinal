@@ -36,7 +36,7 @@ public class Controlador implements IControladorRemoto {
     @Override
     public void actualizar(IObservableRemoto modelo, Object cambio){
             if (cambio.toString().equals("cartas repartidas")){
-                obtenerCartas();
+                obtenerCartas();//tal vez lo puedo borrar
             } else if (cambio.equals("nueva apuesta")) {
                 vista.avisarSobreApuesta();
             } else if (cambio.equals("apuesta cancelada")) {
@@ -62,7 +62,7 @@ public class Controlador implements IControladorRemoto {
                 vista.cerrarPartida();
             } else if (cambio.equals("partida cerrada modo expres")) {
                 vista.cerrarPartida();
-                vista.finalizarPartida();//revisar
+                vista.finalizarPartida();//revisar si es posible cambiar a que muestre la eleccion de partida y las posiciones
             } else if (cambio.equals("pedido anular partida")) {
                 vista.eleccionAnularPartida();
             } else if (cambio.equals("finalizo partida amistosamente")) {

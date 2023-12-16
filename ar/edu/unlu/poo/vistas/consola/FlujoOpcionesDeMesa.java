@@ -63,4 +63,5 @@ public class FlujoOpcionesDeMesa extends Flujo{
         }
         vistaConsola.guardarTxtActual();
     }
+
 }

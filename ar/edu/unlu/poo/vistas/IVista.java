@@ -19,7 +19,6 @@ public interface IVista {
 
     void esperarTurno();
 
-    void actualizarCartas(ArrayList<ICarta> cartasJugador);
 
     void nuevoTurno();
 
