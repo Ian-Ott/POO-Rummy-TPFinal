@@ -17,6 +17,7 @@ public class FlujoAnularPartida extends Flujo{
                 tomoDecision = true;
                 vistaConsola.print("Usted tomo su eleccion. Esperando a que el resto de jugadores decida...");
                 controlador.tomarDecisionDePartida(txtIngresado);
+                return vistaConsola.flujoActual(); //en el caso que se anule la partida el jugador que este procesando la entrada continuara en el siguiente flujo tambien
             }
             case "N" -> controlador.tomarDecisionDePartida(txtIngresado);
             default -> vistaConsola.opcionIncorrecta();
@@ -29,6 +30,8 @@ public class FlujoAnularPartida extends Flujo{
         if (!tomoDecision) {
             vistaConsola.print("Se solicito anular la partida.");
             vistaConsola.print("¿Usted desea anular la partida? (Y/N)");
+        }else {
+            vistaConsola.cambiarEstadoConsola(false);
         }
     }
 }

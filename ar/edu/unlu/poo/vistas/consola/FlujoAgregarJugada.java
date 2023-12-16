@@ -31,13 +31,13 @@ public class FlujoAgregarJugada extends Flujo{
                 }
             }
             case POSIBLE_RUMMY, POSIBLE_ESCALERA, POSIBLE_COMBINACION_CARTAS_IGUALES -> {
-                agregarPosicionCarta(txtIngresado);
+                return agregarPosicionCarta(txtIngresado);
             }
         }
         return this;
     }
 
-    private void agregarPosicionCarta(String txtIngresado) {
+    private Flujo agregarPosicionCarta(String txtIngresado) {
         int posicion = Integer.parseInt(txtIngresado);
         if (posicion <= controlador.getJugadasSize() && posicion > 0){
             posicionesSeleccionadas.add(posicion - 1);
@@ -47,9 +47,11 @@ public class FlujoAgregarJugada extends Flujo{
                 case POSIBLE_ESCALERA -> controlador.armarEscalera(posicionesSeleccionadas);
                 case POSIBLE_COMBINACION_CARTAS_IGUALES -> controlador.armarCombinacionIguales(posicionesSeleccionadas);
             }
+            return vistaConsola.flujoActual();//revisar
         }else {
             vistaConsola.errorRangoNumerico();
         }
+        return this;
     }
 
     @Override

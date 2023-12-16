@@ -32,7 +32,10 @@ public class FlujoContinuarTurno extends Flujo{
                 case "4" -> {
                     return new FlujoOpcionesDeMesa(vistaConsola, controlador);
                 }
-                case "5" -> controlador.solicitarAnularPartida();
+                case "5" -> {
+                    controlador.solicitarAnularPartida();
+                    return vistaConsola.flujoActual();
+                }
                 case "0" -> {
                     return new FlujoTerminarTurno(vistaConsola, controlador);
                 }
