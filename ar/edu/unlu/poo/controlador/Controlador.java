@@ -2,6 +2,7 @@ package ar.edu.unlu.poo.controlador;
 
 import ar.edu.unlu.poo.Serializacion.services.Serializador;
 import ar.edu.unlu.poo.exceptions.JugadorInexistente;
+import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
 import ar.edu.unlu.poo.modelo.*;
 import ar.edu.unlu.poo.vistas.IVista;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
@@ -14,6 +15,7 @@ public class Controlador implements IControladorRemoto {
     private IRummy rummy;
     private IVista vista;
     private String nombreJugador;
+    private String nombreEspectador;
     private boolean anfitrion;
 
     private static Serializador serializador;
@@ -81,6 +83,10 @@ public class Controlador implements IControladorRemoto {
                 vista.pantallaEspera();
             } else if (cambio.equals("juego iniciado")) {
                 vista.iniciarTurno();
+            } else if (cambio instanceof String) {
+                if (nombreEspectador != null) {
+                    vista.mostrarNuevoMensaje((String) cambio);
+                }
             }
     }
 
@@ -129,7 +135,7 @@ public class Controlador implements IControladorRemoto {
         return 0;
     }
 
-    public ICarta getCartaDescarte(){
+    public ICarta getCartaDescarte() throws NoHayCartaBocaArriba {
         try {
             return rummy.getCartaBocaArriba();
         } catch (RemoteException e) {
@@ -149,7 +155,7 @@ public class Controlador implements IControladorRemoto {
         return false;
     }
 
-    public boolean iniciarJuego(){
+    public boolean iniciarJuego() {
         boolean resultado = false;
         try {
             if (rummy.getJugadores().size() >= 2){
@@ -253,7 +259,7 @@ public class Controlador implements IControladorRemoto {
         return nombreJugador;
     }
 
-    public void tomarCartaMazo(){
+    public void tomarCartaMazo() {
         try {
             rummy.sacarCartaMazo(nombreJugador);
         } catch (RemoteException e) {
@@ -439,7 +445,7 @@ public class Controlador implements IControladorRemoto {
         return 0;
     }
 
-    public void iniciarNuevaRonda() {
+    public void iniciarNuevaRonda(){
         try {
             rummy.iniciarNuevaRonda();
         } catch (RemoteException e) {
@@ -577,7 +583,11 @@ public class Controlador implements IControladorRemoto {
     }
 
     public void modificarOpcionChat() {
-
+        try {
+            rummy.modificarOpcionPublico();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
     }
 
     public void modificarPartidasCompetitivas() {
@@ -641,7 +651,7 @@ public class Controlador implements IControladorRemoto {
         return 0;
     }
 
-    public void iniciarJuegoAutomatico() {
+    public void iniciarJuegoAutomatico(){
         try {
             rummy.juegoAutomatico(nombreJugador);
         } catch (RemoteException e) {
@@ -712,6 +722,34 @@ public class Controlador implements IControladorRemoto {
     public void activarNuevoJugador() {
         try {
             nombreJugador = rummy.activarJugadorSiguiente();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
+
+    public boolean publicoPermitido(){
+        try {
+            return rummy.isPublicoPermitido();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+        return false;
+    }
+
+    public void nuevoEspectador(String nombreEspectador) {
+        this.nombreEspectador = nombreEspectador;
+        String nombreNuevoEspectador = nombreEspectador + "Se ha unido al chat";
+        try {
+            rummy.mostrarMensajeEnChat(nombreNuevoEspectador);
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
+
+    public void mostrarMensaje(String txtIngresado) {
+        txtIngresado = " "+ nombreEspectador + " - " + txtIngresado;
+        try {
+            rummy.mostrarMensajeEnChat(txtIngresado);
         } catch (RemoteException e) {
             vista.mostrarErrorConexion();
         }

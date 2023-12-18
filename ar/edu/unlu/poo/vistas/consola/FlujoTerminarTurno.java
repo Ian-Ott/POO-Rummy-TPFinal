@@ -12,9 +12,10 @@ public class FlujoTerminarTurno extends Flujo{
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
+        vistaConsola.limpiarPantalla();
         if (vistaConsola.esNumero(txtIngresado)) {
             int posicion = Integer.parseInt(txtIngresado);
-            if (posicion <= controlador.getJugadasSize() && posicion > 0) {
+            if (posicion <= controlador.getCartasSize() && posicion > 0) {
                 ArrayList<Integer> posicionSeleccionada = new ArrayList<>();
                 posicionSeleccionada.add(posicion - 1);
                 controlador.terminarTurno(posicionSeleccionada);
@@ -33,7 +34,6 @@ public class FlujoTerminarTurno extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
-        vistaConsola.limpiarPantalla();
         vistaConsola.print("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
         vistaConsola.mostrarSeleccionCartas();
     }

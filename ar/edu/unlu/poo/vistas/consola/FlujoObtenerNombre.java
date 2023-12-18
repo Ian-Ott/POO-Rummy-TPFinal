@@ -14,6 +14,7 @@ public class FlujoObtenerNombre extends Flujo{
             controlador.nuevoJugador(controlador.esAnfitrion(), txtIngresado);
             return vistaConsola.flujoActual();
         }else {
+            mostrarSiguienteTexto();
             vistaConsola.print("Error: hay alguien con ese nombre en la partida!!!");
         }
         return this;

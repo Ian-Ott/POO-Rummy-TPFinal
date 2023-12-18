@@ -55,4 +55,8 @@ public interface IVista {
     void mostrarJugadorSalioDelJuego();
 
     void avisarCambiosOpcionesMesa();
+
+    void activarSoloChat();
+
+    void mostrarNuevoMensaje(String cambio);
 }

@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.vistas;
 
 import ar.edu.unlu.poo.controlador.Controlador;
+import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
 import ar.edu.unlu.poo.modelo.*;
 
 import javax.swing.*;
@@ -92,6 +93,14 @@ public class VistaGrafica implements IVista{
     private JTextArea txtTemporizador;
     private JButton desactivarJuegoAutomaticoButton;
     private JScrollPane scrollpanelAsistente;
+    private JPanel panelPartidaGuardada;
+    private JTextArea txtPartidaGuardada;
+    private JList listaPartidaGuardada;
+    private JButton button1;
+    private JButton button2;
+    private JButton button3;
+    private JButton cargarPartidaButton;
+    private JButton guardarPartidaButton;
     private DefaultListModel<ImageIcon> listaModeloAbajo;
     private DefaultListModel<ImageIcon> listaModeloArriba;
     private DefaultListModel<ImageIcon> listaModeloDerecha;
@@ -105,6 +114,8 @@ public class VistaGrafica implements IVista{
     int tiempoRestante;
     TimerTask juegoAutomatico;
     TimerTask mostrarTiempoActual;
+
+    private boolean modoChat;
 
 
     public VistaGrafica() throws RemoteException {
@@ -147,7 +158,7 @@ public class VistaGrafica implements IVista{
                 listaCheckJugada = new ArrayList<>();
 
                 spinnerApuesta.setForeground(new Color(24,224,229));
-                spinnerApuesta.setBackground(new Color(4,18,48));
+                spinnerApuesta.setBackground(new Color(4,21,80));
 
                 iniciarNuevaPartidaButton.setVisible(false);
                 salirButton.setVisible(false);
@@ -286,6 +297,7 @@ public class VistaGrafica implements IVista{
                     public void actionPerformed(ActionEvent e) {
                         mazoButton.setEnabled(false);
                         cartaBocaArribaButton.setEnabled(false);
+                        cartaBocaArribaButton.setVisible(true);
                         controlador.tomarCartaMazo();
                     }
                 });
@@ -406,6 +418,7 @@ public class VistaGrafica implements IVista{
             @Override
             public void windowClosing(WindowEvent e) {
                 controlador.eliminarJugador();
+                System.out.println("salio por aca 2");
                 System.exit(0);
             }
 
@@ -530,7 +543,9 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void pantallaEspera() {
-        controlador.comprobarAnfitrion();
+        if (controlador.getNombreJugador() != null) {
+            controlador.comprobarAnfitrion();
+        }
         if (controlador.getNombreJugador() == null) {
             obtenerNombre();
             apostarButton.setVisible(false);
@@ -552,7 +567,7 @@ public class VistaGrafica implements IVista{
             actualizarBarra();
             txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida podes iniciar la partida apretando el boton del mismo nombre." +
                     "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas.");
-            txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Tambien tenes disponible las opciones de mesa que te permiten cambiar el tiempo por cada turno, cambiar el modo de juego (ya sea expres o por puntos), activar o desactivar las partidas competitivas y por ultimo podes activar el publico el cual se puede unir una vez este iniciada la partida." +
+            txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Tambien tenes disponible las opciones de mesa que te permiten cambiar el tiempo por cada turno, cambiar el modo de juego (ya sea expres o por puntos), activar o desactivar las partidas competitivas y por ultimo podes activar el chec el cual se puede unir una vez este iniciada la partida." +
                     "\nQue disfrutes el juego!!!");
         }else {
             txtInfoInicio.setText("\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
@@ -715,14 +730,14 @@ public class VistaGrafica implements IVista{
     }
 
     private void actualizarCartaBocaArriba() {
-        if (controlador.getCartaDescarte() != null) {
+        try {
             ICarta cartaDescarteActual = controlador.getCartaDescarte();
             String imagenActual = "ar/edu/unlu/poo/images/cartas/" + cartaDescarteActual.getNumero() + cartaDescarteActual.getPalo() + ".png";
             ImageIcon cartaActual = new ImageIcon(imagenActual);
             cartaBocaArribaButton.setIcon(cartaActual);
             cartaBocaArribaButton.setBorderPainted(false);
             cartaBocaArribaButton.setVisible(true);
-        }else {
+        } catch (NoHayCartaBocaArriba e) {
             cartaBocaArribaButton.setVisible(false);
         }
     }
@@ -741,10 +756,10 @@ public class VistaGrafica implements IVista{
         cartaBocaArribaButton.setEnabled(false);
     }
 
-    @Override
+    /*@Override
     public void actualizarCartas(ArrayList<ICarta> cartasJugador) {
         //?
-    }
+    }*/
 
     @Override
     public void nuevoTurno() {
@@ -841,7 +856,8 @@ public class VistaGrafica implements IVista{
             " con " + controlador.getCantidadPuntosGanador()+" puntos");
         txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-La partido ha finalizado y ha ganado " + controlador.getGanador() + " con " + controlador.getCantidadPuntosGanador()+" puntos");
         eleccionNuevaPartida();
-        controlador.obtenerPosiciones();
+        //controlador.obtenerPosiciones();
+        mostrarTablaPosiciones(controlador.obtenerPosiciones());
     }
 
     @Override
@@ -994,6 +1010,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void cerrarJuego() {
+        System.out.println("salio por aca");
         controlador.eliminarJugador();
         System.exit(0);
         //cambiar directamente sacar al anfitrion y hacerle la pregunta al siguiente anfitrion y si elige que no cerrarle su ventana
@@ -1048,5 +1065,16 @@ public class VistaGrafica implements IVista{
         tabbedPane.setForegroundAt(1,new Color(229,11,9));
         txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-El anfitrion realizo cambios en las opciones de mesa del juego.");
         //panelOpcionesMesa.setForeground(new Color(229,11,9));
+    }
+
+    @Override
+    public void activarSoloChat() {
+        modoChat = true;
+        //falta agregar el modo chat para cada actualizar
+    }
+
+    @Override
+    public void mostrarNuevoMensaje(String cambio) {
+
     }
 }

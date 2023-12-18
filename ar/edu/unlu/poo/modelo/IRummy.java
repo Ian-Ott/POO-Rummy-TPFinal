@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.modelo;
 
 import ar.edu.unlu.poo.exceptions.JugadorInexistente;
+import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 import java.rmi.RemoteException;
@@ -72,7 +73,7 @@ public interface IRummy extends IObservableRemoto {
 
     ArrayList<Jugador> getJugadores()throws RemoteException;
     String getNombreTurnoActual()throws RemoteException;
-    Carta getCartaBocaArriba()throws RemoteException;
+    Carta getCartaBocaArriba() throws RemoteException, NoHayCartaBocaArriba;
 
     ITapete getMesaJugadas()throws RemoteException;
 
@@ -154,4 +155,10 @@ public interface IRummy extends IObservableRemoto {
     boolean isPartidaCargada() throws RemoteException;
 
     String activarJugadorSiguiente() throws RemoteException;
+
+    void modificarOpcionPublico() throws RemoteException;
+
+    boolean isPublicoPermitido() throws RemoteException;
+
+    void mostrarMensajeEnChat(String txtIngresado) throws RemoteException;
 }

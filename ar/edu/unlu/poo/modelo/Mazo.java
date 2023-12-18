@@ -1,5 +1,7 @@
 package ar.edu.unlu.poo.modelo;
 
+import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -76,17 +78,19 @@ public class Mazo implements Serializable {
             jugador.agregarCartasEnMano(cartaAux);
             resultado = true;
         }else {
-            //agregar excepcion
-            System.out.println("no hay cartas"); //esto es provisional
+
+            System.out.println("no hay cartas");
         }
         return resultado;
     }
 
     public void mezclarMazo(){
         Carta cartaAux;
-        Carta cartaEnMesaActual = null;
-        if (cartaBocaArribaActual() != null) {
+        Carta cartaEnMesaActual;
+        try {
             cartaEnMesaActual = cartaBocaArribaActual();
+        } catch (NoHayCartaBocaArriba e) {
+            cartaEnMesaActual = null;
         }
         while(!cartasEnMesa.isEmpty()){
             cartaAux = cartasEnMesa.remove((int) (random() * (cartasEnMesa.size() - 1)));
@@ -103,7 +107,10 @@ public class Mazo implements Serializable {
         cartasEnMesa.add(carta);
     }
 
-    public Carta cartaBocaArribaActual() {
-        return cartasEnMesa.get(cartasEnMesa.size() - 1);
+    public Carta cartaBocaArribaActual() throws NoHayCartaBocaArriba {
+        if (!cartasEnMesa.isEmpty()) {
+            return cartasEnMesa.get(cartasEnMesa.size() - 1);
+        }
+        throw new NoHayCartaBocaArriba();
     }
 }

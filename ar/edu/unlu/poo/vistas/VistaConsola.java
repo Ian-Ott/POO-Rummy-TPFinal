@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.vistas;
 
 import ar.edu.unlu.poo.controlador.Controlador;
+import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
 import ar.edu.unlu.poo.modelo.ICarta;
 import ar.edu.unlu.poo.modelo.IJugador;
 import ar.edu.unlu.poo.vistas.consola.*;
@@ -84,6 +85,7 @@ public class VistaConsola implements IVista{
     private Flujo flujoActual;
     private String acumuladorTablaFinRonda;
 
+    private boolean modoChat;
 
     public VistaConsola() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -165,11 +167,13 @@ public class VistaConsola implements IVista{
     }
 
     private void procesarTexto(String txtIngresado){
-        print(txtIngresado);
+        if (!modoChat) {
+            print(txtIngresado);
+        }
         txtConsola.setText("");
         txtIngresado = txtIngresado.trim();
         flujoActual = flujoActual.procesarEntrada(txtIngresado);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
 
         /*String textoIngresado = txtConsola.getText().toLowerCase();
         txtConsola.setText("");
@@ -648,8 +652,8 @@ public class VistaConsola implements IVista{
     @Override
     public void actualizarCantJugadores(){
         flujoActual = new FlujoEsperaPartida(this, controlador);
+        flujoActual.mostrarSiguienteTexto();
         print("Se ha unido un nuevo jugador a la partida!!!");
-        //flujoActual.mostrarSiguienteTexto();
     }
 
 
@@ -665,9 +669,14 @@ public class VistaConsola implements IVista{
 
     @Override
     public void iniciarTurno(){
-        if (controlador.jugadorEnAutomatico()) {
+        /*if (controlador.jugadorEnAutomatico()) {
             System.out.println("entro a juego automatico aca");
-            controlador.iniciarJuegoAutomatico();
+            try {
+                controlador.iniciarJuegoAutomatico();
+            } catch (NoHayCartaBocaArriba e) {
+                System.out.println("No hay carta boca arriba");
+                //aca nunca deberia entrar porque siempre se pone una carta boca arriba pero me obliga poner try catch
+            }
         }else {
             estadoActual = EstadosPosibles.PRIMERAS_OPCIONES;
         }
@@ -675,7 +684,9 @@ public class VistaConsola implements IVista{
         cambiarEstadoConsola(true);
         if (controlador.getTiempoPorTurno() != 0){
             activarTiempoDeTurno();
-        }
+        }*/
+        flujoActual = new FlujoInicioTurno(this, controlador);
+        flujoActual.mostrarSiguienteTexto();
     }
 
     public void cambiarEstadoConsola(boolean estado) {
@@ -726,10 +737,18 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText("----------------------------------------------------------" +
                 "\n1-tomar Carta del mazo" +
                 "\n2-tomar carta descartada" +
-                "\nCarta disponible en la pila de descartes:" + controlador.getCartaDescarte()+
+                "\nCarta disponible en la pila de descartes:" + obtenerCartaDescarte()+
                 "\nTus cartas:\n");
         mostrarCartas();
         guardarTxtActual();
+    }
+
+    private String obtenerCartaDescarte() {
+        try {
+            return controlador.getCartaDescarte().toString();
+        } catch (NoHayCartaBocaArriba e) {
+            return " No hay carta de descarte";
+        }
     }
 
     public void guardarTxtActual() {
@@ -739,8 +758,9 @@ public class VistaConsola implements IVista{
 
     public void mostrarCartas(){
         ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
+        print("\nTus cartas:");
         mostrarPosiciones(cartasActuales);
-        txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nTus cartas:");
+        print("\n");
         for (int i = 0; i < cartasActuales.size(); i++) {
             txtAreaMuestra.setText(txtAreaMuestra.getText() + cartasActuales.get(i));
             if (i == 10 || i == 20){
@@ -974,6 +994,7 @@ public class VistaConsola implements IVista{
         }
         //continuarEnEstadoAnterior();
     }
+
     public void mostrarPartidasDisponibles(ArrayList<String> partidaDisponible) {
         print("Partidas disponibles:");
         if (partidaDisponible.isEmpty()){
@@ -983,5 +1004,17 @@ public class VistaConsola implements IVista{
                 print((i + 1) + "-" + partidaDisponible.get(i));
             }
         }
+    }
+    @Override
+    public void activarSoloChat() {
+        modoChat = true;
+        flujoActual = new FlujoChatPublico(this, controlador);
+        flujoActual.mostrarSiguienteTexto();
+        //falta agregar el modo chat para cada actualizar
+    }
+
+    @Override
+    public void mostrarNuevoMensaje(String mensajeNuevo) {
+        print(mensajeNuevo);
     }
 }

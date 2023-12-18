@@ -2,6 +2,7 @@ package ar.edu.unlu.poo.modelo;
 
 import ar.edu.unlu.poo.Serializacion.services.Serializador;
 import ar.edu.unlu.poo.exceptions.JugadorInexistente;
+import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
 import java.io.Serializable;
@@ -34,6 +35,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     private static Serializador serializador;
     private boolean cargadosPuntosJugadoresEnTabla;
     private boolean partidaCargada;
+    private boolean publicoPermitido;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -47,6 +49,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         estadoCompetitivo = true;
         tiempoDeTurno = 0;
         partidaFinalizada = false;
+        publicoPermitido = false;
     }
 
     public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
@@ -61,7 +64,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         return juegoIniciado;
     }
 
-    public void iniciarJuego() throws RemoteException {
+    public void iniciarJuego() throws RemoteException{
         if (!partidaCargada) {
             reiniciarEstados();
             juegoIniciado = true;
@@ -90,7 +93,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
     }
 
-    public void iniciarNuevaRonda() throws RemoteException {
+    public void iniciarNuevaRonda() throws RemoteException{
         iniciarJuego();
     }
 
@@ -176,7 +179,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
     }
 
-    public Carta getCartaBocaArriba() {
+    public Carta getCartaBocaArriba() throws RemoteException, NoHayCartaBocaArriba {
         return mazoDeJuego.cartaBocaArribaActual();
     }
 
@@ -409,7 +412,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     @Override
-    public void juegoAutomatico(String nombreJugador) throws RemoteException {
+    public void juegoAutomatico(String nombreJugador) throws RemoteException{
         //ArrayList<Carta> posibleRummy;
         ArrayList<Carta> posibleEscalera;
         ArrayList<Carta> posibleCombinacion;
@@ -1394,6 +1397,24 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             }
         }
         return nombreJugadorActivado;
+    }
+
+    @Override
+    public void modificarOpcionPublico() throws RemoteException {
+        if (publicoPermitido){
+            publicoPermitido = false;
+        }else {
+            publicoPermitido = true;
+        }
+    }
+
+    public boolean isPublicoPermitido() throws RemoteException {
+        return publicoPermitido;
+    }
+
+    @Override
+    public void mostrarMensajeEnChat(String txtIngresado) throws RemoteException {
+        notificarObservadores(txtIngresado);
     }
 
     /*public void addObserver(Observer o){

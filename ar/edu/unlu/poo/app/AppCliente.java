@@ -87,8 +87,11 @@ public class AppCliente {
                     System.out.println("ERROR: maximo de jugadores alcanzado");
                     System.exit(0);
                 }
-            }else {
+            } else if (controlador.publicoPermitido()) {
+                vista.activarSoloChat();
+            } else {
                 System.out.println("ERROR: El juego ya fue iniciado");
+                System.exit(0);
             }
 
             } catch (RemoteException e) {
