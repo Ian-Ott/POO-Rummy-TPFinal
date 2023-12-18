@@ -114,6 +114,7 @@ public interface IRummy extends IObservableRemoto {
 
     void nuevoJuego() throws RemoteException;
 
+    ArrayList<IJugador> getTablaPosiciones()throws RemoteException;
     //void cerrarJuego() throws RemoteException;
 
     ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException;
@@ -142,4 +143,15 @@ public interface IRummy extends IObservableRemoto {
 
     int getPuntosJugador(String nombreJugador) throws RemoteException;
 
+    ArrayList<String> obtenerListadoPartidaGuardada() throws RemoteException;
+
+    void sobreescribirPartida(int posicionPartida, String nombrePartidaAGuardar)throws RemoteException;
+
+    void guardarPartida(String nombrePartida)throws RemoteException;
+
+    void cargarPartida(String nombreAnfitrion, int posicionPartida)throws RemoteException;
+
+    boolean isPartidaCargada() throws RemoteException;
+
+    String activarJugadorSiguiente() throws RemoteException;
 }

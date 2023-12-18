@@ -26,7 +26,8 @@ public class FlujoPartidaCerrada extends Flujo{
             if (!controlador.getEstadoCompetitivo()){
                 vistaConsola.print("No se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
             }
-            controlador.obtenerPosiciones();
+            //controlador.obtenerPosiciones();
+            vistaConsola.mostrarTablaPosiciones(controlador.obtenerPosiciones());
             vistaConsola.mostrarOpcionesNuevaPartida();
         }else {
             vistaConsola.print("La ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");

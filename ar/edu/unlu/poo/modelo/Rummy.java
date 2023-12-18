@@ -1,14 +1,16 @@
 package ar.edu.unlu.poo.modelo;
 
+import ar.edu.unlu.poo.Serializacion.services.Serializador;
 import ar.edu.unlu.poo.exceptions.JugadorInexistente;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import static java.lang.Math.random;
 
-public class Rummy extends ObservableRemoto implements IRummy {
+public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     enum modoDeJuego{
         EXPRES,JUEGOAPUNTOS
     }
@@ -29,6 +31,9 @@ public class Rummy extends ObservableRemoto implements IRummy {
     private int tiempoDeTurno;
 
     private boolean tomoCartaJugadorTurno;
+    private static Serializador serializador;
+    private boolean cargadosPuntosJugadoresEnTabla;
+    private boolean partidaCargada;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -57,15 +62,20 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
     public void iniciarJuego() throws RemoteException {
-        reiniciarEstados();
-        juegoIniciado = true;
-        if (jugadores.size() == 2){
-            repartirCartasJugadores(10);
-        } else if (jugadores.size() >= 3) {
-            repartirCartasJugadores(7);
+        if (!partidaCargada) {
+            reiniciarEstados();
+            juegoIniciado = true;
+            if (jugadores.size() == 2) {
+                repartirCartasJugadores(10);
+            } else if (jugadores.size() >= 3) {
+                repartirCartasJugadores(7);
+            }
+            mezclarMazo();
+            elegirJugadorMano();
+        }else {
+            partidaCargada = false;
+            notificarObservadores("juego iniciado");
         }
-        mezclarMazo();
-        elegirJugadorMano();
         //notificarObservadores("cartas repartidas");
     }
 
@@ -75,6 +85,7 @@ public class Rummy extends ObservableRemoto implements IRummy {
         if (partidaFinalizada) {
             reiniciarEstadosJugadores();
             devolverCartasAMesa();
+            cargadosPuntosJugadoresEnTabla = false;
         }
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
     }
@@ -531,6 +542,32 @@ public class Rummy extends ObservableRemoto implements IRummy {
             }
         }
         return  paloMasRepetido;
+    }
+
+    public ArrayList<IJugador> getTablaPosiciones()throws RemoteException{
+        ArrayList<IJugador> jugadores = new ArrayList<>();
+        serializador = new Serializador("top5.dat");
+        /*if (serializador.readFirstObject() == null){
+            serializador.writeOneObject()
+        }*/
+        Object[] recuperado = serializador.readObjects();
+        if (recuperado != null){
+            for (int i = 0; i < recuperado.length; i++) {
+                jugadores.add((IJugador) recuperado[i]);
+            }
+        }
+        if (!cargadosPuntosJugadoresEnTabla) {
+            cargadosPuntosJugadoresEnTabla = true;
+            jugadores = obtenerJugadoresPorPuntos(jugadores);
+            //vista.mostrarErrorConexion();
+            //verificar si esto esta bien
+            //vista.mostrarTablaPosiciones(jugadores);
+            serializador.writeOneObject(jugadores.get(0));
+            for (int i = 1; i < jugadores.size(); i++) {
+                serializador.addOneObject(jugadores.get(i));
+            }
+        }
+        return jugadores;
     }
 
     @Override
@@ -1264,6 +1301,100 @@ public class Rummy extends ObservableRemoto implements IRummy {
     }
 
 
+    public void guardarPartida(String nombrePartida)throws RemoteException{
+        ArrayList<PartidaGuardada> partidas = obtenerPartidasGuardadas();
+        if (partidas.size() < 8){
+            PartidaGuardada partida = new PartidaGuardada(nombrePartida, this, jugadores.getFirst().getNombre());
+            partidas.add(partida);
+            escribirArchivoPartidas(partidas);
+        }
+        notificarObservadores("nuevo turno");
+    }
+
+    private void escribirArchivoPartidas(ArrayList<PartidaGuardada> partidas) {
+        serializador.writeOneObject(partidas.get(0));
+        for (int i = 1; i < partidas.size(); i++) {
+            serializador.addOneObject(partidas.get(i));
+        }
+    }
+
+    private ArrayList<PartidaGuardada> obtenerPartidasGuardadas() {
+        ArrayList<PartidaGuardada> partidas = new ArrayList<>();
+        serializador = new Serializador("partidas.dat");
+        /*if (serializador.readFirstObject() == null){
+            serializador.writeOneObject()
+        }*/
+        Object[] recuperado = serializador.readObjects();
+        if (recuperado != null){
+            for (int i = 0; i < recuperado.length; i++) {
+                partidas.add((PartidaGuardada) recuperado[i]);
+            }
+        }
+        return partidas;
+    }
+
+    public ArrayList<String> obtenerListadoPartidaGuardada() throws RemoteException{
+        ArrayList<PartidaGuardada> partidas = obtenerPartidasGuardadas();
+        ArrayList<String> txtPartida = new ArrayList<>();
+        for (PartidaGuardada partidaActual: partidas) {
+            txtPartida.add(partidaActual.toString());
+        }
+        return txtPartida;
+    }
+
+    public void sobreescribirPartida(int posicionPartida, String nombrePartidaAGuardar)throws RemoteException{
+        ArrayList<PartidaGuardada> partidas = obtenerPartidasGuardadas();
+        if (partidas.size() > posicionPartida){
+            PartidaGuardada partida = new PartidaGuardada(nombrePartidaAGuardar, this, jugadores.getFirst().getNombre());
+            partidas.remove(posicionPartida);
+            partidas.add(posicionPartida,partida);
+            escribirArchivoPartidas(partidas);
+        }//excepcion
+        notificarObservadores("nuevo turno");
+    }
+
+    public void cargarPartida(String nombreAnfitrion, int posicionPartida)throws RemoteException{
+        ArrayList<PartidaGuardada> partidas = obtenerPartidasGuardadas();
+        if (partidas.size() > posicionPartida){
+            PartidaGuardada partidaCargada = partidas.get(posicionPartida);
+            Rummy juegoCargado = partidaCargada.getJuegoGuardado();
+            Jugador anfitrionCargado = juegoCargado.jugadores.get(0);
+            if (anfitrionCargado.getNombre().equals(nombreAnfitrion)){
+                cargarDatosPartida(juegoCargado);
+            }
+        }
+        notificarObservadores("juego cargado");
+    }
+
+    private void cargarDatosPartida(Rummy juegoCargado) {
+        this.mazoDeJuego = juegoCargado.mazoDeJuego;
+        this.jugadores = juegoCargado.jugadores;
+        this.mesaDeJuego = juegoCargado.mesaDeJuego;
+        //this.instancia = juegoCargado.getInstancia();   no es necesario
+        this.posicionTurnoActual = juegoCargado.posicionTurnoActual;
+        this.modo = juegoCargado.modo;
+        this.apuestasActivas = juegoCargado.apuestasActivas;
+        this.solicitudDeAnularPartida = juegoCargado.solicitudDeAnularPartida;
+        this.estadoCompetitivo = juegoCargado.estadoCompetitivo;
+        this.tiempoDeTurno = juegoCargado.tiempoDeTurno;
+        partidaCargada = true;
+    }
+
+    public boolean isPartidaCargada() throws RemoteException{
+        return partidaCargada;
+    }
+
+    @Override
+    public String activarJugadorSiguiente() throws RemoteException {
+        String nombreJugadorActivado = "";
+        for (Jugador jugador:jugadores) {
+            if (!jugador.isActivo()){
+                jugador.setActivo(true);
+                nombreJugadorActivado = jugador.getNombre();
+            }
+        }
+        return nombreJugadorActivado;
+    }
 
     /*public void addObserver(Observer o){
         observadores.add(o);

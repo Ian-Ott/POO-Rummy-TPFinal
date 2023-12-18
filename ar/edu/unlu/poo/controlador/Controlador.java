@@ -4,7 +4,6 @@ import ar.edu.unlu.poo.Serializacion.services.Serializador;
 import ar.edu.unlu.poo.exceptions.JugadorInexistente;
 import ar.edu.unlu.poo.modelo.*;
 import ar.edu.unlu.poo.vistas.IVista;
-import ar.edu.unlu.poo.vistas.VistaConsola;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
@@ -78,6 +77,10 @@ public class Controlador implements IControladorRemoto {
                 vista.pantallaEspera();
             } else if (cambio.equals("cambios en opciones de mesa")) {
                 vista.avisarCambiosOpcionesMesa();
+            } else if (cambio.equals("juego cargado")) {
+                vista.pantallaEspera();
+            } else if (cambio.equals("juego iniciado")) {
+                vista.iniciarTurno();
             }
     }
 
@@ -516,12 +519,12 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
-    public void obtenerPosiciones() {
-        ArrayList<IJugador> jugadores = new ArrayList<>();
+    public ArrayList<IJugador> obtenerPosiciones() {
+        /*ArrayList<IJugador> jugadores = new ArrayList<>();
         serializador = new Serializador("top5.dat");
         /*if (serializador.readFirstObject() == null){
             serializador.writeOneObject()
-        }*/
+        }
         Object[] recuperado = serializador.readObjects();
         if (recuperado != null){
             for (int i = 0; i < recuperado.length; i++) {
@@ -538,6 +541,11 @@ public class Controlador implements IControladorRemoto {
         serializador.writeOneObject(jugadores.get(0));
         for (int i = 1; i < jugadores.size(); i++) {
             serializador.addOneObject(jugadores.get(i));
+        }*/
+        try {
+            return rummy.getTablaPosiciones();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -658,4 +666,54 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
+    public ArrayList<String> getPartidasDisponibles() {
+        try {
+            return rummy.obtenerListadoPartidaGuardada();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+        return new ArrayList<>();
+    }
+
+
+    public void sobreescribirPartidaGuardada(int posicion, String nombrePartidaActual) {
+        try {
+            rummy.sobreescribirPartida(posicion,nombrePartidaActual);
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
+
+    public void guardarPartida(String nombrePartidaActual) {
+        try {
+            rummy.guardarPartida(nombrePartidaActual);
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
+
+    public void cargarPartida(int posicion) {
+        try {
+            rummy.cargarPartida(nombreJugador, posicion);
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
+
+    public boolean partidaCargada() {
+        try {
+            return rummy.isPartidaCargada();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+        return false;
+    }
+
+    public void activarNuevoJugador() {
+        try {
+            nombreJugador = rummy.activarJugadorSiguiente();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+    }
 }

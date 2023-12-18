@@ -19,6 +19,9 @@ public class FlujoInicioTurno extends Flujo{
                 controlador.tomarCartaDescarte();
                 return vistaConsola.flujoActual();
             }
+            case "3" -> {
+                return new FlujoGuardarPartida(vistaConsola, controlador);
+            }
             default -> vistaConsola.opcionIncorrecta();
         }
         return this;
@@ -31,6 +34,7 @@ public class FlujoInicioTurno extends Flujo{
         vistaConsola.print("----------------------------------------------------------");
         vistaConsola.print("1-tomar Carta del mazo");
         vistaConsola.print("2-tomar carta descartada");
+        vistaConsola.print("3-Guardar Partida");
         vistaConsola.print("Carta disponible en la pila de descartes:" + controlador.getCartaDescarte());
         vistaConsola.mostrarCartas();
         vistaConsola.guardarTxtActual();

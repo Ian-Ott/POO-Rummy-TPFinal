@@ -45,6 +45,8 @@ public class VistaConsola implements IVista{
         return flujoActual;
     }
 
+
+
     enum EstadosPosibles{
         SIN_ESTADO,SELECCION_NOMBRE,PRIMERAS_OPCIONES,SELECCION_CARTAS,SELECCION_JUGADA, FIN_PARTIDA, POSIBLE_ANULAR_PARTIDA, CONTINUAR_TURNO, OPCIONES_DE_MESA, OPCIONES_TIEMPO, JUEGO_AUTOMATICO
     }
@@ -96,7 +98,7 @@ public class VistaConsola implements IVista{
                 cambiosOpcionesMesa = false;
 
                 tiempoRestante = 0;
-                estadoActual = EstadosPosibles.SIN_ESTADO;
+                //estadoActual = EstadosPosibles.SIN_ESTADO;
 
                 enterButton.addActionListener(new ActionListener() {
                     @Override
@@ -589,13 +591,16 @@ public class VistaConsola implements IVista{
 
     @Override
     public void pantallaEspera() {
-        //estadoActual = EstadosPosibles.SIN_ESTADO;
-        if (!jugadorAgregado){
-            jugadorAgregado = true;
-            //obtenerNombre();
-            flujoActual = new FlujoObtenerNombre(this,controlador);
-            flujoActual.mostrarSiguienteTexto();
-        }else {
+            //estadoActual = EstadosPosibles.SIN_ESTADO;
+            if (!jugadorAgregado && !controlador.partidaCargada()) {
+                jugadorAgregado = true;
+                //obtenerNombre();
+                flujoActual = new FlujoObtenerNombre(this, controlador);
+                flujoActual.mostrarSiguienteTexto();
+            } else {
+                if (controlador.partidaCargada() && controlador.getNombreJugador() == null){
+                    controlador.activarNuevoJugador();
+                }
             /*controlador.comprobarAnfitrion();
             limpiarPantalla();
             if (!controlador.esAnfitrion()){
@@ -603,9 +608,9 @@ public class VistaConsola implements IVista{
             }else {
                 mostrarEsperaAnfitrion();
             }*/
-            flujoActual = new FlujoEsperaPartida(this,controlador);
-            flujoActual.mostrarSiguienteTexto();
-        }
+                flujoActual = new FlujoEsperaPartida(this, controlador);
+                flujoActual.mostrarSiguienteTexto();
+            }
     }
 
     /*private void mostrarEspera(){
@@ -968,5 +973,15 @@ public class VistaConsola implements IVista{
             print("\nEl anfitrion hizo cambios en las opciones de mesa!!!");
         }
         //continuarEnEstadoAnterior();
+    }
+    public void mostrarPartidasDisponibles(ArrayList<String> partidaDisponible) {
+        print("Partidas disponibles:");
+        if (partidaDisponible.isEmpty()){
+            print("No hay partidas guardadas.");
+        }else {
+            for (int i = 0; i < partidaDisponible.size(); i++) {
+                print((i + 1) + "-" + partidaDisponible.get(i));
+            }
+        }
     }
 }

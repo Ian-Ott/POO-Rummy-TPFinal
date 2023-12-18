@@ -21,7 +21,8 @@ public class FlujoFinPartida extends Flujo{
         if (!controlador.getEstadoCompetitivo()){
             vistaConsola.print("\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
         }
-        controlador.obtenerPosiciones();
+        vistaConsola.mostrarTablaPosiciones(controlador.obtenerPosiciones());
+        //controlador.obtenerPosiciones();
         vistaConsola.mostrarOpcionesNuevaPartida();
     }
 }

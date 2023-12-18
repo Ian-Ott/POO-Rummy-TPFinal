@@ -17,6 +17,8 @@ public class Jugador implements Serializable, IJugador {
     private boolean hizoRummy;
     private boolean enAutomatico;
 
+    private boolean activo;
+
     public Jugador(String nombreJugador) {
         cartasEnMano = new ArrayList<>();
         fichasTotales = 1500000;
@@ -29,6 +31,7 @@ public class Jugador implements Serializable, IJugador {
         puntosTotalesXP = 0;
         enAutomatico = false;
         cantApostada = 0;
+        activo = true;
     }
 
 
@@ -194,6 +197,13 @@ public class Jugador implements Serializable, IJugador {
         return null; //cambiar por excepcion
     }
 
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
 
     @Override
     public String toString() {

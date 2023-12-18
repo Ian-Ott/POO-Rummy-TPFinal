@@ -19,7 +19,8 @@ public class FlujoFinPartidaAmistosa extends Flujo{
     @Override
     public void mostrarSiguienteTexto() {
         vistaConsola.print("La partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
-        controlador.obtenerPosiciones();
+        //controlador.obtenerPosiciones();
+        vistaConsola.mostrarTablaPosiciones(controlador.obtenerPosiciones());
         vistaConsola.mostrarOpcionesNuevaPartida();
     }
 }

@@ -21,6 +21,8 @@ public class FlujoEsperaPartida extends Flujo{
                     return vistaConsola.flujoActual();
                 } else if (numeroIngresado == 2) {
                     return new FlujoOpcionesDeMesa(vistaConsola, controlador);
+                } else if (numeroIngresado == 3 && !controlador.partidaCargada() && controlador.cantJugadores() == 1) {
+                    return new FlujoCargarPartida(vistaConsola, controlador);
                 } else if (numeroIngresado == 0) {
                     controlador.cancelarApuesta();
                 }else {
@@ -57,6 +59,9 @@ public class FlujoEsperaPartida extends Flujo{
         vistaConsola.print("Cuando este la cantidad de jugadores necesaria podra iniciar la partida:");
         vistaConsola.print("1-Iniciar Partida");
         vistaConsola.print("2-Cambiar Opciones de Mesa");
+        if (!controlador.partidaCargada() && controlador.cantJugadores() == 1){
+            vistaConsola.print("3-Cargar partida");
+        }
         vistaConsola.print("__________________________________________");
         vistaConsola.print("Si desea Apostar solo ingrese la cantidad que desea apostar y se definira la situacion de la apuesta segun la decision del resto de jugadores");
         vistaConsola.print("Minimo de Apuesta: 250");
@@ -81,6 +86,9 @@ public class FlujoEsperaPartida extends Flujo{
             vistaConsola.cambiarEstadoConsola(true);
         }else {
             vistaConsola.cambiarEstadoConsola(false);
+        }
+        if (controlador.partidaCargada()){
+            vistaConsola.print("Se te asigno un nombre de jugador automaticamente porque la partida fue cargada por el anfitrion.");
         }
     }
 }
