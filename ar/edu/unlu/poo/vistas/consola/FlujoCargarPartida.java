@@ -8,13 +8,14 @@ import java.util.ArrayList;
 public class FlujoCargarPartida extends Flujo{
     public FlujoCargarPartida(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     private ArrayList<String> partidaDisponible;
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        if (!partidaDisponible.isEmpty()) {
+        if (!partidaDisponible.isEmpty()){
             if (vistaConsola.esNumero(txtIngresado)) {
                 int posicion = Integer.parseInt(txtIngresado);
                 posicion = posicion - 1;

@@ -94,13 +94,19 @@ public class VistaGrafica implements IVista{
     private JButton desactivarJuegoAutomaticoButton;
     private JScrollPane scrollpanelAsistente;
     private JPanel panelPartidaGuardada;
-    private JTextArea txtPartidaGuardada;
-    private JList listaPartidaGuardada;
-    private JButton button1;
-    private JButton button2;
-    private JButton button3;
+    private JList<String> listaPartidaGuardada;
+    private DefaultListModel<String> listaModeloPartidaGuardada;
+    private JButton sobreescribirPartidaButton;
     private JButton cargarPartidaButton;
     private JButton guardarPartidaButton;
+    private JPanel panelChat;
+    private JTextArea txtMensajeChat;
+    private JTextField txtEscribirChat;
+    private JButton enviarButton;
+    private JPanel panelBotonesPartidaGuardada;
+    private JPanel panelDerechaInicio;
+    private JTextField txtNombrePartida;
+    private JPanel panelTxtNombrePartida;
     private DefaultListModel<ImageIcon> listaModeloAbajo;
     private DefaultListModel<ImageIcon> listaModeloArriba;
     private DefaultListModel<ImageIcon> listaModeloDerecha;
@@ -116,7 +122,13 @@ public class VistaGrafica implements IVista{
     TimerTask mostrarTiempoActual;
 
     private boolean modoChat;
+    private enum EstadoChat{
+        OBTENER_NOMBRE, MODO_CHAT
+    }
 
+    private EstadoChat estadoActualChat;
+
+    private int partidaSeleccionada = -1;
 
     public VistaGrafica() throws RemoteException {
         SwingUtilities.invokeLater(new Runnable() {
@@ -176,6 +188,13 @@ public class VistaGrafica implements IVista{
                 txtTemporizador.setEditable(false);
 
                 desactivarJuegoAutomaticoButton.setVisible(false);
+                tabbedPane.remove(panelPartidaGuardada);
+                tabbedPane.remove(panelChat);
+                panelPartidaGuardada.setName("Partidas");
+                panelChat.setName("Chat Publico");
+                listaModeloPartidaGuardada = new DefaultListModel<>();
+
+                listaPartidaGuardada.setModel(listaModeloPartidaGuardada);
                 iniciarSesionButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -193,6 +212,7 @@ public class VistaGrafica implements IVista{
                                 panelUsuario.setVisible(false);
                                 panelUsuario.repaint();
                                 iniciarPartidaButton.setVisible(true);
+                                cargarPartidaButton.setVisible(true);
                                 controlador.nuevoJugador(controlador.esAnfitrion(), txtNombre.getText());
                             }else {
                                 txtNombre.setText("");
@@ -228,7 +248,7 @@ public class VistaGrafica implements IVista{
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
 
-                        JList<String> cartas = (JList<String>) e.getSource();
+                        JList<ImageIcon> cartas = (JList<ImageIcon>) e.getSource();
                         if (e.getValueIsAdjusting()) {
                             int indiceSeleccionado = cartas.getSelectedIndex();
                             if (indiceSeleccionado != -1 && !cartasSeleccionadasPosicion.contains(indiceSeleccionado)) {
@@ -289,6 +309,7 @@ public class VistaGrafica implements IVista{
                 terminarTurnoButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        guardarPartidaButton.setEnabled(false);
                         controlador.terminarTurno(cartasSeleccionadasPosicion);
                     }
                 });
@@ -447,6 +468,156 @@ public class VistaGrafica implements IVista{
                 //sin uso
             }
         });
+        enviarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (estadoActualChat.equals(EstadoChat.OBTENER_NOMBRE)){
+                    if (!txtEscribirChat.getText().isEmpty()){
+                        escribirEnChat("Bienvenido, " + txtEscribirChat.getText() + " Si quieres obtener la lista de comandos solo escribe /ayuda");
+                        controlador.nuevoEspectador(txtEscribirChat.getText());
+                        estadoActualChat = EstadoChat.MODO_CHAT;
+                    }else {
+                        escribirEnChat("Error el nombre no es valido");
+                    }
+                }else {
+                    if (txtEscribirChat.getText().equals("/ayuda")){
+                        mostrarListaComandos();
+                    }else if (txtEscribirChat.getText().equals("/mostrarCartasJugadores")){
+
+                    } else if (txtEscribirChat.getText().equals("/mostrarJugadas")) {
+
+                    } else if (txtEscribirChat.getText().equals("/mostrarNombreTurnoActual")) {
+
+                    } else if (txtEscribirChat.getText().equals("/puntosDePartida")) {
+
+                    } else if (txtEscribirChat.getText().equals("/top5Jugadores")) {
+
+                    }else {
+                        controlador.mostrarMensaje(txtEscribirChat.getText());
+                    }
+                }
+            }
+        });
+
+        ListSelectionListener listenerPartidasSeleccionadas = new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+
+                JList<String> partidas = (JList<String>) e.getSource();
+                if (e.getValueIsAdjusting()) {
+                    int indiceSeleccionado = partidas.getSelectedIndex();
+                    if (indiceSeleccionado != -1 && partidaSeleccionada != indiceSeleccionado) {
+                        System.out.println("seleccionada partida : " + indiceSeleccionado);
+                        String mensajeActual = "|-Se selecciono la partida " + (indiceSeleccionado + 1);
+                        mostrarMensajeAsistente(mensajeActual);
+                        partidaSeleccionada = indiceSeleccionado;
+                        cargarPartidaButton.setEnabled(true);
+                        sobreescribirPartidaButton.setEnabled(true);
+                    }
+                }
+                listaPartidaGuardada.clearSelection();
+                //verificar si esto funciona y explicarlo
+            }
+        };
+        listaPartidaGuardada.addListSelectionListener(listenerPartidasSeleccionadas);
+        cargarPartidaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (seEncuentra(cargarPartidaButton, panelDerechaInicio)){
+                    panelDerechaInicio.remove(cargarPartidaButton);
+                    panelBotonesPartidaGuardada.add(cargarPartidaButton);
+                    panelBotonesPartidaGuardada.remove(sobreescribirPartidaButton);
+                    tabbedPane.add(panelPartidaGuardada);
+                    panelBotonesPartidaGuardada.remove(panelTxtNombrePartida);
+                    mostrarPartidasGuardadas();
+                    cargarPartidaButton.setEnabled(false);
+                }else {
+                    if (partidaSeleccionada != -1 && partidaSeleccionada < controlador.getPartidasDisponibles().size()) {
+                        tabbedPane.remove(panelPartidaGuardada);
+                        panelPartidaGuardada.remove(cargarPartidaButton);
+                        controlador.cargarPartida(partidaSeleccionada);
+                    }
+                }
+            }
+        });
+        guardarPartidaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (seEncuentra(guardarPartidaButton, panelOpciones)){
+                    panelOpciones.remove(guardarPartidaButton);
+                    panelBotonesPartidaGuardada.add(guardarPartidaButton);
+                    panelBotonesPartidaGuardada.add(sobreescribirPartidaButton);
+                    tabbedPane.add(panelPartidaGuardada);
+                    panelBotonesPartidaGuardada.add(panelTxtNombrePartida);
+                    mostrarPartidasGuardadas();
+                    sobreescribirPartidaButton.setEnabled(false);
+                }else {
+                    if (txtNombrePartida.getText() != null) {
+                        tabbedPane.remove(panelPartidaGuardada);
+                        panelPartidaGuardada.remove(guardarPartidaButton);
+                        controlador.guardarPartida(txtNombrePartida.getText());
+                        txtNombrePartida.setText("");
+                        panelOpciones.add(guardarPartidaButton);
+                    }
+                }
+            }
+        });
+        sobreescribirPartidaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (txtNombrePartida.getText() != null) {
+                    if (partidaSeleccionada != -1 && partidaSeleccionada < controlador.getPartidasDisponibles().size()) {
+                        tabbedPane.remove(panelPartidaGuardada);
+                        panelPartidaGuardada.remove(guardarPartidaButton);
+                        controlador.sobreescribirPartidaGuardada(0,txtNombrePartida.getText());
+                        txtNombrePartida.setText("");
+                    }
+
+                }
+            }
+        });
+    }
+
+    private void mostrarPartidasGuardadas() {
+        ArrayList<String> partidasDisponibles = controlador.getPartidasDisponibles();
+        if (listaModeloPartidaGuardada.size() != partidasDisponibles.size() || listaModeloPartidaGuardada.isEmpty()){
+            listaModeloPartidaGuardada.clear();
+            for (int i = 0; i < 8; i++) {
+                if (i < partidasDisponibles.size()){
+                    listaModeloPartidaGuardada.addElement(partidasDisponibles.get(i));
+                }else {
+                    listaModeloPartidaGuardada.addElement((i + 1) + "- <Espacio disponible para guardar partida>");
+                }
+            }
+        }
+    }
+
+    private boolean seEncuentra(JButton botonBuscado, JPanel panelDondeBuscar) {
+        Component[] componentes;
+        componentes = panelDondeBuscar.getComponents();
+        boolean resultado = false;
+        for (Component componenteActual:componentes) {
+            if (componenteActual.equals(botonBuscado)){
+                resultado = true;
+            }
+        }
+        if (!resultado){
+            System.out.println("no se encontro el boton");
+        }
+        return resultado;
+    }
+
+    private void mostrarListaComandos() {
+            escribirEnChat("_____________________________________________________________");
+            escribirEnChat("Lista de Comandos:");
+            escribirEnChat("/mostrarCartasJugadores\t/mostrarJugadas\t/mostrarNombreTurnoActual");
+            escribirEnChat("/puntosDePartida\t/top5Jugadores");
+            escribirEnChat("-Recuerda usar siempre / cuando quieras escribir un comando");
+            escribirEnChat("_____________________________________________________________");
+    }
+
+    private void escribirEnChat(String txtIngresado) {
+        txtMensajeChat.append(txtIngresado + "\n");
     }
 
     private void mostrarMensajeAsistente(String txtIngresado) {
@@ -561,6 +732,9 @@ public class VistaGrafica implements IVista{
         }
         panelInicio.setVisible(true);
         if (controlador.esAnfitrion()){
+            if (!controlador.partidaCargada() && controlador.cantJugadores() <= 1){
+                panelDerechaInicio.add(cargarPartidaButton);
+            }
             txtInfoInicio.setText("Esperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores() +
                     "\nCuando este la cantidad necesaria presione el boton para iniciar.");
@@ -570,6 +744,8 @@ public class VistaGrafica implements IVista{
             txtAsistenteAyuda.setText("\n|" + LocalDateTime.now() + "|-Tambien tenes disponible las opciones de mesa que te permiten cambiar el tiempo por cada turno, cambiar el modo de juego (ya sea expres o por puntos), activar o desactivar las partidas competitivas y por ultimo podes activar el chec el cual se puede unir una vez este iniciada la partida." +
                     "\nQue disfrutes el juego!!!");
         }else {
+            panelDerechaInicio.remove(cargarPartidaButton);
+            panelPartida.remove(guardarPartidaButton);
             txtInfoInicio.setText("\nesperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar) " +
                     "\nCantidad de jugadores:" + controlador.cantJugadores());
             actualizarBarra();
@@ -653,6 +829,8 @@ public class VistaGrafica implements IVista{
         if (controlador.esTurnoJugador() && !controlador.isEliminado()){
             if (controlador.jugadorEnAutomatico()){
                 controlador.iniciarJuegoAutomatico();
+            } else if (controlador.esAnfitrion()) {
+                guardarPartidaButton.setEnabled(true);
             }
             txtTurno.setText("Bienvenido al | modo" +controlador.getModoJuego() + " | , " + controlador.getNombreJugador() +". Es su turno.");
             mazoButton.setEnabled(true);
@@ -1002,10 +1180,16 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void obtenerNombre() {
-        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Solo escribe tu nombre e inicia sesion");
-        panelUsuario.setVisible(true);
-        txtNombre.setEnabled(true);
-        iniciarSesionButton.setEnabled(true);
+        if (!modoChat) {
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|" + LocalDateTime.now() + "|-Solo escribe tu nombre e inicia sesion");
+            panelUsuario.setVisible(true);
+            txtNombre.setEnabled(true);
+            iniciarSesionButton.setEnabled(true);
+            cargarPartidaButton.setVisible(false);
+        }else {
+            estadoActualChat = EstadoChat.OBTENER_NOMBRE;
+            txtMensajeChat.setText("Ingrese su nombre como espectador:\n");
+        }
     }
 
     @Override
@@ -1070,11 +1254,14 @@ public class VistaGrafica implements IVista{
     @Override
     public void activarSoloChat() {
         modoChat = true;
+        tabbedPane.removeAll();
+        tabbedPane.add(panelChat);
+        obtenerNombre();
         //falta agregar el modo chat para cada actualizar
     }
 
     @Override
-    public void mostrarNuevoMensaje(String cambio) {
-
+    public void mostrarNuevoMensaje(String nuevoMensaje) {
+        escribirEnChat(nuevoMensaje);
     }
 }

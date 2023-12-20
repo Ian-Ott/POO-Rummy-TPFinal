@@ -997,11 +997,11 @@ public class VistaConsola implements IVista{
 
     public void mostrarPartidasDisponibles(ArrayList<String> partidaDisponible) {
         print("Partidas disponibles:");
-        if (partidaDisponible.isEmpty()){
-            print("No hay partidas guardadas.");
-        }else {
-            for (int i = 0; i < partidaDisponible.size(); i++) {
+        for (int i = 0; i < 8; i++) {
+            if (i < partidaDisponible.size()) {
                 print((i + 1) + "-" + partidaDisponible.get(i));
+            }else {
+                print((i + 1) + "- <Espacio disponible para guardar partida>");
             }
         }
     }
