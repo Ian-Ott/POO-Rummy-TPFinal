@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class FlujoAgregarJugada extends Flujo{
     public FlujoAgregarJugada(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     private ArrayList<Integer> posicionesSeleccionadas = new ArrayList<>();
@@ -18,6 +19,7 @@ public class FlujoAgregarJugada extends Flujo{
     private EstadosPosibles estadoActual = EstadosPosibles.SELECCION_TIPO_JUGADA;
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
+        vistaConsola.limpiarPantalla();
         switch (estadoActual){
             case SELECCION_TIPO_JUGADA -> {
                 if (txtIngresado.equals("1")) {

@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoEsperaTurno extends Flujo{
     public FlujoEsperaTurno(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -37,6 +38,7 @@ public class FlujoEsperaTurno extends Flujo{
     }
 
     private void esperarTurno() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("______________________________________________");
         vistaConsola.print("Ha iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno...");
         vistaConsola.print("______________________________________________");

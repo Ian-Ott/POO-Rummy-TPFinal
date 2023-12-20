@@ -14,6 +14,7 @@ public class FlujoGuardarPartida extends Flujo{
     }
     public FlujoGuardarPartida(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override

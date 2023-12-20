@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoChatPublico extends Flujo{
     public FlujoChatPublico(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     enum EstadosPosibles{

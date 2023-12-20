@@ -7,6 +7,7 @@ public class FlujoFinPartidaAmistosa extends Flujo{
 
     public FlujoFinPartidaAmistosa(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -18,6 +19,7 @@ public class FlujoFinPartidaAmistosa extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("La partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
         //controlador.obtenerPosiciones();
         vistaConsola.mostrarTablaPosiciones(controlador.obtenerPosiciones());

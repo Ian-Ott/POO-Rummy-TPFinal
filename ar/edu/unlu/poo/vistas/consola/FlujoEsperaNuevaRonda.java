@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoEsperaNuevaRonda extends Flujo{
     public FlujoEsperaNuevaRonda(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -19,6 +20,7 @@ public class FlujoEsperaNuevaRonda extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         if (controlador.esAnfitrion()){
             vistaConsola.print("\nPresione Enter para comenzar una nueva ronda.");
         }else {

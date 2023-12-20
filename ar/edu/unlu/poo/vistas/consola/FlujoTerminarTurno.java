@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class FlujoTerminarTurno extends Flujo{
     public FlujoTerminarTurno(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -34,6 +35,7 @@ public class FlujoTerminarTurno extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
         vistaConsola.mostrarSeleccionCartas();
     }

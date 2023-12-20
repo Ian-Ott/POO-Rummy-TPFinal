@@ -161,4 +161,6 @@ public interface IRummy extends IObservableRemoto {
     boolean isPublicoPermitido() throws RemoteException;
 
     void mostrarMensajeEnChat(String txtIngresado) throws RemoteException;
+
+    int buscarPosicionJugador(String nombreJugador) throws RemoteException;
 }

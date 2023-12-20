@@ -600,7 +600,7 @@ public class VistaConsola implements IVista{
                 jugadorAgregado = true;
                 //obtenerNombre();
                 flujoActual = new FlujoObtenerNombre(this, controlador);
-                flujoActual.mostrarSiguienteTexto();
+                //flujoActual.mostrarSiguienteTexto();
             } else {
                 if (controlador.partidaCargada() && controlador.getNombreJugador() == null){
                     controlador.activarNuevoJugador();
@@ -613,7 +613,7 @@ public class VistaConsola implements IVista{
                 mostrarEsperaAnfitrion();
             }*/
                 flujoActual = new FlujoEsperaPartida(this, controlador);
-                flujoActual.mostrarSiguienteTexto();
+                //flujoActual.mostrarSiguienteTexto();
             }
     }
 
@@ -652,7 +652,7 @@ public class VistaConsola implements IVista{
     @Override
     public void actualizarCantJugadores(){
         flujoActual = new FlujoEsperaPartida(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
         print("Se ha unido un nuevo jugador a la partida!!!");
     }
 
@@ -686,7 +686,7 @@ public class VistaConsola implements IVista{
             activarTiempoDeTurno();
         }*/
         flujoActual = new FlujoInicioTurno(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     public void cambiarEstadoConsola(boolean estado) {
@@ -774,14 +774,14 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
         int mitadString;
         for (int i = 0; i < cartasActuales.size(); i++) {
-            mitadString = cartasActuales.get(i).toString().length() / 2;
-            mitadString+= 3; //le sumo por los espacios que deja la carta y añadidos que no los cuenta este calculo
+            mitadString = cartasActuales.get(i).toString().length();
+            mitadString = mitadString / 2 - 1;
             for (int j = 0; j < mitadString; j++) {
-                txtAreaMuestra.setText(txtAreaMuestra.getText() + "-");
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "_");
             }
             txtAreaMuestra.setText(txtAreaMuestra.getText() + (i + 1));
             for (int j = 0; j < mitadString; j++) {
-                txtAreaMuestra.setText(txtAreaMuestra.getText() + "-");
+                txtAreaMuestra.setText(txtAreaMuestra.getText() + "_");
             }
         }
     }
@@ -823,7 +823,7 @@ public class VistaConsola implements IVista{
         }else {
             flujoActual = new FlujoEsperaTurno(this, controlador);
         }
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     @Override
@@ -833,7 +833,7 @@ public class VistaConsola implements IVista{
         }else {
             flujoActual = new FlujoEsperaTurno(this, controlador);
         }
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     public void mostrarAvisoEliminado() {
@@ -852,7 +852,7 @@ public class VistaConsola implements IVista{
     @Override
     public void finalizarPartida() {
         flujoActual = new FlujoFinPartida(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     public void mostrarOpcionesNuevaPartida() {
@@ -885,7 +885,7 @@ public class VistaConsola implements IVista{
             controlador.iniciarNuevaRonda();
         }*/
         flujoActual = new FlujoPartidaCerrada(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
 
     }
 
@@ -914,7 +914,7 @@ public class VistaConsola implements IVista{
         }
         print(acumuladorTablaFinRonda);
         flujoActual = new FlujoEsperaNuevaRonda(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     @Override
@@ -924,7 +924,7 @@ public class VistaConsola implements IVista{
         controlador.obtenerPosiciones();
         mostrarOpcionesNuevaPartida();*/
         flujoActual = new FlujoFinPartidaAmistosa(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     @Override
@@ -933,7 +933,7 @@ public class VistaConsola implements IVista{
         txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe solicito anular la partida.\n¿Desea anular la partida? (Y/N) (Y para si, N para no)");
         txtConsola.setEnabled(true);*/
         flujoActual = new FlujoAnularPartida(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     @Override
@@ -941,7 +941,7 @@ public class VistaConsola implements IVista{
         /*estadoActual = EstadosPosibles.SELECCION_NOMBRE;
         txtAreaMuestra.setText("Escriba su nombre...");*/
         flujoActual = new FlujoObtenerNombre(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
     }
 
     @Override
@@ -982,7 +982,7 @@ public class VistaConsola implements IVista{
         limpiarPantalla();
         print("Un Jugador Ha salido Del Juego.");
         flujoActual = new FlujoFinPartidaAmistosa(this,controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
         //mostrarOpcionesNuevaPartida();
     }
 
@@ -1009,7 +1009,7 @@ public class VistaConsola implements IVista{
     public void activarSoloChat() {
         modoChat = true;
         flujoActual = new FlujoChatPublico(this, controlador);
-        flujoActual.mostrarSiguienteTexto();
+        //flujoActual.mostrarSiguienteTexto();
         //falta agregar el modo chat para cada actualizar
     }
 

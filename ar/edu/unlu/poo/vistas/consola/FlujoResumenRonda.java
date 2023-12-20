@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoResumenRonda extends Flujo{
     public FlujoResumenRonda(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -15,6 +16,7 @@ public class FlujoResumenRonda extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("<Resumen de ronda>");
         controlador.resultadoRonda();
     }

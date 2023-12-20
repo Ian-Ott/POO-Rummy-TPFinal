@@ -5,6 +5,7 @@ import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
 import ar.edu.unlu.poo.modelo.*;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -621,7 +622,7 @@ public class VistaGrafica implements IVista{
     }
 
     private void mostrarMensajeAsistente(String txtIngresado) {
-        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|"+ LocalDate.now() + "-"+ LocalTime.now() + txtIngresado);
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() + "\n|Fecha:" + LocalDate.now() + "| Hora:" +LocalTime.now()+ "| -" + txtIngresado);
     }
 
     private int obtenerPosicionJugada() {
@@ -648,8 +649,8 @@ public class VistaGrafica implements IVista{
     }
 
     private void errorNombreJugador() {
-        txtInfoInicio.setText("Error el nombre debe estar dentro del juego o su nombre esta vacio");
-        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-El nombre no fue aceptado es posible que ese nombre ya se encuentre en el juego o que escribiste un nombre vacio");
+        txtInfoInicio.setText("Error ya hay alguien con ese nombre en el juego y su nombre no debe estar vacio!!!");
+        txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n| Fecha:" + LocalDate.now() + "| Hora:" +LocalTime.now()+ "| -El nombre no fue aceptado es posible que ese nombre ya se encuentre en el juego o que escribiste un nombre vacio");
         //cambiar
     }
 
@@ -677,25 +678,37 @@ public class VistaGrafica implements IVista{
         for (int i = 0; i < controlador.cantJugadores() - 1;i++){
             oponenteActual = verificarAnfitrion(oponentes.get(i));
             if (i == 0){
-                if (oponenteActual.contains("*")){
-                    oponenteActual = oponenteActual.replace("*", "");
-                    datosJugadorDerecha.setText(oponenteActual);
-                    datosJugadorDerecha.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
-                }else {datosJugadorDerecha.setText(oponenteActual);}
+                cargarDatosJugadorDerecha(oponenteActual);
             } else if (i == 1) {
-                if (oponenteActual.contains("*")){
-                oponenteActual = oponenteActual.replace("*", "");
-                datosJugadorArriba.setText(oponenteActual);
-                datosJugadorArriba.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
-                }else {datosJugadorArriba.setText(oponenteActual);}
+                cargarDatosJugadorArriba(oponenteActual);
             } else if (i == 2) {
-                if (oponenteActual.contains("*")){
-                    oponenteActual = oponenteActual.replace("*", "");
-                    datosJugadorIzquierda.setText(oponenteActual);
-                    datosJugadorIzquierda.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
-                }else {datosJugadorIzquierda.setText(oponenteActual);}
+                cargarDatosJugadorIzquierda(oponenteActual);
             }
         }
+    }
+
+    private void cargarDatosJugadorIzquierda(String oponenteActual) {
+        if (oponenteActual.contains("*")){
+            oponenteActual = oponenteActual.replace("*", "");
+            datosJugadorIzquierda.setText(oponenteActual);
+            datosJugadorIzquierda.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
+        }else {datosJugadorIzquierda.setText(oponenteActual);}
+    }
+
+    private void cargarDatosJugadorArriba(String oponenteActual) {
+        if (oponenteActual.contains("*")){
+        oponenteActual = oponenteActual.replace("*", "");
+        datosJugadorArriba.setText(oponenteActual);
+        datosJugadorArriba.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
+        }else {datosJugadorArriba.setText(oponenteActual);}
+    }
+
+    private void cargarDatosJugadorDerecha(String oponenteActual) {
+        if (oponenteActual.contains("*")){
+            oponenteActual = oponenteActual.replace("*", "");
+            datosJugadorDerecha.setText(oponenteActual);
+            datosJugadorDerecha.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
+        }else {datosJugadorDerecha.setText(oponenteActual);}
     }
 
     private String verificarAnfitrion(String oponenteActual) {
@@ -819,7 +832,6 @@ public class VistaGrafica implements IVista{
         }
         agregarCartaAJugadaButton.setEnabled(false);
         terminarTurnoButton.setEnabled(false);
-        listaAbajo.setEnabled(false);
         seleccionJugada.setEnabled(false);
         cancelarSeleccionButton.setEnabled(false);
         agregarNuevaJugadaButton.setEnabled(false);
@@ -1008,7 +1020,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void continuarTurnoActual() {
         if (controlador.esTurnoJugador()) {
-            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n|" + LocalDateTime.now() + "|-Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada o incluso termnar tu turno." +
+            txtAsistenteAyuda.setText(txtAsistenteAyuda.getText() +"\n| Fecha:" + LocalDate.now() + "| Hora:" +LocalTime.now()+ " |-Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada o incluso termnar tu turno." +
                     "\nA continuacion te dejo algunos tips sobre cada una:" +
                     "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una y una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada. Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
                     "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas y luego ponerle un tilde presonando la casilla de la jugada que necesites" +
@@ -1016,7 +1028,6 @@ public class VistaGrafica implements IVista{
                     "\n-En el caso que hayas seleccionado mal tus cartas puedes seleccionar el boton cancelar seleccion para deseleccionarlas");
             cartasSeleccionadasPosicion.clear();
             actualizarCartas();
-            listaAbajo.setEnabled(true);
             agregarCartaAJugadaButton.setEnabled(true);
             terminarTurnoButton.setEnabled(true);
             agregarNuevaJugadaButton.setEnabled(true);
@@ -1056,17 +1067,20 @@ public class VistaGrafica implements IVista{
             for (int i = 0; i < jugadasEnMesa.getJugada().size(); i++) {
                 if (i % 3 == 0) {
                     panelActual = new JPanel(new FlowLayout());
+                    panelActual.setBackground(new Color(4,21,80));
                     panelJugadas.add(panelActual);
                 }
                 listaActual = new JList<>();
+                listaActual.setBackground(new Color(4,21,80));
                 listaModeloActual = new DefaultListModel<>();
                 listaActual.setModel(listaModeloActual);
                 //listaActual.setName("Jugada " + (i + 1));
                 listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
                 panelScrollActual = new JScrollPane(listaActual);
                 //60 y 60 para jugadas mas grandes
-                panelScrollActual.setPreferredSize(new Dimension(80, 100));
+                panelScrollActual.setPreferredSize(new Dimension(90, 110));
                 checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
+                checkJugadaActual.setBackground(new Color(4,21,80));
                 listaCheckJugada.add(checkJugadaActual);
                 panelActual.add(checkJugadaActual);
                 panelScrollActual.setViewportView(listaActual);

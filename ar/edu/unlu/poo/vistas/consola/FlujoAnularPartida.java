@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoAnularPartida extends Flujo{
     public FlujoAnularPartida(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
     private boolean tomoDecision = false;
 
@@ -27,6 +28,7 @@ public class FlujoAnularPartida extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         if (!tomoDecision) {
             vistaConsola.print("Se solicito anular la partida.");
             vistaConsola.print("¿Usted desea anular la partida? (Y/N)");

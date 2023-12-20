@@ -6,11 +6,15 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoObtenerNombre extends Flujo{
     public FlujoObtenerNombre(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        if (!controlador.estaEnElJuego(txtIngresado)){
+        if (txtIngresado.isEmpty()){
+            mostrarSiguienteTexto();
+            vistaConsola.print("El nombre no puede estar vacio.");
+        } else if (!controlador.estaEnElJuego(txtIngresado)){
             controlador.nuevoJugador(controlador.esAnfitrion(), txtIngresado);
             return vistaConsola.flujoActual();
         }else {
@@ -22,6 +26,7 @@ public class FlujoObtenerNombre extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("Bienvenido, Escriba su nombre...");
     }
 }

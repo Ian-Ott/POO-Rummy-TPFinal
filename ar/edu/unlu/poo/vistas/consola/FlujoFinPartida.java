@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoFinPartida extends Flujo{
     public FlujoFinPartida(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -15,6 +16,7 @@ public class FlujoFinPartida extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("La partida ha finalizado!!!");
         vistaConsola.print("El ganador es..." + controlador.getGanador() +
         " con " + controlador.getCantidadPuntosGanador()+" puntos");

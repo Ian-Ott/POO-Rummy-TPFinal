@@ -754,4 +754,13 @@ public class Controlador implements IControladorRemoto {
             vista.mostrarErrorConexion();
         }
     }
+
+    public int obtenerPosicionJugador() {
+        try {
+            rummy.buscarPosicionJugador(nombreJugador);
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+        return -1;
+    }
 }

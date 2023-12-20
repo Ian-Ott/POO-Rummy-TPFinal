@@ -7,6 +7,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoInicioTurno extends Flujo{
     public FlujoInicioTurno(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override

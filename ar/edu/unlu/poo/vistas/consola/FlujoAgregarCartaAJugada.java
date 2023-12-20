@@ -7,32 +7,41 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 import java.util.ArrayList;
 
 public class FlujoAgregarCartaAJugada extends Flujo{
-    public FlujoAgregarCartaAJugada(VistaConsola consola, Controlador controlador) {
-        super(consola, controlador);
-    }
 
     private enum EstadosPosibles{
         SELECCION_JUGADA, SELECCION_CARTAS
     }
 
-    private EstadosPosibles estadoActual = EstadosPosibles.SELECCION_JUGADA;
+    private EstadosPosibles estadoActual;
+    public FlujoAgregarCartaAJugada(VistaConsola consola, Controlador controlador) {
+        super(consola, controlador);
+        estadoActual = EstadosPosibles.SELECCION_JUGADA;
+        mostrarSiguienteTexto();
+    }
+
+
     private int posicionJugada;
     private ArrayList<Integer> posicionesSeleccionadas = new ArrayList<>();
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        switch (estadoActual){
-            case SELECCION_JUGADA -> {
-                if (vistaConsola.esNumero(txtIngresado)){
-                    return seleccionarJugada(txtIngresado);
-                }else {
-                    vistaConsola.opcionIncorrecta();
+        if (txtIngresado.equals("0")){
+            return new FlujoContinuarTurno(vistaConsola, controlador);
+        }else {
+            switch (estadoActual) {
+                case SELECCION_JUGADA -> {
+                    if (vistaConsola.esNumero(txtIngresado)) {
+                        return seleccionarJugada(txtIngresado);
+                    } else {
+                        vistaConsola.opcionIncorrecta();
+                    }
                 }
-            }case SELECCION_CARTAS -> {
-                if (vistaConsola.esNumero(txtIngresado)){
-                    return agregarPosicionCarta(txtIngresado);
-                }else {
-                    vistaConsola.opcionIncorrecta();
+                case SELECCION_CARTAS -> {
+                    if (vistaConsola.esNumero(txtIngresado)) {
+                        return agregarPosicionCarta(txtIngresado);
+                    } else {
+                        vistaConsola.opcionIncorrecta();
+                    }
                 }
             }
         }
@@ -67,6 +76,7 @@ public class FlujoAgregarCartaAJugada extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         switch (estadoActual) {
             case SELECCION_JUGADA -> {
                 ITapete jugadasEnMesa = controlador.obtenerJugadas();
@@ -78,7 +88,7 @@ public class FlujoAgregarCartaAJugada extends Flujo{
                 vistaConsola.mostrarSeleccionCartas();
                 vistaConsola.guardarTxtActual();
             }
-
         }
+        //vistaConsola.print("0- Volver a las opciones de turno");
     }
 }

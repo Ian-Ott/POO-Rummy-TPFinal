@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class FlujoContinuarTurno extends Flujo{
     public FlujoContinuarTurno(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
 
@@ -30,7 +31,11 @@ public class FlujoContinuarTurno extends Flujo{
                 }
                 case "3" -> mostrarCantidadCartas();
                 case "4" -> {
-                    return new FlujoOpcionesDeMesa(vistaConsola, controlador);
+                    if (controlador.esAnfitrion()) {
+                        return new FlujoOpcionesDeMesa(vistaConsola, controlador);
+                    }else {
+                        vistaConsola.print("No podes modificar las opciones de mesa por no ser anfitrion.");
+                    }
                 }
                 case "5" -> {
                     controlador.solicitarAnularPartida();

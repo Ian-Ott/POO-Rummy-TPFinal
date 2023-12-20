@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoEsperaPartida extends Flujo{
     public FlujoEsperaPartida(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -43,7 +44,7 @@ public class FlujoEsperaPartida extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
-        //vistaConsola.limpiarPantalla();
+        vistaConsola.limpiarPantalla();
         if (controlador.esAnfitrion()){
             mostrarEsperaAnfitrion();
         }else {
@@ -52,6 +53,7 @@ public class FlujoEsperaPartida extends Flujo{
     }
 
     private void mostrarEsperaAnfitrion(){
+        vistaConsola.limpiarPantalla();
         vistaConsola.print("__________________________________________");
         vistaConsola.print("esperando a que se unan jugadores (se necesitan entre 2-4 jugadores para empezar a jugar)");
         vistaConsola.print("Cantidad de jugadores:" + controlador.cantJugadores());

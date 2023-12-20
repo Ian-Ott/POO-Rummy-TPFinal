@@ -1339,8 +1339,10 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     public ArrayList<String> obtenerListadoPartidaGuardada() throws RemoteException{
         ArrayList<PartidaGuardada> partidas = obtenerPartidasGuardadas();
         ArrayList<String> txtPartida = new ArrayList<>();
-        for (PartidaGuardada partidaActual: partidas) {
-            txtPartida.add(partidaActual.toString());
+        if (!partidas.isEmpty()) {
+            for (PartidaGuardada partidaActual : partidas) {
+                txtPartida.add(partidaActual.toString());
+            }
         }
         return txtPartida;
     }
@@ -1415,6 +1417,17 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     @Override
     public void mostrarMensajeEnChat(String txtIngresado) throws RemoteException {
         notificarObservadores(txtIngresado);
+    }
+
+
+    public int buscarPosicionJugador(String nombreJugador) throws RemoteException{
+        int posicionJugador = -1;
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (nombreJugador.equals(jugadores.get(i).getNombre())){
+                posicionJugador = i;
+            }
+        }
+        return posicionJugador;
     }
 
     /*public void addObserver(Observer o){

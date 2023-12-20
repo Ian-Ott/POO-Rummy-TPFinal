@@ -6,6 +6,7 @@ import ar.edu.unlu.poo.vistas.VistaConsola;
 public class FlujoOpcionesTiempo extends Flujo{
     public FlujoOpcionesTiempo(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        mostrarSiguienteTexto();
     }
 
     @Override
@@ -14,13 +15,15 @@ public class FlujoOpcionesTiempo extends Flujo{
             case "1" -> {
                 if (controlador.getTiempoPorTurno() != 60) {
                     controlador.setTiempoTurno(60);
+                    return new FlujoOpcionesTiempo(vistaConsola, controlador);
                 }else {
                     vistaConsola.print("Opcion ya Activa.");
                 }
             }
             case "2" ->{
-                if (controlador.getTiempoPorTurno() != 60) {
+                if (controlador.getTiempoPorTurno() != 120) {
                     controlador.setTiempoTurno(120);
+                    return new FlujoOpcionesTiempo(vistaConsola, controlador);
                 }else {
                     vistaConsola.print("Opcion ya Activa.");
                 }
@@ -28,6 +31,7 @@ public class FlujoOpcionesTiempo extends Flujo{
             case "3" -> {
                 if (controlador.getTiempoPorTurno() != 0){
                     controlador.setTiempoTurno(0);
+                    return new FlujoOpcionesTiempo(vistaConsola, controlador);
                 }else {
                     vistaConsola.print("Opcion ya Activa.");
                 }
