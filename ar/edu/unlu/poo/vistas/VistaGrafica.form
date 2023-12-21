@@ -259,6 +259,7 @@
                     <properties>
                       <background color="-3224316"/>
                       <editable value="false"/>
+                      <foreground color="-16777216"/>
                     </properties>
                   </component>
                 </children>
@@ -268,20 +269,10 @@
                 <constraints border-constraint="East"/>
                 <properties>
                   <background color="-16509616"/>
+                  <preferredSize width="130" height="182"/>
                 </properties>
                 <border type="none"/>
                 <children>
-                  <component id="463c1" class="javax.swing.JList" binding="listaDerecha">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="150" height="150"/>
-                      </grid>
-                    </constraints>
-                    <properties>
-                      <background color="-6550782"/>
-                      <layoutOrientation value="1"/>
-                    </properties>
-                  </component>
                   <component id="50366" class="javax.swing.JTextPane" binding="datosJugadorDerecha">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
@@ -291,6 +282,18 @@
                     <properties>
                       <background color="-6550782"/>
                       <editable value="false"/>
+                      <foreground color="-131074"/>
+                    </properties>
+                  </component>
+                  <component id="463c1" class="javax.swing.JList" binding="listaDerecha">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="100" height="150"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <background color="-6550782"/>
+                      <layoutOrientation value="1"/>
                     </properties>
                   </component>
                 </children>
@@ -308,12 +311,13 @@
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <minimum-size width="40" height="40"/>
-                        <preferred-size width="10" height="40"/>
+                        <preferred-size width="10" height="20"/>
                       </grid>
                     </constraints>
                     <properties>
-                      <background color="-16739130"/>
+                      <background color="-16777216"/>
                       <editable value="false"/>
+                      <foreground color="-131074"/>
                       <preferredSize width="100" height="18"/>
                       <text value=""/>
                     </properties>
@@ -347,6 +351,7 @@
                 <constraints border-constraint="North"/>
                 <properties>
                   <background color="-16509616"/>
+                  <preferredSize width="744" height="54"/>
                 </properties>
                 <border type="none"/>
                 <children>
@@ -359,6 +364,7 @@
                     <properties>
                       <background color="-16617465"/>
                       <editable value="false"/>
+                      <foreground color="-16777216"/>
                     </properties>
                   </component>
                   <component id="2d07" class="javax.swing.JList" binding="listaArriba">
@@ -374,7 +380,7 @@
                   <grid id="9c01e" layout-manager="CardLayout" hgap="0" vgap="0">
                     <constraints>
                       <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="1" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                        <preferred-size width="100" height="30"/>
+                        <preferred-size width="50" height="30"/>
                       </grid>
                     </constraints>
                     <properties>

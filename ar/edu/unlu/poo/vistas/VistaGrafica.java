@@ -690,7 +690,7 @@ public class VistaGrafica implements IVista{
     private void cargarDatosJugadorIzquierda(String oponenteActual) {
         if (oponenteActual.contains("*")){
             oponenteActual = oponenteActual.replace("*", "");
-            datosJugadorIzquierda.setText(oponenteActual);
+            datosJugadorIzquierda.setText(" " + oponenteActual);
             datosJugadorIzquierda.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
         }else {datosJugadorIzquierda.setText(oponenteActual);}
     }
@@ -698,7 +698,7 @@ public class VistaGrafica implements IVista{
     private void cargarDatosJugadorArriba(String oponenteActual) {
         if (oponenteActual.contains("*")){
         oponenteActual = oponenteActual.replace("*", "");
-        datosJugadorArriba.setText(oponenteActual);
+        datosJugadorArriba.setText(" " + oponenteActual);
         datosJugadorArriba.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
         }else {datosJugadorArriba.setText(oponenteActual);}
     }
@@ -706,7 +706,7 @@ public class VistaGrafica implements IVista{
     private void cargarDatosJugadorDerecha(String oponenteActual) {
         if (oponenteActual.contains("*")){
             oponenteActual = oponenteActual.replace("*", "");
-            datosJugadorDerecha.setText(oponenteActual);
+            datosJugadorDerecha.setText(" " + oponenteActual);
             datosJugadorDerecha.insertIcon(new ImageIcon("ar/edu/unlu/poo/images/starIcon.jpg"));
         }else {datosJugadorDerecha.setText(oponenteActual);}
     }
@@ -1078,7 +1078,7 @@ public class VistaGrafica implements IVista{
                 listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
                 panelScrollActual = new JScrollPane(listaActual);
                 //60 y 60 para jugadas mas grandes
-                panelScrollActual.setPreferredSize(new Dimension(90, 110));
+                panelScrollActual.setPreferredSize(new Dimension(85, 105));
                 checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
                 checkJugadaActual.setBackground(new Color(4,21,80));
                 listaCheckJugada.add(checkJugadaActual);
