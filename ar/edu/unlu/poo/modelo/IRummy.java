@@ -1,14 +1,13 @@
 package ar.edu.unlu.poo.modelo;
 
-import ar.edu.unlu.poo.exceptions.JugadorInexistente;
-import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
+import ar.edu.unlu.poo.exceptions.*;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public interface IRummy extends IObservableRemoto {
-    void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException;
+    void agregarJugador(Jugador nuevoJugador) throws RemoteException;
     boolean isJuegoIniciado() throws RemoteException;
     void repartirCartasJugadores(int cantidadCartas) throws RemoteException;
 
@@ -22,29 +21,24 @@ public interface IRummy extends IObservableRemoto {
 
     void agarrarCartaBocaArriba(String jugador) throws RemoteException;
 
-    void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException;
+    void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada, NoPuedeHacerRummy;
 
-    void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException;
+    void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada;
 
     void mezclarMazo() throws RemoteException;
 
 
-    boolean esEscalera(ArrayList<Carta> nuevaJugada)throws RemoteException;
-
-    void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada)throws RemoteException;
-
-    void agregarCartaAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada, String nombreJugador)throws RemoteException;
+    void agregarCartaAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada, String nombreJugador) throws RemoteException, JugadaLLena, NoSeAgregaronAJugada;
 
     void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida)throws RemoteException;
 
-    ArrayList<Carta> buscarJugada(int posicionDeLaJugada) throws RemoteException;
 
     void terminarTurno(Integer carta1, String jugadorActual) throws RemoteException;
 
     Jugador buscarJugadorIzquierda(Jugador jugadorActual)throws RemoteException;
 
 
-    void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException;
+    void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada;
 
 
     void finalizarPartida(String jugador)throws RemoteException;
@@ -162,4 +156,6 @@ public interface IRummy extends IObservableRemoto {
     void mostrarMensajeEnChat(String txtIngresado) throws RemoteException;
 
     int buscarPosicionJugador(String nombreJugador) throws RemoteException;
+
+    int cantJugadoresActivos() throws RemoteException;
 }

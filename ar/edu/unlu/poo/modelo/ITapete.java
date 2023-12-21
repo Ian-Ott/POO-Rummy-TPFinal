@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public interface ITapete {
     void agregarJugada(Jugada jugada);
 
-    ArrayList<Jugada> getJugada();
+    ArrayList<Jugada> getListaJugada();
 
     String toString();
 }

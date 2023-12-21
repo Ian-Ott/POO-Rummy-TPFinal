@@ -17,9 +17,6 @@ public interface IVista {
 
     void iniciarTurno();
 
-    void esperarTurno();
-
-
     void nuevoTurno();
 
     void continuarTurnoActual();
@@ -59,4 +56,14 @@ public interface IVista {
     void activarSoloChat();
 
     void mostrarNuevoMensaje(String cambio);
+
+    void mostrarErrorJugadaLLena();
+
+    void mostrarErrorCartaNoAgregada();
+
+    void mostrarErrorNoEsJugada();
+
+    void mostrarErrorCartasInsuficientes();
+
+    void mostrarErrorRummyNoDisponible();
 }

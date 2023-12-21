@@ -1,8 +1,7 @@
 package ar.edu.unlu.poo.modelo;
 
 import ar.edu.unlu.poo.Serializacion.services.Serializador;
-import ar.edu.unlu.poo.exceptions.JugadorInexistente;
-import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
+import ar.edu.unlu.poo.exceptions.*;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
 import java.io.Serializable;
@@ -165,10 +164,14 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
 
     }
 //sobre jugador
-    public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
+    public void agregarJugador(Jugador nuevoJugador) throws RemoteException{
         if (!juegoIniciado){
-            nuevoJugador.setJefeMesa(anfitrion);
             jugadores.add(nuevoJugador);
+            if (jugadores.size() == 1){
+                nuevoJugador.setJefeMesa(true);
+            }else {
+                nuevoJugador.setJefeMesa(false);
+            }
             notificarObservadores("nuevo jugador");
         }
     }
@@ -366,7 +369,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         notificarObservadores("continuar turno jugador");
     }
 
-    @Override //
+    @Override
     public void agarrarCartaBocaArriba(String nombreJugador) throws RemoteException{
         Jugador jugadorAux = buscarJugador(nombreJugador);
         if (mazoDeJuego.sacarCartaBocaArriba(jugadorAux)){
@@ -392,95 +395,35 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     @Override
-    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException {
+    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada, NoPuedeHacerRummy {
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        if (!tieneJugada(jugadorActual) && !agregoJugada(jugadorActual)) {
-            if (posicionesSeleccionadas.size() == jugadorActual.getCartasEnMano().size()) {
-                ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
-                obtenerCartasOrdenadas(cartasSeleccionadas, jugadorActual);
-                if (esRummy(cartasSeleccionadas)) {
-                    jugadorActual.setHizoRummy(true);
-                    agregarJugada(nombreJugador, cartasSeleccionadas, false);
-                    notificarObservadores("jugada agregada");
-                    finalizarPartida(nombreJugador);
-                }else {
-                    devolverCartas(jugadorActual,cartasSeleccionadas);
-                    notificarObservadores("continuar turno jugador");
-                    //excepcion
-                }
-            } else {
-                notificarObservadores("continuar turno jugador");
-                //excepcion de que no selecciono todas las cartas
+        if (posicionesSeleccionadas.size() == jugadorActual.getCartasEnMano().size()) {
+            ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
+            obtenerCartasOrdenadas(cartasSeleccionadas, jugadorActual);
+            try {
+                mesaDeJuego.verificarRummy(cartasSeleccionadas, jugadorActual);
+            }catch (JugadorHizoRummy e){
+                finalizarPartida(nombreJugador);
             }
         }else {
-            notificarObservadores("continuar turno jugador");
-            //excepcion
+            throw new FaltanCartasParaJugada();
         }
-    }
-
-    private boolean agregoJugada(Jugador jugadorActual) {
-        return jugadorActual.getAgregoJugada();
     }
 
     @Override
-    public void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException {
+    public void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada{
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        boolean estaLLena = false;
-        ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
-        obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual, cartasSeleccionadas);
-        if (esCombinacion( cartasSeleccionadas)){
-            if (cartasSeleccionadas.size() == 4){
-                estaLLena = true;
+        if (posicionesSeleccionadas.size() == jugadorActual.getCartasEnMano().size()) {
+            ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
+            obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual, cartasSeleccionadas);
+            try{
+                mesaDeJuego.verificarCombinacion(cartasSeleccionadas, jugadorActual);
+            }catch (EsJugadaValida e){
+                notificarObservadores("jugada agregada");
             }
-            agregarJugada(nombreJugador, cartasSeleccionadas, estaLLena);
-
-            notificarObservadores("jugada agregada");
         }else {
-            devolverCartas(jugadorActual, cartasSeleccionadas);
-            //excepcion
-            notificarObservadores("continuar turno jugador");
+            throw new FaltanCartasParaJugada();
         }
-    }
-
-    private boolean esCombinacion(ArrayList<Carta> cartasSeleccionadas) {
-        Carta siguiente;
-        Carta actual;
-        boolean resultado = true;
-        for (int i = 0; i < cartasSeleccionadas.size(); i++) {
-            if ((i +1) != cartasSeleccionadas.size()){
-                actual = cartasSeleccionadas.get(i);
-                siguiente = cartasSeleccionadas.get(i + 1);
-                if (actual.getNumero() != siguiente.getNumero()){
-                    resultado = false;
-                }
-            }
-        }
-        return resultado;
-    }
-
-    private void agregarJugada(String nombreJugador, ArrayList<Carta> cartasJugada, boolean esLlena) {
-        Jugada nuevaJugada = new Jugada();
-        nuevaJugada.setJugadaLlena(esLlena);
-        nuevaJugada.setNombreCreadorJugada(nombreJugador);
-        nuevaJugada.setCartasJugada(cartasJugada);
-        mesaDeJuego.agregarJugada(nuevaJugada);
-    }
-
-    private boolean tieneJugada(Jugador jugadorActual) {
-        boolean resultado = false;
-        for (Jugada jugada: mesaDeJuego.getJugada()) {
-            if (jugada.getNombreCreadorJugada().equals(jugadorActual.getNombre())){
-                resultado = true;
-            }
-        }
-        return resultado;
-    }
-
-    private boolean esRummy(ArrayList<Carta> cartasAux) {
-        //solo se verifica que sea una escalera porque el rummy debe ser una jugada unica
-        // y es imposible hacer una unica jugada con solo numeros iguales
-        return esEscalera(cartasAux);
-
     }
 
     private void obtenerCartasOrdenadas(ArrayList<Carta> cartasAux, Jugador jugadorActual) {
@@ -499,142 +442,35 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             agregarCartaOrdenada(cartas,jugadorActual.getCartasEnMano().get(posicion));
             //le saco la carta al jugador para que no quede duplicada
         }
-        quitarCartasSeleccionadas(jugadorActual.getCartasEnMano(), cartas);
+        mesaDeJuego.quitarCartasSeleccionadas(jugadorActual.getCartasEnMano(), cartas);
         posicionesSeleccionadas.clear();
     }
 
     @Override
-    public void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException{
+    public void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada{
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        boolean estaLLena = false;
         if (posicionesSeleccionadas.size() <= jugadorActual.getCartasEnMano().size() && posicionesSeleccionadas.size() >= 3) {
             ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
             obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual, cartasSeleccionadas);
-            //solo acomoda los valores en el caso de que esten el as al principio y la k al final
-            acomodarValoresExtremos(cartasSeleccionadas);
-            if (esEscalera(cartasSeleccionadas)){
-                if (cartasSeleccionadas.size() == 13){
-                    estaLLena = true;
-                }
-                agregarJugada(nombreJugador, cartasSeleccionadas, estaLLena);
+            try {
+                mesaDeJuego.verificarEscalera(cartasSeleccionadas, jugadorActual);
+            }catch (EsJugadaValida e){
                 notificarObservadores("jugada agregada");
-            }else {
-                devolverCartas(jugadorActual, cartasSeleccionadas);
-                //excepcion?
-                notificarObservadores("continuar turno jugador");
             }
         }else {
-            notificarObservadores("continuar turno jugador");
-            //excepcion de que no selecciono todas las cartas
-        }
-    }
-
-    private void devolverCartas(Jugador jugadorActual, ArrayList<Carta> cartasAux) {
-        while (!cartasAux.isEmpty()){
-            jugadorActual.devolverCarta(cartasAux.remove(0));
+            throw new FaltanCartasParaJugada();
         }
     }
 
     @Override
-    public boolean esEscalera(ArrayList<Carta> nuevaJugada) {
-        boolean resultado = true;
-        for (int i = 0; i < nuevaJugada.size(); i++) {
-            if ((i +1) != nuevaJugada.size()) {
-                if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero == 1){
-
-                } else if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero != 1) {
-                    resultado = false;
-                    //compruebo que el siguiente a la k en la escalera sea el As
-                } else if ((nuevaJugada.get(i).numero + 1) != nuevaJugada.get(i + 1).numero) {
-                    //compruebo que el numero actual sumado 1 sea igual al numero siguiente
-                    //(ejemplo: carta1 = 7 y carta2 = 8 entonces si carta1 + 1 valor es igual a carta 2 se confirma que esta en escalera)
-                    resultado = false;
-                }
-            }
-        }
-        return resultado;
-    }
-    @Override
-    public void acomodarValoresExtremos(ArrayList<Carta> nuevaJugada) {
-        Carta cartaAux;
-        int posAgregada = 0;
-        int siguiente;
-        int actual;
-        int posUltimaCarta = nuevaJugada.size() - 1;
-        if (nuevaJugada.get(0).numero == 1){
-            if (nuevaJugada.get(posUltimaCarta).numero == 13) {
-                for (int i = 0; i < nuevaJugada.size(); i++) {
-                    if ((i +1) != nuevaJugada.size()){
-                        //si el numero anterior sumado 1 no es igual al siguiente
-                        // es posible que sea el inicio de la escalera
-                        siguiente = nuevaJugada.get(i + 1).numero;
-                        actual = (nuevaJugada.get(i).numero + 1);
-                        if (siguiente > actual) {
-                            System.out.println("ejecutado");
-                            cartaAux = nuevaJugada.remove(i + 1);
-                            nuevaJugada.add(posAgregada, cartaAux);
-                            posAgregada++;
-                            //posAgregada sirve para saber en que posicion mover la carta mal ordenada
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    @Override
-    public void agregarCartaAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada, String nombreJugador) throws RemoteException {
-        ArrayList<Carta> jugada = buscarJugada(posicionJugada);
-        if (jugada != null) {
-            Jugador jugadorActual = buscarJugador(nombreJugador);
-            ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
-            obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual, cartasSeleccionadas);
-            //primero se comprueba si se quiere agregar la carta a una jugada del mismo numero o del mismo palo
-            if (esEscalera(jugada)){
-                agregarCartasSeleccionadas(cartasSeleccionadas, jugada);
-                acomodarValoresExtremos(jugada);
-                //comprobamos si con las cartas agregadas sigue siendo una escalera
-                if (esEscalera(jugada)){
-                    if (jugada.size() == 13){
-                        mesaDeJuego.getJugada().get(posicionJugada).setJugadaLlena(true);
-                    }
-                    jugadorActual.setAgregoJugada(true);
-                    notificarObservadores("cartas agregadas");
-                }else{
-                    quitarCartasSeleccionadas(jugada, cartasSeleccionadas);
-                    devolverCartas(jugadorActual,cartasSeleccionadas);
-                    //excepcion
-                }
-            }else{
-                agregarCartasSeleccionadas(cartasSeleccionadas, jugada);
-                if (esCombinacion(jugada)){
-                    if (jugada.size() == 4){
-                        mesaDeJuego.getJugada().get(posicionJugada).setJugadaLlena(true);
-                    }
-                    jugadorActual.setAgregoJugada(true);
-                    notificarObservadores("cartas agregadas");
-                }else {
-                    quitarCartasSeleccionadas(jugada, cartasSeleccionadas);
-                    devolverCartas(jugadorActual,cartasSeleccionadas);
-                    //excepcion
-                }
-            }
-        }else{
-            //excepcion
-        }
-        notificarObservadores("continuar turno jugador");
-    }
-
-    private void agregarCartasSeleccionadas(ArrayList<Carta> cartasSeleccionadas, ArrayList<Carta> jugada) {
-        for (Carta carta: cartasSeleccionadas) {
-            agregarCartaOrdenada(jugada, carta);
-        }
-    }
-
-    private void quitarCartasSeleccionadas(ArrayList<Carta> cartasActuales, ArrayList<Carta> cartasSeleccionadas) {
-        for (Carta carta:cartasSeleccionadas) {
-            cartasActuales.remove(carta);
+    public void agregarCartaAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada, String nombreJugador) throws RemoteException, JugadaLLena, NoSeAgregaronAJugada {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
+        obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual, cartasSeleccionadas);
+        try {
+            mesaDeJuego.verificarCartaParaJugada(cartasSeleccionadas, posicionJugada, jugadorActual);
+        }catch (CartasAgregadasAJugada e){
+            notificarObservadores("cartas agregadas");
         }
     }
 
@@ -657,11 +493,6 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 jugada.add(cartaElegida);
             }
         }
-    }
-
-    @Override
-    public ArrayList<Carta> buscarJugada(int posicionDeLaJugada) throws RemoteException{
-        return mesaDeJuego.getJugada().get(posicionDeLaJugada).getCartasJugada();
     }
 
     //sobre opciones de mesa
@@ -690,11 +521,6 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }else {
             estadoCompetitivo = true;
         }
-        /*if (juegoIniciado){
-            notificarObservadores("continuar turno jugador");
-        }else {
-            notificarObservadores("continuar espera");
-        }*/
         notificarObservadores("cambios en opciones de mesa");
     }
 
@@ -1069,8 +895,8 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }else {
             //posible rummy
             obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(), jugadorActual);
-            if (esRummy(jugadorActual.getCartasEnMano())) {
-                agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(), false);
+            if (mesaDeJuego.esRummy(jugadorActual.getCartasEnMano())) {
+                mesaDeJuego.agregarNuevaJugada(nombreJugador, jugadorActual.getCartasEnMano(), false);
                 jugadorActual.getCartasEnMano().clear();
                 //como las cartas se agregaron a la jugada las elimino
                 finalizarPartida(nombreJugador);
@@ -1078,17 +904,17 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             //a partir de aca las cartas deberian de seguir ordenadas por lo que solo se comprueba el palo y si el numero es continuo
             //posible escalera
             posibleEscalera = obtenerCartasPaloMasRepetido(jugadorActual.getCartasEnMano());
-            if (esEscalera(posibleEscalera)) {
-                agregarJugada(nombreJugador, posibleEscalera, false);
+            if (mesaDeJuego.esEscalera(posibleEscalera)) {
+                mesaDeJuego.agregarNuevaJugada(nombreJugador, posibleEscalera, false);
             } else {
-                devolverCartas(jugadorActual, posibleEscalera);
+                mesaDeJuego.devolverCartas(jugadorActual, posibleEscalera);
             }
             //posible combinacion
             posibleCombinacion = obtenerCartasNumeroMasRepetido(jugadorActual.getCartasEnMano());
-            if (esCombinacion(posibleCombinacion)) {
-                agregarJugada(nombreJugador, posibleCombinacion, false);
+            if (mesaDeJuego.esCombinacion(posibleCombinacion)) {
+                mesaDeJuego.agregarNuevaJugada(nombreJugador, posibleCombinacion, false);
             } else {
-                devolverCartas(jugadorActual, posibleCombinacion);
+                mesaDeJuego.devolverCartas(jugadorActual, posibleCombinacion);
             }
             //posible fin de partida
             if (jugadorActual.getCartasEnMano().isEmpty()) {
@@ -1109,7 +935,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 cartasMismoNumero.add(carta);
             }
         }
-        quitarCartasSeleccionadas(cartasEnMano, cartasMismoNumero);
+        mesaDeJuego.quitarCartasSeleccionadas(cartasEnMano, cartasMismoNumero);
         return  cartasMismoNumero;
     }
 
@@ -1141,7 +967,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 cartasMismoPalo.add(carta);
             }
         }
-        quitarCartasSeleccionadas(cartasEnMano, cartasMismoPalo);
+        mesaDeJuego.quitarCartasSeleccionadas(cartasEnMano, cartasMismoPalo);
         return cartasMismoPalo;
     }
 
@@ -1304,9 +1130,9 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     private boolean jugadasLlenas() throws RemoteException{
         Jugada jugadaActual;
         boolean resultado = true;
-        if (!mesaDeJuego.getJugada().isEmpty()){
-            for (int i = 0; i < mesaDeJuego.getJugada().size(); i++) {
-                jugadaActual = mesaDeJuego.getJugada().get(i);
+        if (!mesaDeJuego.getListaJugada().isEmpty()){
+            for (int i = 0; i < mesaDeJuego.getListaJugada().size(); i++) {
+                jugadaActual = mesaDeJuego.getListaJugada().get(i);
                 if (!jugadaActual.isJugadaLlena()){
                     resultado = false;
                 }
@@ -1414,7 +1240,16 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         return nombreJugadorActivado;
     }
 
-
+    @Override
+    public int cantJugadoresActivos() throws RemoteException {
+        int cantidadActivos = 0;
+        for (Jugador jugador:jugadores) {
+            if (jugador.isActivo()){
+                cantidadActivos++;
+            }
+        }
+        return cantidadActivos;
+    }
 
 
     //eliminar
@@ -1427,6 +1262,8 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
         return posicionJugador;
     }
+
+
 
     /*public void addObserver(Observer o){
         observadores.add(o);

@@ -1,8 +1,7 @@
 package ar.edu.unlu.poo.controlador;
 
 import ar.edu.unlu.poo.Serializacion.services.Serializador;
-import ar.edu.unlu.poo.exceptions.JugadorInexistente;
-import ar.edu.unlu.poo.exceptions.NoHayCartaBocaArriba;
+import ar.edu.unlu.poo.exceptions.*;
 import ar.edu.unlu.poo.modelo.*;
 import ar.edu.unlu.poo.vistas.IVista;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
@@ -101,7 +100,16 @@ public class Controlador implements IControladorRemoto {
     }
 
     public boolean esAnfitrion() {
-        return anfitrion;
+        try {
+            return rummy.isJefeMesa(nombreJugador);
+        } catch (RemoteException | JugadorInexistente e) {
+            if (e instanceof JugadorInexistente){
+                System.exit(0);
+            }else {
+                vista.mostrarErrorConexion();
+            }
+        }
+        return false;
     }
 
     public void setAnfitrion(boolean anfitrion) {
@@ -170,11 +178,11 @@ public class Controlador implements IControladorRemoto {
         return resultado;
     }
 
-    public void nuevoJugador(boolean anfitrion, String nombreJugador){
+    public void nuevoJugador(String nombreJugador){
         Jugador nuevoJugador = new Jugador(nombreJugador);
         this.nombreJugador = nombreJugador;
         try {
-            rummy.agregarJugador(nuevoJugador, anfitrion);
+            rummy.agregarJugador(nuevoJugador);
         } catch (RemoteException e) {
             vista.mostrarErrorConexion();
         }
@@ -279,42 +287,58 @@ public class Controlador implements IControladorRemoto {
     public void armarRummy(ArrayList<Integer> posicionesSeleccionadas){
         try {
             rummy.comprobarRummy(posicionesSeleccionadas, nombreJugador);
-        } catch (RemoteException e) {
-            vista.mostrarErrorConexion();
+        } catch (RemoteException | FaltanCartasParaJugada | NoEsJugada | NoPuedeHacerRummy e) {
+            if (e instanceof RemoteException) {
+                vista.mostrarErrorConexion();
+            } else if (e instanceof  FaltanCartasParaJugada) {
+                vista.mostrarErrorCartasInsuficientes();
+            } else if (e instanceof NoEsJugada) {
+                vista.mostrarErrorNoEsJugada();
+            } else{
+                vista.mostrarErrorRummyNoDisponible();
+            }
         }
     }
 
     public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas){
         try {
-            if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
-                rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+            rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
+        } catch (RemoteException | NoEsJugada | FaltanCartasParaJugada e) {
+            if (e instanceof RemoteException) {
+                vista.mostrarErrorConexion();
+            } else if (e instanceof NoEsJugada) {
+                vista.mostrarErrorNoEsJugada();
             }else {
-                vista.continuarTurnoActual();
+                vista.mostrarErrorCartasInsuficientes();
             }
-        } catch (RemoteException e) {
-            vista.mostrarErrorConexion();
         }
     }
 
     public void armarCombinacionIguales(ArrayList<Integer> posicionesSeleccionadas){
         try {
-            if (posicionesSeleccionadas.size() >= 3 && posicionesSeleccionadas.size() <= getCartasSize()){
-                rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
-            }else {
-                //agregar excepcion cartas insuficientes
-                vista.continuarTurnoActual();
-                System.out.println("error cantidad incorrecta de posiciones");
+            rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
+        } catch (RemoteException | NoEsJugada | FaltanCartasParaJugada e) {
+            if (e instanceof RemoteException) {
+                vista.mostrarErrorConexion();
+            } else if (e instanceof NoEsJugada) {
+                vista.mostrarErrorNoEsJugada();
+            } else{
+                vista.mostrarErrorCartasInsuficientes();
             }
-        } catch (RemoteException e) {
-            vista.mostrarErrorConexion();
         }
     }
 
     public void agregarCartasAJugada(ArrayList<Integer> posicionesSeleccionadas, int posicionJugada){
         try {
             rummy.agregarCartaAJugada(posicionesSeleccionadas, posicionJugada, nombreJugador);
-        } catch (RemoteException e) {
-            vista.mostrarErrorConexion();
+        } catch (RemoteException | JugadaLLena | NoSeAgregaronAJugada e) {
+            if (e instanceof RemoteException) {
+                vista.mostrarErrorConexion();
+            } else if (e instanceof JugadaLLena) {
+                vista.mostrarErrorJugadaLLena();
+            } else {
+                vista.mostrarErrorCartaNoAgregada();
+            }
         }
     }
 
@@ -348,7 +372,7 @@ public class Controlador implements IControladorRemoto {
 
     public int getJugadasSize()  {
         try {
-            return rummy.getMesaJugadas().getJugada().size();
+            return rummy.getMesaJugadas().getListaJugada().size();
         } catch (RemoteException e) {
             vista.mostrarErrorConexion();
         }
@@ -568,7 +592,7 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
-    public void comprobarAnfitrion() {
+    /*public void comprobarAnfitrion() {
         try {
             if (rummy.isJefeMesa(nombreJugador)){
                 anfitrion = true;
@@ -580,7 +604,7 @@ public class Controlador implements IControladorRemoto {
                 vista.mostrarErrorConexion();
             }
         }
-    }
+    }*/
 
     public void modificarOpcionChat() {
         try {
@@ -762,5 +786,14 @@ public class Controlador implements IControladorRemoto {
             vista.mostrarErrorConexion();
         }
         return -1;
+    }
+
+    public int getJugadoresActivos() {
+        try {
+            return rummy.cantJugadoresActivos();
+        } catch (RemoteException e) {
+            vista.mostrarErrorConexion();
+        }
+        return 0;
     }
 }

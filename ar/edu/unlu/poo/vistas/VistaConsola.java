@@ -340,27 +340,6 @@ public class VistaConsola implements IVista{
         }
     }
 
-    //podria borrar
-    @Override
-    public void esperarTurno(){
-        limpiarPantalla();
-        if (controlador.isEliminado()){
-            mostrarAvisoEliminado();
-        } else if (!controlador.esTurnoJugador()){
-            txtAreaMuestra.setText("______________________________________________" +
-                    "\nHa iniciado un nuevo turno, pero no es suyo. Espere su siguiente turno..." +
-                    "\n______________________________________________");
-            txtConsola.setEnabled(false);
-            if (controlador.jugadorEnAutomatico()){
-                txtConsola.setEnabled(true);
-                txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nSe te activo el juego automatico por no terminar tu turno a tiempo." +
-                        "\nAVISO: si todos los jugadores entran en modo automatico la partida finalizara amistosamente." +
-                        "\nSi quiere desactivar esta opcion solo presione 1");
-            }
-        }
-        guardarTxtActual();
-    }
-
     @Override
     public void nuevoTurno(){
         if (controlador.esTurnoJugador()){
@@ -399,7 +378,6 @@ public class VistaConsola implements IVista{
 
     public void mostrarOpcionesNuevaPartida() {
         //comprueba cual es el anfitrion antes de dar la eleccion por si hubo un cambio inesperado
-        controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()){
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n¿Desea iniciar una nueva partida? (Y/N) (Y para si, N para no)");
         }else {
@@ -524,5 +502,30 @@ public class VistaConsola implements IVista{
     @Override
     public void mostrarNuevoMensaje(String mensajeNuevo) {
         print(mensajeNuevo);
+    }
+
+    @Override
+    public void mostrarErrorJugadaLLena() {
+        print("Error: La jugada seleccionada esta llena.");
+    }
+
+    @Override
+    public void mostrarErrorCartaNoAgregada() {
+        print("Error: Las cartas seleccionadas para agregar no forman parte de la jugada seleccionada.");
+    }
+
+    @Override
+    public void mostrarErrorNoEsJugada() {
+        print("Error: Las cartas seleccionadas no forman esa jugada.");
+    }
+
+    @Override
+    public void mostrarErrorCartasInsuficientes() {
+        print("Error: Faltan cartas para armar la jugada");
+    }
+
+    @Override
+    public void mostrarErrorRummyNoDisponible() {
+        print("Error: La opcion de rummy no esta disponible porque ya hizo una jugada anteriormente.");
     }
 }

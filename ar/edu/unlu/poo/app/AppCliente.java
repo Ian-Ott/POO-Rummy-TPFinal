@@ -76,13 +76,14 @@ public class AppCliente {
             if (!controlador.juegoIniciado()){
                 //controlador.nuevoJugador(nuevoJugador);
                 if(!controlador.juegoIniciado() && controlador.cantJugadores() < 4){
-                    if (controlador.primerJugador()){
+                    /*if (controlador.primerJugador()){
                         controlador.setAnfitrion(true);
                         vista.pantallaEspera();
                     }else {
                         controlador.setAnfitrion(false);
                         vista.pantallaEspera();
-                    }
+                    }*/
+                    vista.pantallaEspera();
                 }else {
                     System.out.println("ERROR: maximo de jugadores alcanzado");
                     System.exit(0);

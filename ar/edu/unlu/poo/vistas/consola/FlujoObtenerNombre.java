@@ -15,7 +15,7 @@ public class FlujoObtenerNombre extends Flujo{
             mostrarSiguienteTexto();
             vistaConsola.print("El nombre no puede estar vacio.");
         } else if (!controlador.estaEnElJuego(txtIngresado)){
-            controlador.nuevoJugador(controlador.esAnfitrion(), txtIngresado);
+            controlador.nuevoJugador(txtIngresado);
             return vistaConsola.flujoActual();
         }else {
             mostrarSiguienteTexto();
