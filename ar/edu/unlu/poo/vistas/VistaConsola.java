@@ -223,15 +223,19 @@ public class VistaConsola implements IVista{
 
     @Override
     public void pantallaEspera() {
+        if (!modoChat) {
             if (!jugadorAgregado && !controlador.partidaCargada()) {
                 jugadorAgregado = true;
                 flujoActual = new FlujoObtenerNombre(this, controlador);
             } else {
-                if (controlador.partidaCargada() && controlador.getNombreJugador() == null){
+                if (controlador.partidaCargada() && controlador.getNombreJugador() == null) {
                     controlador.activarNuevoJugador();
                 }
                 flujoActual = new FlujoEsperaPartida(this, controlador);
             }
+        }else {
+            print("Se esta esperando a que se inicie la partida");
+        }
     }
 
 
@@ -241,13 +245,19 @@ public class VistaConsola implements IVista{
 
     @Override
     public void actualizarCantJugadores(){
-        flujoActual = new FlujoEsperaPartida(this, controlador);
-        //print("Se ha unido un nuevo jugador a la partida!!!");
+        if (!modoChat) {
+            flujoActual = new FlujoEsperaPartida(this, controlador);
+            //print("Se ha unido un nuevo jugador a la partida!!!");
+        }else {
+            print("Se esta esperando a que inicie la partida. Cantidad de jugadores " + controlador.cantJugadores() + ". Activos: " + controlador.getJugadoresActivos());
+        }
     }
 
     @Override
     public void iniciarTurno(){
-        flujoActual = new FlujoInicioTurno(this, controlador);
+        if (!modoChat) {
+            flujoActual = new FlujoInicioTurno(this, controlador);
+        }
     }
 
     public void cambiarEstadoConsola(boolean estado) {
@@ -342,19 +352,27 @@ public class VistaConsola implements IVista{
 
     @Override
     public void nuevoTurno(){
-        if (controlador.esTurnoJugador()){
-            flujoActual = new FlujoInicioTurno(this, controlador);
+        if (!modoChat) {
+            if (controlador.esTurnoJugador()) {
+                flujoActual = new FlujoInicioTurno(this, controlador);
+            } else {
+                flujoActual = new FlujoEsperaTurno(this, controlador);
+            }
         }else {
-            flujoActual = new FlujoEsperaTurno(this, controlador);
+            print("Se Ha iniciado un nuevo turno. Recuerde usar /mostrarNombreTurnoActual para saber de quien se trata.");
         }
     }
 
     @Override
     public void continuarTurnoActual(){
-        if (controlador.esTurnoJugador()) {
-            flujoActual = new FlujoContinuarTurno(this, controlador);
+        if (!modoChat) {
+            if (controlador.esTurnoJugador()) {
+                flujoActual = new FlujoContinuarTurno(this, controlador);
+            } else {
+                flujoActual = new FlujoEsperaTurno(this, controlador);
+            }
         }else {
-            flujoActual = new FlujoEsperaTurno(this, controlador);
+            print("Se esta continuando el turno Actual. Recuerde usar /mostrarNombreTurnoActual para saber de quien se trata.");
         }
     }
 
@@ -373,7 +391,17 @@ public class VistaConsola implements IVista{
 
     @Override
     public void finalizarPartida() {
-        flujoActual = new FlujoFinPartida(this, controlador);
+        if (!modoChat) {
+            flujoActual = new FlujoFinPartida(this, controlador);
+        }else {
+            print("La partida ha finalizado!!!");
+            print("El ganador es..." + controlador.getGanador() +
+                    " con " + controlador.getCantidadPuntosGanador()+" puntos");
+            if (!controlador.getEstadoCompetitivo()){
+                print("\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+            }
+            mostrarTablaPosiciones(controlador.obtenerPosiciones());
+        }
     }
 
     public void mostrarOpcionesNuevaPartida() {
@@ -388,24 +416,49 @@ public class VistaConsola implements IVista{
 
     @Override
     public void actualizarJugadas(){
-        jugadasSinVer = true;
+        if (!modoChat) {
+            jugadasSinVer = true;
+        }else {
+            print("Hay nuevas jugadas sin ver!!! escriba el comando /mostrarJugadas para verlas");
+        }
     }
 
     @Override
     public void cerrarPartida() {
-        flujoActual = new FlujoPartidaCerrada(this, controlador);
+        if (!modoChat) {
+            flujoActual = new FlujoPartidaCerrada(this, controlador);
+        }else {
+            if (controlador.getModoJuego().equals("EXPRES")){
+                print("La partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+                if (!controlador.getEstadoCompetitivo()){
+                    print("No se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+                }
+                //controlador.obtenerPosiciones();
+                mostrarTablaPosiciones(controlador.obtenerPosiciones());
+            }else {
+                print("La ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+            }
+        }
     }
 
     @Override
-    public void mostrarErrorApuesta(){
-        hayApuesta = false;
-        print("\nSe cancelaron las apuestas!!!");
+    public void mostrarApuestaCancelada(){
+        if (!modoChat) {
+            hayApuesta = false;
+            print("\nSe cancelaron las apuestas!!!");
+        }else {
+            print("Se cancelaron las apuestas en la partida.");
+        }
     }
 
     @Override
     public void avisarSobreApuesta() {
-        if (!controlador.esAnfitrion()){
-            hayApuesta = true;
+        if (!modoChat) {
+            if (!controlador.esAnfitrion()) {
+                hayApuesta = true;
+            }
+        }else {
+            print("Los jugadores tienen las apuestas activas!!");
         }
     }
 
@@ -417,18 +470,27 @@ public class VistaConsola implements IVista{
             acumuladorTablaFinRonda += jugadores.get(i).getNombre() + "\t" + jugadores.get(i).getPuntosDePartida() + "\t";
         }
         print(acumuladorTablaFinRonda);
-        flujoActual = new FlujoEsperaNuevaRonda(this, controlador);
+        if (!modoChat) {
+            flujoActual = new FlujoEsperaNuevaRonda(this, controlador);
+        }
     }
 
     @Override
     public void finalizarPartidaAmistosamente() {
-        flujoActual = new FlujoFinPartidaAmistosa(this, controlador);
+        if (!modoChat) {
+            flujoActual = new FlujoFinPartidaAmistosa(this, controlador);
+        }else {
+            print("Se finalizo la partida amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+        }
     }
 
     @Override
     public void eleccionAnularPartida() {
-
-        flujoActual = new FlujoAnularPartida(this, controlador);
+        if (!modoChat) {
+            flujoActual = new FlujoAnularPartida(this, controlador);
+        }else {
+            print("Se esta solicitando anular la partida.");
+        }
     }
 
     @Override
@@ -477,8 +539,13 @@ public class VistaConsola implements IVista{
 
     @Override
     public void avisarCambiosOpcionesMesa() {
-        cambiosOpcionesMesa = true;
-        if (!controlador.esTurnoJugador()){
+        if (!modoChat) {
+            cambiosOpcionesMesa = true;
+            if (!controlador.esTurnoJugador()) {
+                print("\nEl anfitrion hizo cambios en las opciones de mesa!!!");
+            }
+        }else {
+            flujoActual = new FlujoChatPublico(this, controlador);
             print("\nEl anfitrion hizo cambios en las opciones de mesa!!!");
         }
     }

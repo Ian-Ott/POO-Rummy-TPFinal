@@ -35,12 +35,13 @@ public class Controlador implements IControladorRemoto {
 
     @Override
     public void actualizar(IObservableRemoto modelo, Object cambio){
-            if (cambio.toString().equals("cartas repartidas")){
+            /*if (cambio.toString().equals("cartas repartidas")){
                 obtenerCartas();//tal vez lo puedo borrar
-            } else if (cambio.equals("nueva apuesta")) {
+            } else*/
+        if (cambio.equals("nueva apuesta")) {
                 vista.avisarSobreApuesta();
             } else if (cambio.equals("apuesta cancelada")) {
-                vista.mostrarErrorApuesta();
+                vista.mostrarApuestaCancelada();
             } else if (cambio.equals("nuevo jugador")) {
                 vista.actualizarCantJugadores();
             } else if (cambio.equals("jugador eliminado")) {
@@ -401,7 +402,7 @@ public class Controlador implements IControladorRemoto {
             if (rummy.puedenApostarJugadores(apuesta)){
                 rummy.apostarFichas(apuesta);
             }else {
-                vista.mostrarErrorApuesta();
+                vista.mostrarApuestaCancelada();
             }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
@@ -779,14 +780,6 @@ public class Controlador implements IControladorRemoto {
         }
     }
 
-    public int obtenerPosicionJugador() {
-        try {
-            rummy.buscarPosicionJugador(nombreJugador);
-        } catch (RemoteException e) {
-            vista.mostrarErrorConexion();
-        }
-        return -1;
-    }
 
     public int getJugadoresActivos() {
         try {

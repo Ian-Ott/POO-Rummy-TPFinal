@@ -14,7 +14,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.rmi.RemoteException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -234,7 +233,7 @@ public class VistaGrafica implements IVista{
                             if (!controlador.apuestasActivadas()) {
                                 controlador.apostar((int) spinnerApuesta.getValue());
                             }else {
-                                mostrarErrorApuesta();
+                                mostrarApuestaCancelada();
                             }
                         }
                     }
@@ -484,15 +483,15 @@ public class VistaGrafica implements IVista{
                     if (txtEscribirChat.getText().equals("/ayuda")){
                         mostrarListaComandos();
                     }else if (txtEscribirChat.getText().equals("/mostrarCartasJugadores")){
-
+                        mostrarNuevoMensaje("Jugador " + controlador.getNombreAnfitrion() + ": " +controlador.cantCartasOponente(controlador.getNombreAnfitrion()));
+                        for (String oponenteAnfitrion: controlador.nombreOponentes(controlador.getNombreAnfitrion())) {
+                            mostrarNuevoMensaje("Jugador " + controlador.getNombreAnfitrion() + ": " + controlador.cantCartasOponente(oponenteAnfitrion));
+                        }
                     } else if (txtEscribirChat.getText().equals("/mostrarJugadas")) {
-
+                        ITapete jugadasEnMesa = controlador.obtenerJugadas();
+                        mostrarNuevoMensaje(String.valueOf(jugadasEnMesa));
                     } else if (txtEscribirChat.getText().equals("/mostrarNombreTurnoActual")) {
-
-                    } else if (txtEscribirChat.getText().equals("/puntosDePartida")) {
-
-                    } else if (txtEscribirChat.getText().equals("/top5Jugadores")) {
-
+                        mostrarNuevoMensaje("Jugador con el turno Actual: " + controlador.getNombreTurnoActual());
                     }else {
                         controlador.mostrarMensaje(txtEscribirChat.getText());
                     }
@@ -612,7 +611,6 @@ public class VistaGrafica implements IVista{
             escribirEnChat("_____________________________________________________________");
             escribirEnChat("Lista de Comandos:");
             escribirEnChat("/mostrarCartasJugadores\t/mostrarJugadas\t/mostrarNombreTurnoActual");
-            escribirEnChat("/puntosDePartida\t/top5Jugadores");
             escribirEnChat("-Recuerda usar siempre / cuando quieras escribir un comando");
             escribirEnChat("_____________________________________________________________");
     }
@@ -726,32 +724,36 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void pantallaEspera() {
-        if (controlador.getNombreJugador() == null) {
-            obtenerNombre();
-            apostarButton.setVisible(false);
-            spinnerApuesta.setVisible(false);
-        }else if (controlador.esAnfitrion()){
-            apostarButton.setVisible(true);
-            spinnerApuesta.setVisible(true);
-            //esto sucede solo si se esta iniciando una nueva partida en el mismo servidor
-            iniciarPartidaButton.setVisible(true);
-        }else {
-            apostarButton.setVisible(true);
-            spinnerApuesta.setVisible(true);
-        }
-        panelInicio.setVisible(true);
-        if (controlador.esAnfitrion()){
-            if (controlador.partidaCargada()){
-                mostrarEsperaCargarPartidaAnfitrion();
-            }
-            mostrarEsperaAnfitrion();
-        }else {
-            if (controlador.partidaCargada()) {
-                mostrarEsperaCargarPartida();
+        if (!modoChat) {
+            if (controlador.getNombreJugador() == null) {
+                obtenerNombre();
+                apostarButton.setVisible(false);
+                spinnerApuesta.setVisible(false);
+            } else if (controlador.esAnfitrion()) {
+                apostarButton.setVisible(true);
+                spinnerApuesta.setVisible(true);
+                //esto sucede solo si se esta iniciando una nueva partida en el mismo servidor
+                iniciarPartidaButton.setVisible(true);
             } else {
-                mostrarEspera();
+                apostarButton.setVisible(true);
+                spinnerApuesta.setVisible(true);
             }
-            comprobarApuesta();
+            panelInicio.setVisible(true);
+            if (controlador.esAnfitrion()) {
+                if (controlador.partidaCargada()) {
+                    mostrarEsperaCargarPartidaAnfitrion();
+                }
+                mostrarEsperaAnfitrion();
+            } else {
+                if (controlador.partidaCargada()) {
+                    mostrarEsperaCargarPartida();
+                } else {
+                    mostrarEspera();
+                }
+                comprobarApuesta();
+            }
+        }else {
+            mostrarNuevoMensaje("Se esta esperando a que se inicie la partida");
         }
     }
 
@@ -836,67 +838,73 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void actualizarCantJugadores() {
-        pantallaEspera();
+        if (!modoChat) {
+            pantallaEspera();
+        }else {
+            mostrarNuevoMensaje("Se esta esperando a que inicie la partida. Cantidad de jugadores " + controlador.cantJugadores() + ". Activos: " + controlador.getJugadoresActivos());
+        }
     }
 
     @Override
     public void iniciarTurno() {
-        if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
-            activarPartida();
-        }
-        if (!controlador.esAnfitrion()){
-            seleccionTiempo.setVisible(false);
-            partidaCompetitivaCheck.setVisible(false);
-            modoExpresCheckBox.setVisible(false);
-            modoPorPuntosCheckBox.setVisible(false);
-            checkBoxChat.setVisible(false);
-            txtOpcionMesa.setText("No podes modificar las opciones de mesa por no ser anfitrion.");
-        }else {
-            seleccionTiempo.setVisible(true);
-            partidaCompetitivaCheck.setVisible(true);
-            modoExpresCheckBox.setVisible(true);
-            modoPorPuntosCheckBox.setVisible(true);
-            checkBoxChat.setVisible(true);
-            txtOpcionMesa.setText("Seleccione las opciones de Mesa que quiera cambiar");
-        }
-        agregarCartaAJugadaButton.setEnabled(false);
-        terminarTurnoButton.setEnabled(false);
-        seleccionJugada.setEnabled(false);
-        cancelarSeleccionButton.setEnabled(false);
-        agregarNuevaJugadaButton.setEnabled(false);
-        asignarNombresJugadores();
-        //establecerColorJugadores();
-        actualizarCartaBocaArriba();
-        if (controlador.esTurnoJugador() && !controlador.isEliminado()){
-            if (controlador.jugadorEnAutomatico()){
-                controlador.iniciarJuegoAutomatico();
-            } else if (controlador.esAnfitrion()) {
-                guardarPartidaButton.setEnabled(true);
+        if (!modoChat) {
+            if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
+                activarPartida();
             }
-            txtTurno.setText("Bienvenido al | modo" +controlador.getModoJuego() + " | , " + controlador.getNombreJugador() +". Es su turno.");
-            mazoButton.setEnabled(true);
-            cartaBocaArribaButton.setEnabled(true);
-            mostrarMensajeAsistente("Ahora mismo es tu turno. Para comenzar debes decidir si agarrar una carta del mazo o la carta que esta boca arriba al lado del mazo.");
-            comprobarTiempoTurno();
-        } else if (controlador.isEliminado()) {
-            mazoButton.setEnabled(false);
-            cartaBocaArribaButton.setEnabled(false);
-            if (controlador.apuestasActivadas()){
-                reengancharseButton.setEnabled(true);
-                txtTurno.setText("Has sido Eliminado. Si quiere puede reengancharse a la partida apostando la mitad de las fichas que aposto antes y volvera a jugar empezando el turno con los mismos puntos que el jugador que mas tiene.");
-                mostrarMensajeAsistente("Fuiste elminado por sobrepasar el limite de puntos pero tenes la chance reengancharte a la partida con los puntos del jugador que mas tiene." +
-                        "\nPara eso dirigite al panel de partida y presiona reengancharse.");
-            }else {
-                txtTurno.setText("Has sido Eliminado. No es posible reengancharse debido a que las apuestas no estan activadas");
-                mostrarMensajeAsistente("Fuiste elminado por sobrepasar el limite de puntos pero no podes reengancharte a la partida porque las apuestas no estan actvadas. Debes esperar a que la partida termine :(");
+            if (!controlador.esAnfitrion()) {
+                seleccionTiempo.setVisible(false);
+                partidaCompetitivaCheck.setVisible(false);
+                modoExpresCheckBox.setVisible(false);
+                modoPorPuntosCheckBox.setVisible(false);
+                checkBoxChat.setVisible(false);
+                txtOpcionMesa.setText("No podes modificar las opciones de mesa por no ser anfitrion.");
+            } else {
+                seleccionTiempo.setVisible(true);
+                partidaCompetitivaCheck.setVisible(true);
+                modoExpresCheckBox.setVisible(true);
+                modoPorPuntosCheckBox.setVisible(true);
+                checkBoxChat.setVisible(true);
+                txtOpcionMesa.setText("Seleccione las opciones de Mesa que quiera cambiar");
             }
-        } else {
-            esperarTurno();
-        }
-        txtTurno.setText(txtTurno.getText() +  "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
-        "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() + ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
-        if (controlador.getModoJuego().equals("JUEGOAPUNTOS")){
-            txtTurno.setText("Tus puntos de partida: "+ controlador.getpuntosJugador());
+            agregarCartaAJugadaButton.setEnabled(false);
+            terminarTurnoButton.setEnabled(false);
+            seleccionJugada.setEnabled(false);
+            cancelarSeleccionButton.setEnabled(false);
+            agregarNuevaJugadaButton.setEnabled(false);
+            asignarNombresJugadores();
+            //establecerColorJugadores();
+            actualizarCartaBocaArriba();
+            if (controlador.esTurnoJugador() && !controlador.isEliminado()) {
+                if (controlador.jugadorEnAutomatico()) {
+                    controlador.iniciarJuegoAutomatico();
+                } else if (controlador.esAnfitrion()) {
+                    guardarPartidaButton.setEnabled(true);
+                }
+                txtTurno.setText("Bienvenido al | modo" + controlador.getModoJuego() + " | , " + controlador.getNombreJugador() + ". Es su turno.");
+                mazoButton.setEnabled(true);
+                cartaBocaArribaButton.setEnabled(true);
+                mostrarMensajeAsistente("Ahora mismo es tu turno. Para comenzar debes decidir si agarrar una carta del mazo o la carta que esta boca arriba al lado del mazo.");
+                comprobarTiempoTurno();
+            } else if (controlador.isEliminado()) {
+                mazoButton.setEnabled(false);
+                cartaBocaArribaButton.setEnabled(false);
+                if (controlador.apuestasActivadas()) {
+                    reengancharseButton.setEnabled(true);
+                    txtTurno.setText("Has sido Eliminado. Si quiere puede reengancharse a la partida apostando la mitad de las fichas que aposto antes y volvera a jugar empezando el turno con los mismos puntos que el jugador que mas tiene.");
+                    mostrarMensajeAsistente("Fuiste elminado por sobrepasar el limite de puntos pero tenes la chance reengancharte a la partida con los puntos del jugador que mas tiene." +
+                            "\nPara eso dirigite al panel de partida y presiona reengancharse.");
+                } else {
+                    txtTurno.setText("Has sido Eliminado. No es posible reengancharse debido a que las apuestas no estan activadas");
+                    mostrarMensajeAsistente("Fuiste elminado por sobrepasar el limite de puntos pero no podes reengancharte a la partida porque las apuestas no estan actvadas. Debes esperar a que la partida termine :(");
+                }
+            } else {
+                esperarTurno();
+            }
+            txtTurno.setText(txtTurno.getText() + "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
+                    "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() + ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
+            if (controlador.getModoJuego().equals("JUEGOAPUNTOS")) {
+                txtTurno.setText("Tus puntos de partida: " + controlador.getpuntosJugador());
+            }
         }
     }
 
@@ -977,8 +985,12 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void nuevoTurno() {
-        actualizarCartas();
-        iniciarTurno();
+        if (!modoChat) {
+            actualizarCartas();
+            iniciarTurno();
+        }else {
+            mostrarNuevoMensaje("Se Ha iniciado un nuevo turno. Recuerde usar /mostrarNombreTurnoActual para saber de quien se trata.");
+        }
     }
 
     private void actualizarCartas() {
@@ -1043,123 +1055,164 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void continuarTurnoActual() {
-        if (controlador.esTurnoJugador()) {
-            mostrarMensajeAsistente("Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada o incluso termnar tu turno." +
-                    "\nA continuacion te dejo algunos tips sobre cada una:" +
-                            "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una y una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada. Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
-                            "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas y luego ponerle un tilde presonando la casilla de la jugada que necesites" +
-                            "\n-Para terminar el turno debes seleccionar una unica carta y presonar el boton con el mismo nombre." +
-                            "\n-En el caso que hayas seleccionado mal tus cartas puedes seleccionar el boton cancelar seleccion para deseleccionarlas");
-            cartasSeleccionadasPosicion.clear();
-            actualizarCartas();
-            agregarCartaAJugadaButton.setEnabled(true);
-            terminarTurnoButton.setEnabled(true);
-            agregarNuevaJugadaButton.setEnabled(true);
-            seleccionJugada.setEnabled(true);
-            cancelarSeleccionButton.setEnabled(true);
+        if (!modoChat) {
+            if (controlador.esTurnoJugador()) {
+                mostrarMensajeAsistente("Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada o incluso termnar tu turno." +
+                        "\nA continuacion te dejo algunos tips sobre cada una:" +
+                        "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una y una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada. Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
+                        "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas y luego ponerle un tilde presonando la casilla de la jugada que necesites" +
+                        "\n-Para terminar el turno debes seleccionar una unica carta y presonar el boton con el mismo nombre." +
+                        "\n-En el caso que hayas seleccionado mal tus cartas puedes seleccionar el boton cancelar seleccion para deseleccionarlas");
+                cartasSeleccionadasPosicion.clear();
+                actualizarCartas();
+                agregarCartaAJugadaButton.setEnabled(true);
+                terminarTurnoButton.setEnabled(true);
+                agregarNuevaJugadaButton.setEnabled(true);
+                seleccionJugada.setEnabled(true);
+                cancelarSeleccionButton.setEnabled(true);
+            }
+            actualizarCartaBocaArriba();
+        }else {
+            mostrarNuevoMensaje("Se esta continuando el turno Actual. Recuerde usar /mostrarNombreTurnoActual para saber de quien se trata.");
         }
-        actualizarCartaBocaArriba();
     }
 
     @Override
     public void finalizarPartida() {
-        volverAInicio();
-        desactivarJuegoAutomaticoButton.setVisible(false);
-        txtInfoInicio.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
-            " con " + controlador.getCantidadPuntosGanador()+" puntos");
-        mostrarMensajeAsistente("La partido ha finalizado y ha ganado " + controlador.getGanador() + " con " + controlador.getCantidadPuntosGanador()+" puntos");
-        eleccionNuevaPartida();
-        mostrarTablaPosiciones(controlador.obtenerPosiciones());
+        if (!modoChat) {
+            volverAInicio();
+            desactivarJuegoAutomaticoButton.setVisible(false);
+            txtInfoInicio.setText("\nLa partida ha finalizado!!! El ganador es..." + controlador.getGanador() +
+                    " con " + controlador.getCantidadPuntosGanador() + " puntos");
+            mostrarMensajeAsistente("La partido ha finalizado y ha ganado " + controlador.getGanador() + " con " + controlador.getCantidadPuntosGanador() + " puntos");
+            eleccionNuevaPartida();
+            mostrarTablaPosiciones(controlador.obtenerPosiciones());
+        }else {
+            mostrarNuevoMensaje("La partida ha finalizado!!!");
+            mostrarNuevoMensaje("El ganador es..." + controlador.getGanador() +
+                    " con " + controlador.getCantidadPuntosGanador()+" puntos");
+            if (!controlador.getEstadoCompetitivo()){
+                mostrarNuevoMensaje("\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+            }
+            mostrarTablaPosiciones(controlador.obtenerPosiciones());
+        }
     }
 
     @Override
     public void actualizarJugadas() {
-        cartasSeleccionadasPosicion.clear();
-        listaCheckJugada.clear();
-        JList<ImageIcon> listaActual;
-        DefaultListModel<ImageIcon> listaModeloActual;
-        JCheckBox checkJugadaActual;
-        actualizarCartas();
-        String imagenActual;
-        ImageIcon cartaActual;
-        JScrollPane panelScrollActual = null;
-        ITapete jugadasEnMesa = controlador.obtenerJugadas();
-        JPanel panelActual = new JPanel(new FlowLayout());
-        if (listaCheckJugada.size() != jugadasEnMesa.getListaJugada().size()) {
-            panelJugadas.removeAll();
-            for (int i = 0; i < jugadasEnMesa.getListaJugada().size(); i++) {
-                if (i % 3 == 0) {
-                    panelActual = new JPanel(new FlowLayout());
-                    panelActual.setBackground(new Color(4,21,80));
-                    panelJugadas.add(panelActual);
-                }
-                listaActual = new JList<>();
-                listaActual.setBackground(new Color(4,21,80));
-                listaModeloActual = new DefaultListModel<>();
-                listaActual.setModel(listaModeloActual);
-                //listaActual.setName("Jugada " + (i + 1));
-                listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-                panelScrollActual = new JScrollPane(listaActual);
-                //60 y 60 para jugadas mas grandes
-                panelScrollActual.setPreferredSize(new Dimension(85, 105));
-                checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
-                checkJugadaActual.setBackground(new Color(4,21,80));
-                listaCheckJugada.add(checkJugadaActual);
-                panelActual.add(checkJugadaActual);
-                panelScrollActual.setViewportView(listaActual);
-                panelActual.add(panelScrollActual);
-                for (ICarta carta : jugadasEnMesa.getListaJugada().get(i).getCartasJugada()) {
-                    imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo() + ".png";
-                    cartaActual = new ImageIcon(imagenActual);
-                    listaModeloActual.addElement(cartaActual);
+        if (!modoChat) {
+            cartasSeleccionadasPosicion.clear();
+            listaCheckJugada.clear();
+            JList<ImageIcon> listaActual;
+            DefaultListModel<ImageIcon> listaModeloActual;
+            JCheckBox checkJugadaActual;
+            actualizarCartas();
+            String imagenActual;
+            ImageIcon cartaActual;
+            JScrollPane panelScrollActual = null;
+            ITapete jugadasEnMesa = controlador.obtenerJugadas();
+            JPanel panelActual = new JPanel(new FlowLayout());
+            if (listaCheckJugada.size() != jugadasEnMesa.getListaJugada().size()) {
+                panelJugadas.removeAll();
+                for (int i = 0; i < jugadasEnMesa.getListaJugada().size(); i++) {
+                    if (i % 3 == 0) {
+                        panelActual = new JPanel(new FlowLayout());
+                        panelActual.setBackground(new Color(4, 21, 80));
+                        panelJugadas.add(panelActual);
+                    }
+                    listaActual = new JList<>();
+                    listaActual.setBackground(new Color(4, 21, 80));
+                    listaModeloActual = new DefaultListModel<>();
+                    listaActual.setModel(listaModeloActual);
+                    //listaActual.setName("Jugada " + (i + 1));
+                    listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+                    panelScrollActual = new JScrollPane(listaActual);
+                    //60 y 60 para jugadas mas grandes
+                    panelScrollActual.setPreferredSize(new Dimension(85, 105));
+                    checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
+                    checkJugadaActual.setBackground(new Color(4, 21, 80));
+                    listaCheckJugada.add(checkJugadaActual);
+                    panelActual.add(checkJugadaActual);
+                    panelScrollActual.setViewportView(listaActual);
+                    panelActual.add(panelScrollActual);
+                    for (ICarta carta : jugadasEnMesa.getListaJugada().get(i).getCartasJugada()) {
+                        imagenActual = "ar/edu/unlu/poo/images/cartas/" + carta.getNumero() + carta.getPalo() + ".png";
+                        cartaActual = new ImageIcon(imagenActual);
+                        listaModeloActual.addElement(cartaActual);
+                    }
                 }
             }
+            mostrarMensajeAsistente("Hay nuevas jugadas en la mesa!!!");
+        }else {
+            mostrarNuevoMensaje("Hay nuevas jugadas sin ver!!! escriba el comando /mostrarJugadas para verlas");
         }
-        mostrarMensajeAsistente("Hay nuevas jugadas en la mesa!!!");
     }
 
     @Override
     public void cerrarPartida() {
-        volverAInicio();
-        if (controlador.getModoJuego().equals("EXPRES")){
-            txtInfoInicio.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
-            mostrarMensajeAsistente("Se cerro la partida porque no se pueden hacer nuevas jugadas y las jugadas en mesa estan llenas.");
-            if (!controlador.getEstadoCompetitivo()){
-                txtInfoInicio.setText(txtInfoInicio.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
-                mostrarMensajeAsistente("Las partidas competitivas estan desactivas por lo que tampoco se ganaron puntos ni fichas :c");
+        if (!modoChat) {
+            volverAInicio();
+            if (controlador.getModoJuego().equals("EXPRES")) {
+                txtInfoInicio.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+                mostrarMensajeAsistente("Se cerro la partida porque no se pueden hacer nuevas jugadas y las jugadas en mesa estan llenas.");
+                if (!controlador.getEstadoCompetitivo()) {
+                    txtInfoInicio.setText(txtInfoInicio.getText() + "\nNo se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+                    mostrarMensajeAsistente("Las partidas competitivas estan desactivas por lo que tampoco se ganaron puntos ni fichas :c");
+                }
+                eleccionNuevaPartida();
+            } else {
+                txtInfoInicio.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+                mostrarMensajeAsistente("La ronda quedo cerrada por tener jugadas llenas y por no poder hacer nuevas jugadas. Pronto iniciara una nueva ronda!");
+                controlador.iniciarNuevaRonda();
             }
-            eleccionNuevaPartida();
         }else {
-            txtInfoInicio.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
-            mostrarMensajeAsistente("La ronda quedo cerrada por tener jugadas llenas y por no poder hacer nuevas jugadas. Pronto iniciara una nueva ronda!");
-            controlador.iniciarNuevaRonda();
+            if (controlador.getModoJuego().equals("EXPRES")){
+                mostrarNuevoMensaje("La partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
+                if (!controlador.getEstadoCompetitivo()){
+                    mostrarNuevoMensaje("No se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
+                }
+                //controlador.obtenerPosiciones();
+                mostrarTablaPosiciones(controlador.obtenerPosiciones());
+            }else {
+                mostrarNuevoMensaje("La ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
+            }
         }
     }
 
     @Override
-    public void mostrarErrorApuesta() {
-        pantallaEspera();
-        if (controlador.apuestasActivadas()) {
-            txtInfoInicio.setText("\nApuestas Desactivadas!!!");
-            mostrarMensajeAsistente("Se cancelaron las apuestas!!!");
+    public void mostrarApuestaCancelada() {
+        if (!modoChat) {
+            pantallaEspera();
+            if (controlador.apuestasActivadas()) {
+                txtInfoInicio.setText("\nApuestas Desactivadas!!!");
+                mostrarMensajeAsistente("Se cancelaron las apuestas!!!");
+            } else {
+                txtInfoInicio.setText("\nYa hay una apuesta activa.");
+                mostrarMensajeAsistente("No se puedo apostar porque ya hay una apuesta activa.");
+            }
         }else {
-            txtInfoInicio.setText("\nYa hay una apuesta activa.");
-            mostrarMensajeAsistente("No se puedo apostar porque ya hay una apuesta activa.");
+            mostrarNuevoMensaje("Se cancelaron las apuestas en la partida.");
         }
     }
 
     @Override
     public void avisarSobreApuesta() {
-        if (controlador.getcantidadApostada() != 0) {
-            txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas" +
-                    "\nTu total de fichas ahora seria de: " + controlador.cantFichas());
-            mostrarMensajeAsistente("Las apuestas fueron activadas. En el caso que quieras desactivarlas puedes apostar 0 fichas y se cancelaran y en caso contrario todos apostaran " + controlador.getcantidadApostada() + " fichas.");
+        if (!modoChat) {
+            if (controlador.getcantidadApostada() != 0) {
+                txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas" +
+                        "\nTu total de fichas ahora seria de: " + controlador.cantFichas());
+                mostrarMensajeAsistente("Las apuestas fueron activadas. En el caso que quieras desactivarlas puedes apostar 0 fichas y se cancelaran y en caso contrario todos apostaran " + controlador.getcantidadApostada() + " fichas.");
+            }
+        }else {
+            escribirEnChat("Los jugadores tienen las apuestas activas!!");
         }
     }
 
     @Override
     public void mostrarResultadosPuntosRonda(ArrayList<IJugador> jugadores) {
-        mostrarMensajeAsistente("Ahora mismo podes visualizar los resultados en puntos de la ronda actual en el panel resumen de partida mientras se prepara la nueva ronda.");
+        if (!modoChat) {
+            mostrarMensajeAsistente("Ahora mismo podes visualizar los resultados en puntos de la ronda actual en el panel resumen de partida mientras se prepara la nueva ronda.");
+        }
         panelFinRonda.setName("Resumen de Partida");
         tabbedPane.add(panelFinRonda);
         for (int i = 0; i < jugadores.size(); i++) {
@@ -1181,12 +1234,16 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void finalizarPartidaAmistosamente() {
-        volverAInicio();
-        txtInfoInicio.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
-        mostrarMensajeAsistente("La partida finalizo amistosamente por lo que se devolvieron las apuestas si estaban activas y no contaron los puntos.");
-        panelAbajo.setEnabled(false);
-        panelOpciones.setEnabled(false);
-        eleccionNuevaPartida();
+        if (!modoChat) {
+            volverAInicio();
+            txtInfoInicio.setText("\nLa partida ha finalizado Amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+            mostrarMensajeAsistente("La partida finalizo amistosamente por lo que se devolvieron las apuestas si estaban activas y no contaron los puntos.");
+            panelAbajo.setEnabled(false);
+            panelOpciones.setEnabled(false);
+            eleccionNuevaPartida();
+        }else {
+            mostrarNuevoMensaje("Se finalizo la partida amistosamente!!! Se devolvieron apuestas actuales y los puntos no cuentan");
+        }
     }
 
     private void volverAInicio() {
@@ -1213,8 +1270,12 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void eleccionAnularPartida() {
-        seleccionAnularPartida = true;
-        anularPartidaButton.setForeground(new Color(229,213,7));
+        if (!modoChat) {
+            seleccionAnularPartida = true;
+            anularPartidaButton.setForeground(new Color(229, 213, 7));
+        }else {
+            mostrarNuevoMensaje("Se esta solicitando anular la partida.");
+        }
     }
 
     @Override
@@ -1241,8 +1302,10 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
-        mostrarMensajeAsistente("Puedes visualizar la tabla de posiciones en el panel del mismo nombre. " +
-                "En caso que no aparezcas es porque no alcanzaste el top de jugadores :(");
+        if (!modoChat) {
+            mostrarMensajeAsistente("Puedes visualizar la tabla de posiciones en el panel del mismo nombre. " +
+                    "En caso que no aparezcas es porque no alcanzaste el top de jugadores :(");
+        }
         panelTablaPosiciones.setName("Tabla De Posiciones");
         tabbedPane.add(panelTablaPosiciones);
         //txtTablaPosiciones.setText("\nTabla de posiciones (top 5 jugadores):");
@@ -1286,8 +1349,18 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void avisarCambiosOpcionesMesa() {
-        tabbedPane.setForegroundAt(1,new Color(229,11,9));
-        mostrarMensajeAsistente("El anfitrion realizo cambios en las opciones de mesa del juego.");
+        if (!modoChat) {
+            tabbedPane.setForegroundAt(1, new Color(229, 11, 9));
+            mostrarMensajeAsistente("El anfitrion realizo cambios en las opciones de mesa del juego.");
+        }else {
+            mostrarNuevoMensaje("El anfitrion realizo cambios en las opciones de mesa del juego.");
+            if (controlador.publicoPermitido()){
+                txtEscribirChat.setEnabled(true);
+            }else {
+                txtEscribirChat.setEnabled(false);
+                mostrarNuevoMensaje("El anfitrion desahibilito el publico por lo que no podras escribir.");
+            }
+        }
     }
 
     @Override

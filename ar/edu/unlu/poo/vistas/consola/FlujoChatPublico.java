@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.vistas.consola;
 
 import ar.edu.unlu.poo.controlador.Controlador;
+import ar.edu.unlu.poo.modelo.ITapete;
 import ar.edu.unlu.poo.vistas.VistaConsola;
 
 public class FlujoChatPublico extends Flujo{
@@ -22,16 +23,16 @@ public class FlujoChatPublico extends Flujo{
         }else {
             if (txtIngresado.equals("/ayuda")){
                 mostrarListaComandos();
-            }else if (txtIngresado.equals("/mostrarCartasJugadores")){
-
+            }else if (txtIngresado.equals("/mostrarCantidadCartasJugadores")){
+                vistaConsola.print("Jugador " + controlador.getNombreAnfitrion() + ": " +controlador.cantCartasOponente(controlador.getNombreAnfitrion()));
+                for (String oponenteAnfitrion: controlador.nombreOponentes(controlador.getNombreAnfitrion())) {
+                    vistaConsola.print("Jugador " + controlador.getNombreAnfitrion() + ": " + controlador.cantCartasOponente(oponenteAnfitrion));
+                }
             } else if (txtIngresado.equals("/mostrarJugadas")) {
-
+                ITapete jugadasEnMesa = controlador.obtenerJugadas();
+                vistaConsola.print(String.valueOf(jugadasEnMesa));
             } else if (txtIngresado.equals("/mostrarNombreTurnoActual")) {
-
-            } else if (txtIngresado.equals("/puntosDePartida")) {
-
-            } else if (txtIngresado.equals("/top5Jugadores")) {
-
+                vistaConsola.print("Jugador con el turno Actual: " + controlador.getNombreTurnoActual());
             }else {
                 controlador.mostrarMensaje(txtIngresado);
             }
@@ -42,8 +43,7 @@ public class FlujoChatPublico extends Flujo{
     private void mostrarListaComandos() {
         vistaConsola.print("_____________________________________________________________");
         vistaConsola.print("Lista de Comandos:");
-        vistaConsola.print("/mostrarCartasJugadores\t/mostrarJugadas\t/mostrarNombreTurnoActual");
-        vistaConsola.print("/puntosDePartida\t/top5Jugadores");
+        vistaConsola.print("/mostrarCantidadCartasJugadores\t/mostrarJugadas\t/mostrarNombreTurnoActual");
         vistaConsola.print("-Recuerda usar siempre / cuando quieras escribir un comando");
         vistaConsola.print("_____________________________________________________________");
     }
