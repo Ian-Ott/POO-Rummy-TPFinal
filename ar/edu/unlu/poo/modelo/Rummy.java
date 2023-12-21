@@ -1251,20 +1251,6 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         return cantidadActivos;
     }
 
-
-    //eliminar
-    public int buscarPosicionJugador(String nombreJugador) throws RemoteException{
-        int posicionJugador = -1;
-        for (int i = 0; i < jugadores.size(); i++) {
-            if (nombreJugador.equals(jugadores.get(i).getNombre())){
-                posicionJugador = i;
-            }
-        }
-        return posicionJugador;
-    }
-
-
-
     /*public void addObserver(Observer o){
         observadores.add(o);
     }*/

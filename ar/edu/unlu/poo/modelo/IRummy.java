@@ -155,7 +155,5 @@ public interface IRummy extends IObservableRemoto {
 
     void mostrarMensajeEnChat(String txtIngresado) throws RemoteException;
 
-    int buscarPosicionJugador(String nombreJugador) throws RemoteException;
-
     int cantJugadoresActivos() throws RemoteException;
 }

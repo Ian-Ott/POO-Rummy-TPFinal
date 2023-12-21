@@ -1,7 +1,6 @@
 package ar.edu.unlu.poo.vistas;
 
 import ar.edu.unlu.poo.controlador.Controlador;
-import ar.edu.unlu.poo.modelo.ICarta;
 import ar.edu.unlu.poo.modelo.IJugador;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public interface IVista {
 
     void cerrarPartida();
 
-    void mostrarErrorApuesta();
+    void mostrarApuestaCancelada();
 
     void avisarSobreApuesta();
 
