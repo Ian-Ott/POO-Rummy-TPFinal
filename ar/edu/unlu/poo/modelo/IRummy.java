@@ -55,7 +55,6 @@ public interface IRummy extends IObservableRemoto {
 
     void contarPuntosPartida() throws RemoteException;
 
-    void agregarPuntosClasificacion()throws RemoteException;
 
     void siguienteTurno(Jugador jugadorIzquierda)throws RemoteException;
 

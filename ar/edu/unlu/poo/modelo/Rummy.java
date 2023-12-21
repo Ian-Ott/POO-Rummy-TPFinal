@@ -52,13 +52,17 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         publicoPermitido = false;
     }
 
-    public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
-        if (!juegoIniciado){
-            nuevoJugador.setJefeMesa(anfitrion);
-            jugadores.add(nuevoJugador);
-            notificarObservadores("nuevo jugador");
+    public static IRummy getInstancia() throws RemoteException {
+        try {
+            if (instancia == null){
+                instancia = new Rummy();
+            }
+        }catch (RemoteException e){
+            e.printStackTrace();
         }
+        return instancia;
     }
+//inicio juego:
 
     public boolean isJuegoIniciado() throws RemoteException{
         return juegoIniciado;
@@ -82,6 +86,11 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         //notificarObservadores("cartas repartidas");
     }
 
+    public void mezclarMazo() throws RemoteException{
+        //cuando el mazo se quede sin cartas se van a agregar de manera random al mazo las cartas que quedaron boca arriba
+        mazoDeJuego.mezclarMazo();
+    }
+
     public void reiniciarEstados() throws RemoteException {
         ganador = null;
         solicitudDeAnularPartida = 0;
@@ -92,7 +101,11 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
         //devuelve todas las cartas de los jugadores a la mesa para despues mezclarlas con el mazo
     }
-
+    @Override
+    public void nuevoJuego() throws RemoteException {
+        juegoIniciado = false;
+        notificarObservadores("nuevo juego");
+    }
     public void iniciarNuevaRonda() throws RemoteException{
         iniciarJuego();
     }
@@ -142,16 +155,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         notificarObservadores("nuevo turno");
     }
 
-    public static IRummy getInstancia() throws RemoteException {
-        try {
-            if (instancia == null){
-                instancia = new Rummy();
-            }
-        }catch (RemoteException e){
-            e.printStackTrace();
-        }
-        return instancia;
-    }
+
 
     @Override //
     public void repartirCartasJugadores(int cantidadCartas) throws RemoteException {
@@ -160,7 +164,200 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
 
     }
+//sobre jugador
+    public void agregarJugador(Jugador nuevoJugador, boolean anfitrion) throws RemoteException{
+        if (!juegoIniciado){
+            nuevoJugador.setJefeMesa(anfitrion);
+            jugadores.add(nuevoJugador);
+            notificarObservadores("nuevo jugador");
+        }
+    }
 
+    @Override
+    public void eliminarJugador(String nombreJugador) throws RemoteException {
+        Jugador jugadorBorrado = buscarJugador(nombreJugador);
+        jugadores.remove(jugadorBorrado);
+        if (jugadorBorrado.getJefeMesa() && !jugadores.isEmpty()){
+            jugadores.get(0).setJefeMesa(true);
+        }
+        if (juegoIniciado && !partidaFinalizada){
+            solicitudDeAnularPartida = jugadores.size() - 1;
+            //obligo anular la partida por la falta de un jugador
+            anularPartida(true);
+        }else {
+            notificarObservadores("jugador sacado del juego");
+        }
+    }
+
+    public int getJugadoresSize() throws RemoteException {
+        return jugadores.size();
+    }
+
+    public ArrayList<Jugador> getJugadores() {
+        return jugadores;
+    }
+    @Override
+    public int getCantidadFichas(String nombreJugador) {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.getFichasTotales();
+    }
+
+    @Override
+    public int getCantCartasOponente(String oponente) throws RemoteException{
+        Jugador jugadorActual = buscarJugador(oponente);
+        return jugadorActual.getCartasEnMano().size();
+    }
+    @Override
+    public String getJugador(int posicion) throws RemoteException {
+        return String.valueOf(jugadores.get(posicion));
+    }
+
+    @Override
+    public ArrayList<IJugador> getIJugadores() throws RemoteException {
+        ArrayList<IJugador> iJugadores = new ArrayList<>();
+        for (Jugador jugador: jugadores) {
+            iJugadores.add((IJugador) jugador);
+        }
+        return iJugadores;
+    }
+
+    @Override
+    public void siguienteTurno(Jugador jugadorIzquierda)throws RemoteException{
+        //busca la posicion del jugador que tiene el turno y luego de guardarla avisa el cambio de turno
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).equals(jugadorIzquierda)){
+                posicionTurnoActual = i;
+                tomoCartaJugadorTurno = false;
+                notificarObservadores("nuevo turno");
+            }
+        }
+    }
+
+
+
+
+    @Override
+    public ArrayList<String> getNombreOponentes(String nombreJugador)throws RemoteException {
+        ArrayList<String> oponentes = new ArrayList<>();
+
+        String nombreAux;
+        for (int i = 0; i < jugadores.size();i++){
+            nombreAux = jugadores.get(i).getNombre();
+            if (!nombreAux.equals(nombreJugador)){
+                oponentes.add(nombreAux);
+            }
+        }
+
+        return oponentes;
+    }
+
+    @Override
+    public ArrayList<String> getNombreJugadores()throws RemoteException {
+        ArrayList<String> nombres = new ArrayList<>();
+        String nombreAux = "";
+        Jugador jugadorAux;
+        for (int i = 0; i < this.jugadores.size(); i++){
+            jugadorAux = this.jugadores.get(i);
+            nombreAux += jugadorAux.getNombre();
+            nombres.add(nombreAux);
+            nombreAux = "";
+        }
+        return nombres;
+    }
+    @Override
+    public ArrayList<Carta> getCartasJugador(String nombreJugador) throws RemoteException {
+        ArrayList<Carta> listaCartas = null;
+        //poner una excepcion para no devolver null
+        Jugador jugadorAux;
+        for (int i = 0; i < jugadores.size(); i++){
+            jugadorAux = jugadores.get(i);
+            if (jugadorAux.getNombre().equals(nombreJugador)){
+                listaCartas = jugadorAux.getCartasEnMano();
+            }
+        }
+        return listaCartas;
+    }
+
+    public String getNombreTurnoActual(){
+        System.out.println("posicion turno actual: " + posicionTurnoActual);
+        System.out.println("nombre turno: " + jugadores.get(posicionTurnoActual).getNombre());
+        return jugadores.get(posicionTurnoActual).getNombre();
+    }
+
+
+    //sobre jefe de mesa
+    @Override
+    public boolean isJefeMesa(String nombreJugador) throws RemoteException, JugadorInexistente {
+        Jugador jugadorAux = buscarJugador(nombreJugador);
+        if (jugadorAux == null){
+            throw new JugadorInexistente();
+        }
+        return jugadorAux.getJefeMesa();
+    }
+
+    @Override
+    public String getNombreJefeMesa() throws RemoteException {
+        String nombreJefeMesa = null;
+        //nunca deberia de devolver null porque si o si un jugador debe ser jefe de mesa
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).getJefeMesa()){
+                nombreJefeMesa = jugadores.get(i).getNombre();
+            }
+        }
+        return nombreJefeMesa;
+    }
+
+    private Jugador buscarJugador(String nombreJugador) {
+        Jugador jugador = null;
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).getNombre().equals(nombreJugador)){
+                jugador = jugadores.get(i);
+            }
+        }
+        return jugador;
+    }
+
+    @Override
+    public Jugador buscarJugadorIzquierda(Jugador jugadorActual) {
+        Jugador jugadorAux  = null;
+        for (int i = 0; i < jugadores.size(); i++){
+            if (jugadorActual.equals(jugadores.get(i))){
+                if (i == 0){
+                    jugadorAux = jugadores.get(jugadores.size() - 1);
+                }else {
+                    jugadorAux = jugadores.get(i - 1);
+                }
+            }
+        }
+        if (jugadorAux.isEliminado()){
+            jugadorAux = buscarJugadorIzquierda(jugadorAux);
+            //en el caso que el jugador de la izquierda este eliminado el metodo busca recursivamente cual es el siguiente
+        }
+        return jugadorAux;
+    }
+
+
+
+    //sobre jugador eliminado
+    @Override
+    public boolean estaEliminado(String nombreJugador) throws RemoteException{
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.isEliminado();
+    }
+    public void reengancharJugador(String nombreJugador)throws RemoteException{
+        int puntosNuevos = buscarJugadorConMasPuntos();
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        jugadorActual.setPuntosDePartida(puntosNuevos);
+        jugadorActual.setEliminado(false);
+        //debe apostar la mitad de la apuesta inicial para reenganchar
+        int nuevaApuesta = (int) (jugadorActual.getCantApostada() * 0.5);
+        jugadorActual.setCantApostada(nuevaApuesta + jugadorActual.getCantApostada());
+        jugadorActual.restarFichasTotales(nuevaApuesta);
+        //le agrego la cantidad total que aposto por si quiere volver a hacer reenganche y le resto su cantidad de fichas
+        mesaDeJuego.agregarApuesta(nuevaApuesta);
+    }
+
+    //inicio turno
     @Override //
     public void sacarCartaMazo(String jugador) throws RemoteException{
         Jugador jugadorAux = buscarJugador(jugador);
@@ -182,483 +379,16 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     public Carta getCartaBocaArriba() throws RemoteException, NoHayCartaBocaArriba {
         return mazoDeJuego.cartaBocaArribaActual();
     }
-
-    @Override
-    public ITapete getMesaJugadas() throws RemoteException{
-        return mesaDeJuego;
-    }
-
-    @Override
-    public int getCantCartasOponente(String oponente) throws RemoteException{
-        Jugador jugadorActual = buscarJugador(oponente);
-        return jugadorActual.getCartasEnMano().size();
-    }
-
-    @Override
-    public void modoExpres() throws RemoteException {
-        modo = modoDeJuego.EXPRES;
-        notificarObservadores("cambios en opciones de mesa");
-    }
-
-    @Override
-    public void modoPuntos() throws RemoteException {
-        modo = modoDeJuego.JUEGOAPUNTOS;
-        notificarObservadores("cambios en opciones de mesa");
-    }
-
-    @Override
-    public int getCantidadFichas(String nombreJugador) {
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        return jugadorActual.getFichasTotales();
-    }
-
-
-
-    public void apostarFichas(int cantFichas) throws RemoteException{
-        //apuesta la misma cantidad por todos los jugadores
-        // y si no aceptan apostar luego se puede cancelar y devolver las fichas
-        for (Jugador jugador: jugadores) {
-            jugador.setCantApostada(cantFichas);
-            System.out.println(jugador.getCantApostada() + " - " + cantFichas);
-            jugador.restarFichasTotales(cantFichas);
-            mesaDeJuego.agregarApuesta(cantFichas);
-        }
-        apuestasActivas = true;
-        notificarObservadores("nueva apuesta");
-    }
-
-    public void cancelarApuestas()throws RemoteException{
-        for (Jugador jugador: jugadores) {
-            jugador.sumarFichasTotales(jugador.getCantApostada());
-            mesaDeJuego.sacarApuesta(jugador.getCantApostada());
-            jugador.setCantApostada(0);
-        }
-        apuestasActivas = false;
-        notificarObservadores("apuesta cancelada");
-    }
-    @Override
-    public boolean puedenApostarJugadores(int apuesta) throws RemoteException {
-        boolean resultado = true;
-        for (Jugador jugador:jugadores) {
-            if (jugador.getFichasTotales() < apuesta){
-                resultado = false;
-            }
-        }
-        return resultado;
-    }
-
-    @Override
-    public int getCantApostada(String nombreJugador) throws RemoteException {
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        return jugadorActual.getCantApostada();
-    }
-
-    public boolean isApuestasActivas()throws RemoteException{
-        return apuestasActivas;
-    }
-
-    public void apostarFichasJugador(String nombreJugador) throws RemoteException{
-        //este metodo va a sacarle las fichas a los nuevos jugadores si hay una apuesta activa
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        //la apuesta sera segun la cantidad apostada por el anfitrion
-        int cantFichas = jugadores.get(0).getCantApostada();
-        jugadorActual.setCantApostada(cantFichas);
-        jugadorActual.restarFichasTotales(cantFichas);
-        mesaDeJuego.agregarApuesta(cantFichas);
-    }
-
-    @Override
-    public int getCantidadTotalApuesta() throws RemoteException {
-        return mesaDeJuego.getBoteApuesta();
-    }
-
-    @Override
-    public String getModoActual() throws RemoteException {
-        return String.valueOf(modo);
-        //supuestamente devuelve el modo pasado a string
-    }
-
-    @Override
-    public String getNombreGanador() throws RemoteException {
-        return ganador.getNombre();
-    }
-
-    @Override
-    public int getPuntosGanador() throws RemoteException {
-        return ganador.getPuntosTotalesXP();
-    }
-
-    @Override
-    public String getJugador(int posicion) throws RemoteException {
-        return String.valueOf(jugadores.get(posicion));
-    }
-
-    @Override
-    public boolean estaEliminado(String nombreJugador) throws RemoteException{
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        return jugadorActual.isEliminado();
-    }
-
-    public void pedidoAnularPartidaAmistosamente() throws RemoteException {
-        notificarObservadores("pedido anular partida");
-    }
-
-    public void anularPartida(boolean anular) throws RemoteException {
-        if (anular){
-            if (jugadores.size() - 1 == solicitudDeAnularPartida){
-                solicitudDeAnularPartida = 0;
-                finalizarPartidaAmistosamente();
-            }else {
-                solicitudDeAnularPartida++;
-            }
-        } else{
-            solicitudDeAnularPartida = 0;
-            notificarObservadores("continuar turno jugador");
-        }
-    }
-
-    private void finalizarPartidaAmistosamente() throws RemoteException {
-        for (Jugador jugador: jugadores) {
-            jugador.sumarFichasTotales(jugador.getCantApostada());
-            mesaDeJuego.sacarApuesta(jugador.getCantApostada());
-            jugador.setCantApostada(0);
-        }
-        System.out.println("finalizo amistosamente");
-        partidaFinalizada = true;
-        //pongo de ganador al anfitrion aunque no gana nada para reiniciar los estados del juego
-        apuestasActivas = false;
-        notificarObservadores("finalizo partida amistosamente");
-    }
-
-    public void reengancharJugador(String nombreJugador)throws RemoteException{
-        int puntosNuevos = buscarJugadorConMasPuntos();
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        jugadorActual.setPuntosDePartida(puntosNuevos);
-        jugadorActual.setEliminado(false);
-        //debe apostar la mitad de la apuesta inicial para reenganchar
-        int nuevaApuesta = (int) (jugadorActual.getCantApostada() * 0.5);
-        jugadorActual.setCantApostada(nuevaApuesta + jugadorActual.getCantApostada());
-        jugadorActual.restarFichasTotales(nuevaApuesta);
-        //le agrego la cantidad total que aposto por si quiere volver a hacer reenganche y le resto su cantidad de fichas
-        mesaDeJuego.agregarApuesta(nuevaApuesta);
-    }
-
-    @Override
-    public void nuevoJuego() throws RemoteException {
-        juegoIniciado = false;
-        notificarObservadores("nuevo juego");
-    }
-
-    /*@Override
-    public void cerrarJuego() throws RemoteException {
-        notificarObservadores("cerrar juego");
-        System.exit(0);
-    }*/
-
-    @Override
-    public ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException{
-        devolverCartasAMesa();
-        //devuelvo las cartas a mesa para no pasarlas al archivo
-        for (Jugador jugador:this.jugadores) {
-            agregarJugadorOrdenado(jugadores, jugador);
-        }
-        return jugadores;
-    }
-
-    @Override
-    public void eliminarJugador(String nombreJugador) throws RemoteException {
-        Jugador jugadorBorrado = buscarJugador(nombreJugador);
-        jugadores.remove(jugadorBorrado);
-        if (jugadorBorrado.getJefeMesa() && !jugadores.isEmpty()){
-            jugadores.get(0).setJefeMesa(true);
-        }
-        if (juegoIniciado && !partidaFinalizada){
-            solicitudDeAnularPartida = jugadores.size() - 1;
-            //obligo anular la partida por la falta de un jugador
-            anularPartida(true);
-        }else {
-            notificarObservadores("jugador sacado del juego");
-        }
-    }
-
-    @Override
-    public boolean isJefeMesa(String nombreJugador) throws RemoteException, JugadorInexistente {
-        Jugador jugadorAux = buscarJugador(nombreJugador);
-        if (jugadorAux == null){
-            throw new JugadorInexistente();
-        }
-        return jugadorAux.getJefeMesa();
-    }
-
-    @Override
-    public String getNombreJefeMesa() throws RemoteException {
-        String nombreJefeMesa = null;
-        //nunca deberia de devolver null porque si o si un jugador debe ser jefe de mesa
-        for (int i = 0; i < jugadores.size(); i++) {
-            if (jugadores.get(i).getJefeMesa()){
-                nombreJefeMesa = jugadores.get(i).getNombre();
-            }
-        }
-        return nombreJefeMesa;
-}
-
-    @Override
-    public ArrayList<IJugador> getIJugadores() throws RemoteException {
-        ArrayList<IJugador> iJugadores = new ArrayList<>();
-        for (Jugador jugador: jugadores) {
-            iJugadores.add((IJugador) jugador);
-        }
-        return iJugadores;
-    }
-
-    @Override
-    public void juegoAutomatico(String nombreJugador) throws RemoteException{
-        //ArrayList<Carta> posibleRummy;
-        ArrayList<Carta> posibleEscalera;
-        ArrayList<Carta> posibleCombinacion;
-        if (!tomoCartaJugadorTurno){
-            sacarCartaMazo(nombreJugador);
-        }
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        jugadorActual.setModoAutomatico(true);
-        if (todosEnAutomatico()){
-            finalizarPartidaAmistosamente();
-        }else {
-            obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(), jugadorActual);
-            if (esRummy(jugadorActual.getCartasEnMano())) {
-                agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(), false);
-                jugadorActual.getCartasEnMano().clear();
-                //como las cartas se agregaron a la jugada las elimino
-                finalizarPartida(nombreJugador);
-            }
-            //a partir de aca las cartas deberian de seguir ordenadas por lo que solo se comprueba el palo y si el numero es continuo
-            posibleEscalera = obtenerCartasPaloMasRepetido(jugadorActual.getCartasEnMano());
-            if (esEscalera(posibleEscalera)) {
-                agregarJugada(nombreJugador, posibleEscalera, false);
-            } else {
-                devolverCartas(jugadorActual, posibleEscalera);
-            }
-            posibleCombinacion = obtenerCartasNumeroMasRepetido(jugadorActual.getCartasEnMano());
-            if (esCombinacion(posibleCombinacion)) {
-                agregarJugada(nombreJugador, posibleCombinacion, false);
-            } else {
-                devolverCartas(jugadorActual, posibleCombinacion);
-            }
-            if (jugadorActual.getCartasEnMano().isEmpty()) {
-                finalizarPartida(nombreJugador);
-            } else {
-                int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
-                terminarTurno(posicionCarta, nombreJugador);
-            }
-        }
-    }
-
-    @Override
-    public boolean isJugadorEnAutomatico(String nombreJugador) throws RemoteException {
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        return jugadorActual.isEnAutomatico();
-    }
-
-    @Override
-    public void desactivarJuegoAutomatico(String nombreJugador) throws RemoteException {
-        Jugador jugadorActual = buscarJugador(nombreJugador);
-        jugadorActual.setModoAutomatico(false);
-    }
-
     @Override
     public int getPuntosJugador(String nombreJugador) throws RemoteException {
         Jugador jugadorActual = buscarJugador(nombreJugador);
         return jugadorActual.getPuntosDePartida();
     }
 
-    private boolean todosEnAutomatico() {
-        boolean resultado = true;
-        for (Jugador jugador: jugadores) {
-            if (!jugador.isEnAutomatico()){
-                System.out.println("hay alguno que no esta en automatico");
-                resultado = false;
-            }
-        }
-        return resultado;
-    }
-
-    private ArrayList<Carta> obtenerCartasNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
-        //hacer un remove y luego devolver las cartas si no era
-        ArrayList<Carta> cartasMismoNumero;
-        int numeroMasRepetido = buscarNumeroMasRepetido(cartasEnMano);
-        cartasMismoNumero = new ArrayList<>();
-        for (Carta carta:cartasEnMano) {
-            if (carta.getNumero() == numeroMasRepetido){
-                cartasMismoNumero.add(carta);
-            }
-        }
-        quitarCartasSeleccionadas(cartasEnMano, cartasMismoNumero);
-        return  cartasMismoNumero;
-    }
-
-    private int buscarNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
-        int numeroMayor = 0;
-        int repeticionesCarta = 0;
-        int repeticiones = 0;
-        for (int i = 1; i < 14; i++) {
-            //compruebo en los 13 numeros de carta a ver cual se repite mas
-            for (Carta carta:cartasEnMano) {
-                if (carta.getNumero() == i){
-                    repeticiones++;
-                }
-            }
-            if (repeticiones > repeticionesCarta){
-                numeroMayor = i;
-                repeticionesCarta = repeticiones;
-            }
-            repeticiones = 0;
-        }
-        return numeroMayor;
-    }
-
-    private ArrayList<Carta> obtenerCartasPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
-        Palo paloRepetido = buscarPaloMasRepetido(cartasEnMano);
-        ArrayList<Carta> cartasMismoPalo = new ArrayList<>();
-        for (Carta carta:cartasEnMano) {
-            if (carta.getPalo().equals(paloRepetido)){
-                cartasMismoPalo.add(carta);
-            }
-        }
-        quitarCartasSeleccionadas(cartasEnMano, cartasMismoPalo);
-        return cartasMismoPalo;
-    }
-
-    private Palo buscarPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
-        Palo paloMasRepetido = null;
-        int repeticionesPalo = 0;
-        int repeticiones = 0;
-        for (Palo paloActual: Palo.values()) {
-            System.out.println(paloActual);
-            for (Carta carta:cartasEnMano) {
-                if (carta.getPalo().equals(paloActual)){
-                    repeticiones++;
-                }
-            }
-            if (repeticiones > repeticionesPalo){
-                paloMasRepetido = paloActual;
-                repeticionesPalo = repeticiones;
-            }
-        }
-        return  paloMasRepetido;
-    }
-
-    public ArrayList<IJugador> getTablaPosiciones()throws RemoteException{
-        ArrayList<IJugador> jugadores = new ArrayList<>();
-        serializador = new Serializador("top5.dat");
-        /*if (serializador.readFirstObject() == null){
-            serializador.writeOneObject()
-        }*/
-        Object[] recuperado = serializador.readObjects();
-        if (recuperado != null){
-            for (int i = 0; i < recuperado.length; i++) {
-                jugadores.add((IJugador) recuperado[i]);
-            }
-        }
-        if (!cargadosPuntosJugadoresEnTabla) {
-            cargadosPuntosJugadoresEnTabla = true;
-            jugadores = obtenerJugadoresPorPuntos(jugadores);
-            //vista.mostrarErrorConexion();
-            //verificar si esto esta bien
-            //vista.mostrarTablaPosiciones(jugadores);
-            serializador.writeOneObject(jugadores.get(0));
-            for (int i = 1; i < jugadores.size(); i++) {
-                serializador.addOneObject(jugadores.get(i));
-            }
-        }
-        return jugadores;
-    }
-
+    //sobre jugadas
     @Override
-    public void modificarCompetitivo() throws RemoteException {
-        if (estadoCompetitivo){
-            estadoCompetitivo = false;
-        }else {
-            estadoCompetitivo = true;
-        }
-        /*if (juegoIniciado){
-            notificarObservadores("continuar turno jugador");
-        }else {
-            notificarObservadores("continuar espera");
-        }*/
-        notificarObservadores("cambios en opciones de mesa");
-    }
-
-    @Override
-    public boolean getEstadoCompetitivo() throws RemoteException {
-        return estadoCompetitivo;
-    }
-
-    @Override
-    public void cambiarTiempoTurno(int tiempoEstablecido) throws RemoteException {
-        tiempoDeTurno = tiempoEstablecido;
-        notificarObservadores("cambios en opciones de mesa");
-    }
-
-    public int getCantidadTiempoTurno() throws RemoteException{
-        return tiempoDeTurno;
-    }
-
-
-    private void agregarJugadorOrdenado(ArrayList<IJugador> jugadores, Jugador jugador) {
-        boolean agregado = false;
-        if (jugadores.isEmpty()){
-            jugadores.add(jugador);
-        }else {
-            if (jugadorEnTabla(jugadores, jugador)) {
-                sumarPuntosJugador(jugadores, jugador);
-            }else {
-                for (int i = 0; i < jugadores.size(); i++) {
-
-                    if (jugador.getPuntosTotalesXP() >= jugadores.get(i).getPuntosTotalesXP() && !agregado){
-                        jugadores.add(i, jugador);
-                        agregado = true;
-                    }
-                }
-                if (!agregado){
-                    jugadores.add(jugador);
-                }
-            }
-        }
-    }
-
-    private void sumarPuntosJugador(ArrayList<IJugador> jugadores, Jugador jugador) {
-        Jugador jugadorAux = null;
-        for (IJugador ijugador: jugadores) {
-            if (jugador.getNombre().equals(ijugador.getNombre())){
-                ijugador.sumarPuntosTotalesXP(jugador.getPuntosTotalesXP());
-                jugadorAux = (Jugador) ijugador;
-                //lo elimino para luego reordenarlo en el top con su nuevo puntaje
-            }
-        }
-        if (jugadorAux != null){
-            jugadores.remove(jugadorAux);
-            agregarJugadorOrdenado(jugadores,jugadorAux);
-        }
-    }
-
-    private boolean jugadorEnTabla(ArrayList<IJugador> jugadores, Jugador jugador) {
-        boolean resultado = false;
-        for (IJugador ijugador: jugadores) {
-            if (jugador.getNombre().equals(ijugador.getNombre())){
-                resultado = true;
-            }
-        }
-        return resultado;
-    }
-
-    private int buscarJugadorConMasPuntos() {
-        int puntosMasAltos = 0;
-        for (Jugador jugador:jugadores) {
-            if (jugador.getPuntosDePartida() > puntosMasAltos){
-                puntosMasAltos = jugador.getPuntosDePartida();
-            }
-        }
-        return puntosMasAltos;
+    public ITapete getMesaJugadas() throws RemoteException{
+        return mesaDeJuego;
     }
 
     @Override
@@ -774,12 +504,6 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     @Override
-    public void mezclarMazo() throws RemoteException{
-        //cuando el mazo se quede sin cartas se van a agregar de manera random al mazo las cartas que quedaron boca arriba
-        mazoDeJuego.mezclarMazo();
-    }
-
-    @Override
     public void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador)throws RemoteException{
         Jugador jugadorActual = buscarJugador(nombreJugador);
         boolean estaLLena = false;
@@ -841,8 +565,8 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             if (nuevaJugada.get(posUltimaCarta).numero == 13) {
                 for (int i = 0; i < nuevaJugada.size(); i++) {
                     if ((i +1) != nuevaJugada.size()){
-                    //si el numero anterior sumado 1 no es igual al siguiente
-                    // es posible que sea el inicio de la escalera
+                        //si el numero anterior sumado 1 no es igual al siguiente
+                        // es posible que sea el inicio de la escalera
                         siguiente = nuevaJugada.get(i + 1).numero;
                         actual = (nuevaJugada.get(i).numero + 1);
                         if (siguiente > actual) {
@@ -940,99 +664,199 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         return mesaDeJuego.getJugada().get(posicionDeLaJugada).getCartasJugada();
     }
 
+    //sobre opciones de mesa
     @Override
-    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador)throws RemoteException{
+    public void modoExpres() throws RemoteException {
+        modo = modoDeJuego.EXPRES;
+        notificarObservadores("cambios en opciones de mesa");
+    }
+
+    @Override
+    public void modoPuntos() throws RemoteException {
+        modo = modoDeJuego.JUEGOAPUNTOS;
+        notificarObservadores("cambios en opciones de mesa");
+    }
+
+    @Override
+    public String getModoActual() throws RemoteException {
+        return String.valueOf(modo);
+        //devuelve el modo pasado a string
+    }
+
+    @Override
+    public void modificarCompetitivo() throws RemoteException {
+        if (estadoCompetitivo){
+            estadoCompetitivo = false;
+        }else {
+            estadoCompetitivo = true;
+        }
+        /*if (juegoIniciado){
+            notificarObservadores("continuar turno jugador");
+        }else {
+            notificarObservadores("continuar espera");
+        }*/
+        notificarObservadores("cambios en opciones de mesa");
+    }
+
+    @Override
+    public boolean getEstadoCompetitivo() throws RemoteException {
+        return estadoCompetitivo;
+    }
+
+    @Override
+    public void cambiarTiempoTurno(int tiempoEstablecido) throws RemoteException {
+        tiempoDeTurno = tiempoEstablecido;
+        notificarObservadores("cambios en opciones de mesa");
+    }
+
+    public int getCantidadTiempoTurno() throws RemoteException{
+        return tiempoDeTurno;
+    }
+
+    @Override
+    public void modificarOpcionPublico() throws RemoteException {
+        if (publicoPermitido){
+            publicoPermitido = false;
+        }else {
+            publicoPermitido = true;
+        }
+    }
+
+    public boolean isPublicoPermitido() throws RemoteException {
+        return publicoPermitido;
+    }
+
+    @Override
+    public void mostrarMensajeEnChat(String txtIngresado) throws RemoteException {
+        notificarObservadores(txtIngresado);
+    }
+    //apuestas
+    public void apostarFichas(int cantFichas) throws RemoteException{
+        //apuesta la misma cantidad por todos los jugadores
+        // y si no aceptan apostar luego se puede cancelar y devolver las fichas
+        for (Jugador jugador: jugadores) {
+            jugador.setCantApostada(cantFichas);
+            System.out.println(jugador.getCantApostada() + " - " + cantFichas);
+            jugador.restarFichasTotales(cantFichas);
+            mesaDeJuego.agregarApuesta(cantFichas);
+        }
+        apuestasActivas = true;
+        notificarObservadores("nueva apuesta");
+    }
+
+    public void cancelarApuestas()throws RemoteException{
+        for (Jugador jugador: jugadores) {
+            jugador.sumarFichasTotales(jugador.getCantApostada());
+            mesaDeJuego.sacarApuesta(jugador.getCantApostada());
+            jugador.setCantApostada(0);
+        }
+        apuestasActivas = false;
+        notificarObservadores("apuesta cancelada");
+    }
+    @Override
+    public boolean puedenApostarJugadores(int apuesta) throws RemoteException {
+        boolean resultado = true;
+        for (Jugador jugador:jugadores) {
+            if (jugador.getFichasTotales() < apuesta){
+                resultado = false;
+            }
+        }
+        return resultado;
+    }
+
+    @Override
+    public int getCantApostada(String nombreJugador) throws RemoteException {
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        if (jugadorActual.getCartasEnMano().isEmpty() && cartaSeleccionada == -1){
-            finalizarPartida(nombreJugador);
-        }else if (cartaSeleccionada == -1){
-            //excepcion
-            return;
+        return jugadorActual.getCantApostada();
+    }
+
+    public boolean isApuestasActivas()throws RemoteException{
+        return apuestasActivas;
+    }
+
+    public void apostarFichasJugador(String nombreJugador) throws RemoteException{
+        //este metodo va a sacarle las fichas a los nuevos jugadores si hay una apuesta activa
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        //la apuesta sera segun la cantidad apostada por el anfitrion
+        int cantFichas = jugadores.get(0).getCantApostada();
+        jugadorActual.setCantApostada(cantFichas);
+        jugadorActual.restarFichasTotales(cantFichas);
+        mesaDeJuego.agregarApuesta(cantFichas);
+    }
+
+    @Override
+    public int getCantidadTotalApuesta() throws RemoteException {
+        return mesaDeJuego.getBoteApuesta();
+    }
+
+
+//sobre el ganador
+    @Override
+    public String getNombreGanador() throws RemoteException {
+        return ganador.getNombre();
+    }
+
+    @Override
+    public int getPuntosGanador() throws RemoteException {
+        return ganador.getPuntosTotalesXP();
+    }
+
+
+
+
+//sobre finalizar partida
+    public void pedidoAnularPartidaAmistosamente() throws RemoteException {
+        notificarObservadores("pedido anular partida");
+    }
+
+    public void anularPartida(boolean anular) throws RemoteException {
+        if (anular){
+            if (jugadores.size() - 1 == solicitudDeAnularPartida){
+                solicitudDeAnularPartida = 0;
+                finalizarPartidaAmistosamente();
+            }else {
+                solicitudDeAnularPartida++;
+            }
+        } else{
+            solicitudDeAnularPartida = 0;
+            notificarObservadores("continuar turno jugador");
         }
-        Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
-        //le saca la carta que selecciono
-        if (jugadorActual.getCartasEnMano().isEmpty()){
-            mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
-            finalizarPartida(nombreJugador);
-        } else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()) {
-            cerrarPartida(nombreJugador);
-        } else if (quedaUnJugador()) {
-            finalizarPartida(nombreJugador);
-        } else {
-            mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
-            Jugador jugadorSiguiente = buscarJugadorIzquierda(jugadorActual);
-            siguienteTurno(jugadorSiguiente);
+    }
+
+    private void finalizarPartidaAmistosamente() throws RemoteException {
+        for (Jugador jugador: jugadores) {
+            jugador.sumarFichasTotales(jugador.getCantApostada());
+            mesaDeJuego.sacarApuesta(jugador.getCantApostada());
+            jugador.setCantApostada(0);
         }
+        System.out.println("finalizo amistosamente");
+        partidaFinalizada = true;
+        apuestasActivas = false;
+        notificarObservadores("finalizo partida amistosamente");
     }
 
     private void cerrarPartida(String nombreJugador) throws RemoteException{
         finalizarPartida(nombreJugador);
     }
 
-    private boolean jugadasLlenas() throws RemoteException{
-        Jugada jugadaActual;
-        boolean resultado = true;
-        if (!mesaDeJuego.getJugada().isEmpty()){
-            for (int i = 0; i < mesaDeJuego.getJugada().size(); i++) {
-                jugadaActual = mesaDeJuego.getJugada().get(i);
-                if (!jugadaActual.isJugadaLlena()){
-                    resultado = false;
-                }
-            }
-        }
-        return resultado;
-    }
-
-    private Jugador buscarJugador(String nombreJugador) {
-        Jugador jugador = null;
-        for (int i = 0; i < jugadores.size(); i++) {
-            if (jugadores.get(i).getNombre().equals(nombreJugador)){
-                jugador = jugadores.get(i);
-            }
-        }
-        return jugador;
-    }
-
-    @Override
-    public Jugador buscarJugadorIzquierda(Jugador jugadorActual) {
-        Jugador jugadorAux  = null;
-        for (int i = 0; i < jugadores.size(); i++){
-            if (jugadorActual.equals(jugadores.get(i))){
-                if (i == 0){
-                    jugadorAux = jugadores.get(jugadores.size() - 1);
-                }else {
-                    jugadorAux = jugadores.get(i - 1);
-                }
-            }
-        }
-        if (jugadorAux.isEliminado()){
-            jugadorAux = buscarJugadorIzquierda(jugadorAux);
-            //en el caso que el jugador de la izquierda este eliminado el metodo busca recursivamente cual es el siguiente
-        }
-        return jugadorAux;
-    }
-
-
-
-
     @Override
     public void finalizarPartida(String nombreJugador) throws RemoteException {
         Jugador jugadorActual = buscarJugador(nombreJugador);
-         if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
+        if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
             contarPuntosPartida();
         }
         establecerGanador();
-         if (ganador.getHizoRummy()){
-             duplicarPuntosCartas();
-             //vuelve a comprobar los eliminados despues de contar los puntos
-             comprobarEliminados();
-         }
-         if (estadoCompetitivo){
+        if (ganador.getHizoRummy()){
+            duplicarPuntosCartas();
+            //vuelve a comprobar los eliminados despues de contar los puntos
+            comprobarEliminados();
+        }
+        if (estadoCompetitivo){
             contarPuntosTotales();
-         }
-         if (jugadorActual.getCartasEnMano().isEmpty() && modo.equals(modoDeJuego.JUEGOAPUNTOS) && !quedaUnJugador() && !todosEliminados()){
-             notificarObservadores("fin ronda");
-         }
+        }
+        if (jugadorActual.getCartasEnMano().isEmpty() && modo.equals(modoDeJuego.JUEGOAPUNTOS) && !quedaUnJugador() && !todosEliminados()){
+            notificarObservadores("fin ronda");
+        }
         if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
             if (quedaUnJugador() || todosEliminados()){
@@ -1230,80 +1054,268 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
     }
 
+    //modo automatico
     @Override
-    public void agregarPuntosClasificacion()throws RemoteException {
-
-    }
-
-    @Override
-    public void siguienteTurno(Jugador jugadorIzquierda)throws RemoteException{
-        //busca la posicion del jugador que tiene el turno y luego de guardarla avisa el cambio de turno
-        for (int i = 0; i < jugadores.size(); i++) {
-            if (jugadores.get(i).equals(jugadorIzquierda)){
-                posicionTurnoActual = i;
-                tomoCartaJugadorTurno = false;
-                notificarObservadores("nuevo turno");
+    public void juegoAutomatico(String nombreJugador) throws RemoteException{
+        ArrayList<Carta> posibleEscalera;
+        ArrayList<Carta> posibleCombinacion;
+        if (!tomoCartaJugadorTurno){
+            sacarCartaMazo(nombreJugador);
+        }
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        jugadorActual.setModoAutomatico(true);
+        if (todosEnAutomatico()){
+            finalizarPartidaAmistosamente();
+        }else {
+            //posible rummy
+            obtenerCartasOrdenadas(jugadorActual.getCartasEnMano(), jugadorActual);
+            if (esRummy(jugadorActual.getCartasEnMano())) {
+                agregarJugada(nombreJugador, jugadorActual.getCartasEnMano(), false);
+                jugadorActual.getCartasEnMano().clear();
+                //como las cartas se agregaron a la jugada las elimino
+                finalizarPartida(nombreJugador);
+            }
+            //a partir de aca las cartas deberian de seguir ordenadas por lo que solo se comprueba el palo y si el numero es continuo
+            //posible escalera
+            posibleEscalera = obtenerCartasPaloMasRepetido(jugadorActual.getCartasEnMano());
+            if (esEscalera(posibleEscalera)) {
+                agregarJugada(nombreJugador, posibleEscalera, false);
+            } else {
+                devolverCartas(jugadorActual, posibleEscalera);
+            }
+            //posible combinacion
+            posibleCombinacion = obtenerCartasNumeroMasRepetido(jugadorActual.getCartasEnMano());
+            if (esCombinacion(posibleCombinacion)) {
+                agregarJugada(nombreJugador, posibleCombinacion, false);
+            } else {
+                devolverCartas(jugadorActual, posibleCombinacion);
+            }
+            //posible fin de partida
+            if (jugadorActual.getCartasEnMano().isEmpty()) {
+                finalizarPartida(nombreJugador);
+            } else {
+                int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
+                terminarTurno(posicionCarta, nombreJugador);
             }
         }
     }
-
-    public int getJugadoresSize() {
-        return jugadores.size();
+    private ArrayList<Carta> obtenerCartasNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
+        //hacer un remove y luego devolver las cartas si no era
+        ArrayList<Carta> cartasMismoNumero;
+        int numeroMasRepetido = buscarNumeroMasRepetido(cartasEnMano);
+        cartasMismoNumero = new ArrayList<>();
+        for (Carta carta:cartasEnMano) {
+            if (carta.getNumero() == numeroMasRepetido){
+                cartasMismoNumero.add(carta);
+            }
+        }
+        quitarCartasSeleccionadas(cartasEnMano, cartasMismoNumero);
+        return  cartasMismoNumero;
     }
 
-    public ArrayList<Jugador> getJugadores() {
+    private int buscarNumeroMasRepetido(ArrayList<Carta> cartasEnMano) {
+        int numeroMayor = 0;
+        int repeticionesCarta = 0;
+        int repeticiones = 0;
+        for (int i = 1; i < 14; i++) {
+            //compruebo en los 13 numeros de carta a ver cual se repite mas
+            for (Carta carta:cartasEnMano) {
+                if (carta.getNumero() == i){
+                    repeticiones++;
+                }
+            }
+            if (repeticiones > repeticionesCarta){
+                numeroMayor = i;
+                repeticionesCarta = repeticiones;
+            }
+            repeticiones = 0;
+        }
+        return numeroMayor;
+    }
+
+    private ArrayList<Carta> obtenerCartasPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
+        Palo paloRepetido = buscarPaloMasRepetido(cartasEnMano);
+        ArrayList<Carta> cartasMismoPalo = new ArrayList<>();
+        for (Carta carta:cartasEnMano) {
+            if (carta.getPalo().equals(paloRepetido)){
+                cartasMismoPalo.add(carta);
+            }
+        }
+        quitarCartasSeleccionadas(cartasEnMano, cartasMismoPalo);
+        return cartasMismoPalo;
+    }
+
+    private Palo buscarPaloMasRepetido(ArrayList<Carta> cartasEnMano) {
+        Palo paloMasRepetido = null;
+        int repeticionesPalo = 0;
+        int repeticiones = 0;
+        for (Palo paloActual: Palo.values()) {
+            System.out.println(paloActual);
+            for (Carta carta:cartasEnMano) {
+                if (carta.getPalo().equals(paloActual)){
+                    repeticiones++;
+                }
+            }
+            if (repeticiones > repeticionesPalo){
+                paloMasRepetido = paloActual;
+                repeticionesPalo = repeticiones;
+            }
+        }
+        return  paloMasRepetido;
+    }
+
+    @Override
+    public boolean isJugadorEnAutomatico(String nombreJugador) throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        return jugadorActual.isEnAutomatico();
+    }
+
+    @Override
+    public void desactivarJuegoAutomatico(String nombreJugador) throws RemoteException {
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        jugadorActual.setModoAutomatico(false);
+    }
+
+    private boolean todosEnAutomatico() {
+        boolean resultado = true;
+        for (Jugador jugador: jugadores) {
+            if (!jugador.isEnAutomatico()){
+                System.out.println("hay alguno que no esta en automatico");
+                resultado = false;
+            }
+        }
+        return resultado;
+    }
+
+
+
+    //sobre tabla de posiciones
+    public ArrayList<IJugador> getTablaPosiciones()throws RemoteException{
+        ArrayList<IJugador> jugadores = new ArrayList<>();
+        serializador = new Serializador("top5.dat");
+        Object[] recuperado = serializador.readObjects();
+        if (recuperado != null){
+            for (int i = 0; i < recuperado.length; i++) {
+                jugadores.add((IJugador) recuperado[i]);
+            }
+        }
+        if (!cargadosPuntosJugadoresEnTabla) {
+            cargadosPuntosJugadoresEnTabla = true;
+            jugadores = obtenerJugadoresPorPuntos(jugadores);
+            serializador.writeOneObject(jugadores.get(0));
+            for (int i = 1; i < jugadores.size(); i++) {
+                serializador.addOneObject(jugadores.get(i));
+            }
+        }
         return jugadores;
     }
 
-    @Override
-    public ArrayList<String> getNombreOponentes(String nombreJugador)throws RemoteException {
-        ArrayList<String> oponentes = new ArrayList<>();
+    public ArrayList<IJugador> obtenerJugadoresPorPuntos(ArrayList<IJugador> jugadores) throws RemoteException{
+        devolverCartasAMesa();
+        //devuelvo las cartas a mesa para no pasarlas al archivo
+        for (Jugador jugador:this.jugadores) {
+            agregarJugadorOrdenado(jugadores, jugador);
+        }
+        return jugadores;
+    }
 
-        String nombreAux;
-        for (int i = 0; i < jugadores.size();i++){
-            nombreAux = jugadores.get(i).getNombre();
-            if (!nombreAux.equals(nombreJugador)){
-                oponentes.add(nombreAux);
+    private void agregarJugadorOrdenado(ArrayList<IJugador> jugadores, Jugador jugador) {
+        boolean agregado = false;
+        if (jugadores.isEmpty()){
+            jugadores.add(jugador);
+        }else {
+            if (jugadorEnTabla(jugadores, jugador)) {
+                sumarPuntosJugador(jugadores, jugador);
+            }else {
+                for (int i = 0; i < jugadores.size(); i++) {
+
+                    if (jugador.getPuntosTotalesXP() >= jugadores.get(i).getPuntosTotalesXP() && !agregado){
+                        jugadores.add(i, jugador);
+                        agregado = true;
+                    }
+                }
+                if (!agregado){
+                    jugadores.add(jugador);
+                }
             }
         }
-
-        return oponentes;
     }
 
-    @Override
-    public ArrayList<String> getNombreJugadores()throws RemoteException {
-        ArrayList<String> nombres = new ArrayList<>();
-        String nombreAux = "";
-        Jugador jugadorAux;
-        for (int i = 0; i < this.jugadores.size(); i++){
-             jugadorAux = this.jugadores.get(i);
-             nombreAux += jugadorAux.getNombre();
-             nombres.add(nombreAux);
-             nombreAux = "";
-        }
-        return nombres;
-    }
-    @Override
-    public ArrayList<Carta> getCartasJugador(String nombreJugador) throws RemoteException {
-        ArrayList<Carta> listaCartas = null;
-        //poner una excepcion para no devolver null
-        Jugador jugadorAux;
-        for (int i = 0; i < jugadores.size(); i++){
-            jugadorAux = jugadores.get(i);
-            if (jugadorAux.getNombre().equals(nombreJugador)){
-                listaCartas = jugadorAux.getCartasEnMano();
+    private void sumarPuntosJugador(ArrayList<IJugador> jugadores, Jugador jugador) {
+        Jugador jugadorAux = null;
+        for (IJugador ijugador: jugadores) {
+            if (jugador.getNombre().equals(ijugador.getNombre())){
+                ijugador.sumarPuntosTotalesXP(jugador.getPuntosTotalesXP());
+                jugadorAux = (Jugador) ijugador;
+                //lo elimino para luego reordenarlo en el top con su nuevo puntaje
             }
         }
-        return listaCartas;
+        if (jugadorAux != null){
+            jugadores.remove(jugadorAux);
+            agregarJugadorOrdenado(jugadores,jugadorAux);
+        }
     }
 
-    public String getNombreTurnoActual(){
-        System.out.println("posicion turno actual: " + posicionTurnoActual);
-        System.out.println("nombre turno: " + jugadores.get(posicionTurnoActual).getNombre());
-        return jugadores.get(posicionTurnoActual).getNombre();
+    private boolean jugadorEnTabla(ArrayList<IJugador> jugadores, Jugador jugador) {
+        boolean resultado = false;
+        for (IJugador ijugador: jugadores) {
+            if (jugador.getNombre().equals(ijugador.getNombre())){
+                resultado = true;
+            }
+        }
+        return resultado;
     }
 
+    private int buscarJugadorConMasPuntos() {
+        int puntosMasAltos = 0;
+        for (Jugador jugador:jugadores) {
+            if (jugador.getPuntosDePartida() > puntosMasAltos){
+                puntosMasAltos = jugador.getPuntosDePartida();
+            }
+        }
+        return puntosMasAltos;
+    }
 
+//sobre fin de turno
+    @Override
+    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador)throws RemoteException{
+        Jugador jugadorActual = buscarJugador(nombreJugador);
+        if (jugadorActual.getCartasEnMano().isEmpty() && cartaSeleccionada == -1){
+            finalizarPartida(nombreJugador);
+        }else if (cartaSeleccionada == -1){
+            //excepcion
+            return;
+        }
+        Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
+        //le saca la carta que selecciono
+        if (jugadorActual.getCartasEnMano().isEmpty()){
+            mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
+            finalizarPartida(nombreJugador);
+        } else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()) {
+            cerrarPartida(nombreJugador);
+        } else if (quedaUnJugador()) {
+            finalizarPartida(nombreJugador);
+        } else {
+            mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
+            Jugador jugadorSiguiente = buscarJugadorIzquierda(jugadorActual);
+            siguienteTurno(jugadorSiguiente);
+        }
+    }
+    private boolean jugadasLlenas() throws RemoteException{
+        Jugada jugadaActual;
+        boolean resultado = true;
+        if (!mesaDeJuego.getJugada().isEmpty()){
+            for (int i = 0; i < mesaDeJuego.getJugada().size(); i++) {
+                jugadaActual = mesaDeJuego.getJugada().get(i);
+                if (!jugadaActual.isJugadaLlena()){
+                    resultado = false;
+                }
+            }
+        }
+        return resultado;
+    }
+
+    //sobre guardar, sobreescribir o cargar partida
     public void guardarPartida(String nombrePartida)throws RemoteException{
         ArrayList<PartidaGuardada> partidas = obtenerPartidasGuardadas();
         if (partidas.size() < 8){
@@ -1391,6 +1403,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
 
     @Override
     public String activarJugadorSiguiente() throws RemoteException {
+        //tiene que ver con cargar partida una vez se carga se necesita
         String nombreJugadorActivado = "";
         for (Jugador jugador:jugadores) {
             if (!jugador.isActivo()){
@@ -1401,25 +1414,10 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         return nombreJugadorActivado;
     }
 
-    @Override
-    public void modificarOpcionPublico() throws RemoteException {
-        if (publicoPermitido){
-            publicoPermitido = false;
-        }else {
-            publicoPermitido = true;
-        }
-    }
-
-    public boolean isPublicoPermitido() throws RemoteException {
-        return publicoPermitido;
-    }
-
-    @Override
-    public void mostrarMensajeEnChat(String txtIngresado) throws RemoteException {
-        notificarObservadores(txtIngresado);
-    }
 
 
+
+    //eliminar
     public int buscarPosicionJugador(String nombreJugador) throws RemoteException{
         int posicionJugador = -1;
         for (int i = 0; i < jugadores.size(); i++) {
