@@ -25,9 +25,6 @@ public class FlujoAgregarCartaAJugada extends Flujo{
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        if (txtIngresado.equals("0")){
-            return new FlujoContinuarTurno(vistaConsola, controlador);
-        }else {
             switch (estadoActual) {
                 case SELECCION_JUGADA -> {
                     if (vistaConsola.esNumero(txtIngresado)) {
@@ -37,6 +34,7 @@ public class FlujoAgregarCartaAJugada extends Flujo{
                     }
                 }
                 case SELECCION_CARTAS -> {
+                    System.out.println("llego aca");
                     if (vistaConsola.esNumero(txtIngresado)) {
                         return agregarPosicionCarta(txtIngresado);
                     } else {
@@ -44,18 +42,20 @@ public class FlujoAgregarCartaAJugada extends Flujo{
                     }
                 }
             }
-        }
         return this;
     }
 
     private Flujo agregarPosicionCarta(String txtIngresado) {
         int numero = Integer.parseInt(txtIngresado);
-        if (numero <= controlador.getJugadasSize() && numero > 0){
+        if (numero <= controlador.getCartasSize() && numero > 0){
             posicionesSeleccionadas.add(numero - 1);
+            vistaConsola.print("Carta " + numero + " seleccionada!!");
         } else if (numero == 0) {
-            controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
+            System.out.println("llego antes de agregar carta a jugada");
+            controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada - 1);
             posicionesSeleccionadas.clear();
-            return vistaConsola.flujoActual();//comprobar si esta bien
+            System.out.println("llego a agregar carta jugada");
+            return new FlujoContinuarTurno(vistaConsola, controlador);//comprobar si esta bien
         }else {
             vistaConsola.errorRangoNumerico();
         }

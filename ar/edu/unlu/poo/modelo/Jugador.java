@@ -62,7 +62,7 @@ public class Jugador implements Serializable, IJugador {
 
     @Override
     public void sumarPuntosDePartida(int puntos) {
-        this.puntosDePartida += puntosDePartida;
+        this.puntosDePartida += puntos;
     }
 
 
@@ -191,7 +191,7 @@ public class Jugador implements Serializable, IJugador {
 
     @Override
     public Carta tirarCarta(Integer posicion){
-        if (posicion < cartasEnMano.size()){
+        if (posicion < cartasEnMano.size() && posicion >= 0){
             return cartasEnMano.remove((int)posicion);
         }
         return null; //cambiar por excepcion

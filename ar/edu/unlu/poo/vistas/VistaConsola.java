@@ -449,6 +449,7 @@ public class VistaConsola implements IVista{
     public void mostrarApuestaCancelada(){
         if (!modoChat) {
             hayApuesta = false;
+            flujoActual = new FlujoEsperaPartida(this, controlador);
             print("\nSe cancelaron las apuestas!!!");
         }else {
             print("Se cancelaron las apuestas en la partida.");
@@ -458,9 +459,8 @@ public class VistaConsola implements IVista{
     @Override
     public void avisarSobreApuesta() {
         if (!modoChat) {
-            if (!controlador.esAnfitrion()) {
-                hayApuesta = true;
-            }
+            hayApuesta = true;
+            flujoActual = new FlujoEsperaPartida(this, controlador);
         }else {
             print("Los jugadores tienen las apuestas activas!!");
         }

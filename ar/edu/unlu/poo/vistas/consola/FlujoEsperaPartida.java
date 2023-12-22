@@ -73,6 +73,7 @@ public class FlujoEsperaPartida extends Flujo{
             vistaConsola.print("Tus fichas:" + controlador.cantFichas());
             if (controlador.apuestasActivadas()) {
                 vistaConsola.print("\nApuestas Activadas!!!");
+                vistaConsola.print("Tu apuesta seria de " + controlador.getcantidadApostada());
                 vistaConsola.print("Si las quiere desactivar seleccione la opcion 0.");
             }
             vistaConsola.cambiarEstadoConsola(true);

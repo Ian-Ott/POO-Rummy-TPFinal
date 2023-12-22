@@ -20,7 +20,6 @@ public class FlujoEsperaNuevaRonda extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
-        vistaConsola.limpiarPantalla();
         if (controlador.esAnfitrion()){
             vistaConsola.print("\nPresione Enter para comenzar una nueva ronda.");
         }else {

@@ -35,6 +35,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     private boolean cargadosPuntosJugadoresEnTabla;
     private boolean partidaCargada;
     private boolean publicoPermitido;
+    private boolean finRonda;
     //private ArrayList<Observer> observadores = new ArrayList<>();
 
     public Rummy() throws RemoteException {
@@ -49,6 +50,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         tiempoDeTurno = 0;
         partidaFinalizada = false;
         publicoPermitido = false;
+        finRonda = false;
     }
 
     public static IRummy getInstancia() throws RemoteException {
@@ -93,7 +95,8 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     public void reiniciarEstados() throws RemoteException {
         ganador = null;
         solicitudDeAnularPartida = 0;
-        if (partidaFinalizada) {
+        if (partidaFinalizada || finRonda) {
+            finRonda = false;
             reiniciarEstadosJugadores();
             devolverCartasAMesa();
             cargadosPuntosJugadoresEnTabla = false;
@@ -680,48 +683,71 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     private void cerrarPartida(String nombreJugador) throws RemoteException{
-        finalizarPartida(nombreJugador);
+        if (modo.equals(modoDeJuego.EXPRES) || quedaUnJugador() || todosEliminados()){
+            juegoIniciado = false;
+            partidaFinalizada = true;
+            establecerGanador();
+            if (estadoCompetitivo) {
+                contarPuntosTotales();
+            }
+            if (apuestasActivas && estadoCompetitivo){
+                ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
+            }
+            //la partida fue cerrada por lo que se puede iniciar una nueva si se quiere
+            notificarObservadores("partida cerrada");
+        }else {
+            establecerResultadosRonda();
+            if (!quedaUnJugador() || !todosEliminados()) {
+                //si llega aca significa que la ronda fue cerrada por lo que se iniciara una nueva
+                notificarObservadores("ronda cerrada");
+            }else {
+                cerrarPartida(nombreJugador);
+            }
+        }
     }
 
     @Override
     public void finalizarPartida(String nombreJugador) throws RemoteException {
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
-            contarPuntosPartida();
-        }
-        establecerGanador();
-        if (ganador.getHizoRummy()){
-            duplicarPuntosCartas();
-            //vuelve a comprobar los eliminados despues de contar los puntos
-            comprobarEliminados();
-        }
-        if (estadoCompetitivo){
-            contarPuntosTotales();
-        }
         if (jugadorActual.getCartasEnMano().isEmpty() && modo.equals(modoDeJuego.JUEGOAPUNTOS) && !quedaUnJugador() && !todosEliminados()){
             System.out.println("finalizo la ronda!");
-            notificarObservadores("fin ronda");
-        }else if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
+            establecerResultadosRonda();
+            if (!quedaUnJugador() && !todosEliminados()) {
+                finRonda = true;
+                notificarObservadores("fin ronda");
+            }
+        }
+        if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
             if (quedaUnJugador() || todosEliminados()){
                 partidaFinalizada = true;
-            }
-            if (apuestasActivas && estadoCompetitivo){
-                ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
-            }
-            notificarObservadores("fin de partida");
-            //dialogo de mensaje que avise que la partida fue finalizada y tal vez algun boton de nueva partida
-            //mostrar clasificacion y sumar los puntos del jugador a la clasificacion
-        }else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()){
-            if (modo.equals(modoDeJuego.EXPRES)){
-                juegoIniciado = false;
-                //la partida fue cerrada en modo expres por lo que se puede iniciar una nueva si se quiere
-                notificarObservadores("partida cerrada modo expres");
-            }else {
-                //si llega aca significa que la ronda fue cerrada por lo que se iniciara una nueva
-                notificarObservadores("partida cerrada");
+                establecerGanador();
+                if (estadoCompetitivo) {
+                    contarPuntosTotales();
+                }
+                if (apuestasActivas && estadoCompetitivo){
+                    ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
+                }
+                notificarObservadores("fin de partida");
+            } else if (modo.equals(modoDeJuego.EXPRES)) {
+                partidaFinalizada = true;
+                establecerGanador();
+                contarPuntosTotales();
+                if (apuestasActivas && estadoCompetitivo){
+                    ganador.sumarFichasTotales(mesaDeJuego.otorgarFichasAlGanador());
+                }
+                notificarObservadores("fin de partida");
             }
         }
+    }
+
+    private void establecerResultadosRonda() throws RemoteException {
+            contarPuntosPartida();
+            establecerGanador();
+        if (ganador.getHizoRummy()){
+            duplicarPuntosCartas();
+        }
+        comprobarEliminados();
     }
 
     private void duplicarPuntosCartas() {
@@ -806,7 +832,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
         return resultado;
     }
-    private void comprobarEliminados() throws RemoteException {
+    private void comprobarEliminados() throws RemoteException{
         //boolean nuevoEliminado = false;
         if (modo.equals(modoDeJuego.JUEGOAPUNTOS)){
             for (Jugador jugadorActual:jugadores) {
@@ -891,9 +917,11 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         for (int i = 0; i < jugadores.size(); i++) {
             puntosConseguidos = 0;
             for (int j = 0; j < jugadores.get(i).getCartasEnMano().size(); j++) {
-                cartaAux = jugadores.get(i).getCartasEnMano().get(i);
+                cartaAux = jugadores.get(i).getCartasEnMano().get(j);
                 puntosConseguidos += cartaAux.getPuntos();
+                System.out.println(cartaAux.getPuntos());
             }
+            System.out.println(i + "puntos conseguidos: " + puntosConseguidos);
             jugadores.get(i).sumarPuntosDePartida(puntosConseguidos);
         }
     }
@@ -1129,17 +1157,19 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
         }
         Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
         //le saca la carta que selecciono
-        if (jugadorActual.getCartasEnMano().isEmpty()){
-            mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
-            finalizarPartida(nombreJugador);
-        } else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()) {
-            cerrarPartida(nombreJugador);
-        } else if (quedaUnJugador()) {
-            finalizarPartida(nombreJugador);
-        } else {
-            mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
-            Jugador jugadorSiguiente = buscarJugadorIzquierda(jugadorActual);
-            siguienteTurno(jugadorSiguiente);
+        if (cartaTirada != null) {
+            if (jugadorActual.getCartasEnMano().isEmpty()) {
+                mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
+                finalizarPartida(nombreJugador);
+            } else if (jugadorActual.getCartasEnMano().size() <= 2 && jugadasLlenas()) {
+                cerrarPartida(nombreJugador);
+            } else if (quedaUnJugador()) {
+                finalizarPartida(nombreJugador);
+            } else {
+                mazoDeJuego.agregarCartaBocaArriba(cartaTirada);
+                Jugador jugadorSiguiente = buscarJugadorIzquierda(jugadorActual);
+                siguienteTurno(jugadorSiguiente);
+            }
         }
     }
     private boolean jugadasLlenas() throws RemoteException{

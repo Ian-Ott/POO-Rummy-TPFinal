@@ -71,7 +71,6 @@ public class Tapete implements Serializable, ITapete {
                 }
                 agregarNuevaJugada(jugadorActual.getNombre(), cartasSeleccionadas, estaLLena);
                 throw new EsJugadaValida();
-
             }else {
                 devolverCartas(jugadorActual, cartasSeleccionadas);
                 throw new NoEsJugada();
@@ -99,12 +98,18 @@ public class Tapete implements Serializable, ITapete {
             if (esEscalera(jugada)){
                 if (jugada.size() != 13) {
                     agregarCartasSeleccionadas(cartasSeleccionadas, jugada);
-                    acomodarValoresExtremos(jugada);
+                    ArrayList<Carta> jugadaOrdenada = ordenarCartasFormaAscendente(jugada);
+                    acomodarValoresExtremos(jugadaOrdenada);
                     //comprobamos si con las cartas agregadas sigue siendo una escalera
-                    if (esEscalera(jugada)) {
-                        if (jugada.size() == 13) {
-                            listaJugada.get(posicionJugada).setJugadaLlena(true);
+                    if (esEscalera(jugadaOrdenada)) {
+                        listaJugada.remove(posicionJugada);
+                        Jugada jugadaActualizada = new Jugada();
+                        jugadaActualizada.setCartasJugada(jugadaOrdenada);
+                        jugadaActualizada.setNombreCreadorJugada(jugadorActual.getNombre());
+                        if (jugadaOrdenada.size() == 13) {
+                            jugadaActualizada.setJugadaLlena(true);
                         }
+                        listaJugada.add(posicionJugada, jugadaActualizada);
                         jugadorActual.setAgregoJugada(true);
                         throw new CartasAgregadasAJugada();
                     } else {
@@ -138,6 +143,16 @@ public class Tapete implements Serializable, ITapete {
             //podria ser una excepcion pero nunca llega a esto
         }
     }
+
+    private ArrayList<Carta> ordenarCartasFormaAscendente(ArrayList<Carta> jugada) {
+        ArrayList<Carta> cartasOrdenadas = new ArrayList<>();
+        for (Carta carta: jugada) {
+            System.out.println("ordenada");
+            agregarCartaOrdenada(cartasOrdenadas, carta);
+        }
+        return cartasOrdenadas;
+    }
+
     public void quitarCartasSeleccionadas(ArrayList<Carta> cartasActuales, ArrayList<Carta> cartasSeleccionadas) {
         for (Carta carta:cartasSeleccionadas) {
             cartasActuales.remove(carta);
@@ -235,17 +250,26 @@ public class Tapete implements Serializable, ITapete {
     }
     public boolean esEscalera(ArrayList<Carta> nuevaJugada) {
         boolean resultado = true;
+        Palo paloActual = null;
         for (int i = 0; i < nuevaJugada.size(); i++) {
+            if (i == 0){
+                paloActual = nuevaJugada.get(i).getPalo();
+            }
             if ((i +1) != nuevaJugada.size()) {
-                if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero == 1){
-
-                } else if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero != 1) {
+                if (!paloActual.equals(nuevaJugada.get(i + 1).getPalo())) {
                     resultado = false;
+                    System.out.println("no es del mismo palo");
+                }else if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero == 1){
+
+                }else if (nuevaJugada.get(i).numero == 13 && nuevaJugada.get(i + 1).numero != 1) {
+                    resultado = false;
+                    System.out.println("no es escalera extremos");
                     //compruebo que el siguiente a la k en la escalera sea el As
                 } else if ((nuevaJugada.get(i).numero + 1) != nuevaJugada.get(i + 1).numero) {
                     //compruebo que el numero actual sumado 1 sea igual al numero siguiente
                     //(ejemplo: carta1 = 7 y carta2 = 8 entonces si carta1 + 1 valor es igual a carta 2 se confirma que esta en escalera)
                     resultado = false;
+                    System.out.println("no es escalera");
                 }
             }
         }

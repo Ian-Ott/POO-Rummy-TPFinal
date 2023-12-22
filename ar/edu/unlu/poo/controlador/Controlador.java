@@ -59,9 +59,9 @@ public class Controlador implements IControladorRemoto {
                 vista.actualizarJugadas();
             } else if (cambio.equals("fin de partida")) {
                 vista.finalizarPartida();
-            } else if (cambio.equals("partida cerrada")) {
+            } else if (cambio.equals("ronda cerrada")) {
                 vista.cerrarPartida();
-            } else if (cambio.equals("partida cerrada modo expres")) {
+            } else if (cambio.equals("partida cerrada")) {
                 vista.cerrarPartida();
                 vista.finalizarPartida();//revisar si es posible cambiar a que muestre la eleccion de partida y las posiciones
             } else if (cambio.equals("pedido anular partida")) {

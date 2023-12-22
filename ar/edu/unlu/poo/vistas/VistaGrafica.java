@@ -230,13 +230,19 @@ public class VistaGrafica implements IVista{
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if ((int)spinnerApuesta.getValue() == 0){
-                            controlador.cancelarApuesta();
+                            if (controlador.apuestasActivadas()) {
+                                controlador.cancelarApuesta();
+                            }else {
+                                mostrarMensajeAsistente("No hay una apuesta activa.");
+                            }
                         } else if ((int)spinnerApuesta.getValue() >= 250 && (int) spinnerApuesta.getValue() <= controlador.cantFichas()) {
                             if (!controlador.apuestasActivadas()) {
                                 controlador.apostar((int) spinnerApuesta.getValue());
                             }else {
-                                mostrarApuestaCancelada();
+                                mostrarMensajeAsistente("ya hay una apuesta activa!!");
                             }
+                        }else {
+                            mostrarMensajeAsistente("La apuesta no esta dentro del rango permitido.");
                         }
                     }
                 });
@@ -312,7 +318,11 @@ public class VistaGrafica implements IVista{
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         guardarPartidaButton.setEnabled(false);
-                        controlador.terminarTurno(cartasSeleccionadasPosicion);
+                        if (!cartasSeleccionadasPosicion.isEmpty()) {
+                            controlador.terminarTurno(cartasSeleccionadasPosicion);
+                        }else {
+                            mostrarMensajeAsistente("por favor seleccione una carta antes de terminar el turno.");
+                        }
                     }
                 });
                 mazoButton.addActionListener(new ActionListener() {
@@ -747,7 +757,6 @@ public class VistaGrafica implements IVista{
                 }else {
                     mostrarEsperaAnfitrion();
                 }
-                verificarEstadosOpcionesMesa();
                 comprobarApuesta();
                 iniciarPartidaButton.setVisible(true);
             } else {
@@ -865,6 +874,7 @@ public class VistaGrafica implements IVista{
     }
 
     private void mostrarEsperaCargarPartidaAnfitrion() {
+        verificarEstadosOpcionesMesa();
         txtInfoInicio.setText("Se ha cargado una partida!" +
                 "\nesperando a que se activen los jugadores (se necesitan que los " + controlador.cantJugadores() + " jugadores esten para cargar correctamente la partida)" +
                 "\nJugadores Activos:" + controlador.getJugadoresActivos() +
@@ -908,6 +918,8 @@ public class VistaGrafica implements IVista{
             if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
                 activarPartida();
             }
+            panelJugadas.removeAll();
+            listaCheckJugada.clear();
             agregarCartaAJugadaButton.setEnabled(false);
             terminarTurnoButton.setEnabled(false);
             seleccionJugada.setEnabled(false);
@@ -1153,6 +1165,7 @@ public class VistaGrafica implements IVista{
             ImageIcon cartaActual;
             JScrollPane panelScrollActual = null;
             ITapete jugadasEnMesa = controlador.obtenerJugadas();
+            System.out.println("actualizo jugada");
             JPanel panelActual = new JPanel(new FlowLayout());
             if (listaCheckJugada.size() != jugadasEnMesa.getListaJugada().size()) {
                 panelJugadas.removeAll();
@@ -1198,7 +1211,7 @@ public class VistaGrafica implements IVista{
     public void cerrarPartida() {
         if (!modoChat) {
             volverAInicio();
-            if (controlador.getModoJuego().equals("EXPRES")) {
+            if (controlador.getModoJuego().equals("EXPRES") || !controlador.juegoIniciado()) {
                 txtInfoInicio.setText("\nLa partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
                 mostrarMensajeAsistente("Se cerro la partida porque no se pueden hacer nuevas jugadas y las jugadas en mesa estan llenas.");
                 if (!controlador.getEstadoCompetitivo()) {
@@ -1209,10 +1222,11 @@ public class VistaGrafica implements IVista{
             } else {
                 txtInfoInicio.setText("\nLa ronda fue cerrada por lo que se sumaran los puntos sobrantes a cada jugador e iniciara una nueva ronda...");
                 mostrarMensajeAsistente("La ronda quedo cerrada por tener jugadas llenas y por no poder hacer nuevas jugadas. Pronto iniciara una nueva ronda!");
-                controlador.iniciarNuevaRonda();
+                //controlador.iniciarNuevaRonda();
+                controlador.resultadoRonda();
             }
         }else {
-            if (controlador.getModoJuego().equals("EXPRES")){
+            if (controlador.getModoJuego().equals("EXPRES") || !controlador.juegoIniciado()){
                 mostrarNuevoMensaje("La partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
                 if (!controlador.getEstadoCompetitivo()){
                     mostrarNuevoMensaje("No se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
@@ -1229,12 +1243,9 @@ public class VistaGrafica implements IVista{
     public void mostrarApuestaCancelada() {
         if (!modoChat) {
             pantallaEspera();
-            if (controlador.apuestasActivadas()) {
+            if (!controlador.apuestasActivadas()) {
                 txtInfoInicio.setText("\nApuestas Desactivadas!!!");
                 mostrarMensajeAsistente("Se cancelaron las apuestas!!!");
-            } else {
-                txtInfoInicio.setText("\nYa hay una apuesta activa.");
-                mostrarMensajeAsistente("No se puedo apostar porque ya hay una apuesta activa.");
             }
         }else {
             mostrarNuevoMensaje("Se cancelaron las apuestas en la partida.");
@@ -1244,11 +1255,9 @@ public class VistaGrafica implements IVista{
     @Override
     public void avisarSobreApuesta() {
         if (!modoChat) {
-            if (controlador.getcantidadApostada() != 0) {
-                txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas" +
+            txtInfoInicio.setText(txtInfoInicio.getText() + "\nHay apuestas Activas de " + controlador.getcantidadApostada() + " fichas!!! \nPara desactivarlas apueste 0 fichas" +
                         "\nTu total de fichas ahora seria de: " + controlador.cantFichas());
-                mostrarMensajeAsistente("Las apuestas fueron activadas. En el caso que quieras desactivarlas puedes apostar 0 fichas y se cancelaran y en caso contrario todos apostaran " + controlador.getcantidadApostada() + " fichas.");
-            }
+            mostrarMensajeAsistente("Las apuestas fueron activadas. En el caso que quieras desactivarlas puedes apostar 0 fichas y se cancelaran y en caso contrario todos apostaran " + controlador.getcantidadApostada() + " fichas.");
         }else {
             escribirEnChat("Los jugadores tienen las apuestas activas!!");
         }
@@ -1275,6 +1284,11 @@ public class VistaGrafica implements IVista{
                 nombreJugadorPuntos4.setText(jugadores.get(i).getNombre());
                 puntosJugador4.setText(puntosJugador4.getText() + "\n\t" + jugadores.get(i).getPuntosDePartida());
             }
+        }
+        if (controlador.esAnfitrion()){
+            iniciarNuevaRondaButton.setVisible(true);
+        }else{
+            iniciarNuevaRondaButton.setVisible(false);
         }
     }
 
@@ -1427,26 +1441,31 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarErrorJugadaLLena() {
+        cartasSeleccionadasPosicion.clear();
         mostrarMensajeAsistente("Error: La jugada seleccionada esta llena :(");
     }
 
     @Override
     public void mostrarErrorCartaNoAgregada() {
+        cartasSeleccionadasPosicion.clear();
         mostrarMensajeAsistente("Error: Las cartas seleccionadas para agregar no forman parte de la jugada seleccionada.");
     }
 
     @Override
     public void mostrarErrorNoEsJugada() {
-        mostrarMensajeAsistente("Error: Las cartas seleccionadas no forman esa jugada. :C");
+        mostrarMensajeAsistente("Error: Las cartas seleccionadas no forman una jugada. :C");
+        cartasSeleccionadasPosicion.clear();
     }
 
     @Override
     public void mostrarErrorCartasInsuficientes() {
+        cartasSeleccionadasPosicion.clear();
         mostrarMensajeAsistente("Error: Faltan cartas para continuar.");
     }
 
     @Override
     public void mostrarErrorRummyNoDisponible() {
+        cartasSeleccionadasPosicion.clear();
         mostrarMensajeAsistente("Error: La opcion de rummy no esta disponible porque ya hizo una jugada anteriormente. :(");
     }
 }
