@@ -21,9 +21,9 @@ public interface IRummy extends IObservableRemoto {
 
     void agarrarCartaBocaArriba(String jugador) throws RemoteException;
 
-    void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada, NoPuedeHacerRummy;
+    void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartas, NoEsJugada, NoPuedeHacerRummy;
 
-    void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada;
+    void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartas, NoEsJugada;
 
     void mezclarMazo() throws RemoteException;
 
@@ -33,12 +33,12 @@ public interface IRummy extends IObservableRemoto {
     void agregarCartaOrdenada(ArrayList<Carta> jugada, Carta cartaElegida)throws RemoteException;
 
 
-    void terminarTurno(Integer carta1, String jugadorActual) throws RemoteException;
+    void terminarTurno(Integer carta1, String jugadorActual) throws RemoteException, FaltanCartas;
 
     Jugador buscarJugadorIzquierda(Jugador jugadorActual)throws RemoteException;
 
 
-    void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada;
+    void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartas, NoEsJugada;
 
 
     void finalizarPartida(String jugador)throws RemoteException;

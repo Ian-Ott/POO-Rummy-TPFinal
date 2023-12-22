@@ -60,7 +60,7 @@ public class VistaGrafica implements IVista{
     private JPanel panelPrincipal;
     private JPanel panelVacio;
     private JPanel panelAbajo;
-    private JScrollPane panelJugadas;
+    private JPanel panelJugadas;
     private JPanel panelOpcionesMesa;
     private JPanel panelApuesta;
     private JSpinner spinnerApuesta;
@@ -1294,6 +1294,7 @@ public class VistaGrafica implements IVista{
     public void obtenerNombre() {
         if (!modoChat) {
             System.out.println("llego aca");
+            //txtInfoInicio.setText("Ingrese su nombre");
             mostrarMensajeAsistente("Solo escribe tu nombre e inicia sesion");
             panelUsuario.setVisible(true);
             txtNombre.setEnabled(true);

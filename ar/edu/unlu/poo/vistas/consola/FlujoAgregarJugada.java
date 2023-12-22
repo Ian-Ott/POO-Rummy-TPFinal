@@ -54,8 +54,12 @@ public class FlujoAgregarJugada extends Flujo{
                 case POSIBLE_ESCALERA -> controlador.armarEscalera(posicionesSeleccionadas);
                 case POSIBLE_COMBINACION_CARTAS_IGUALES -> controlador.armarCombinacionIguales(posicionesSeleccionadas);
             }
+            posicionesSeleccionadas.clear();
             return vistaConsola.flujoActual();
-        }else {
+        } else if (posicion == 15) {
+            posicionesSeleccionadas.clear();
+            return new FlujoContinuarTurno(vistaConsola, controlador);
+        } else {
             vistaConsola.errorRangoNumerico();
         }
         return this;
@@ -74,7 +78,8 @@ public class FlujoAgregarJugada extends Flujo{
                 vistaConsola.guardarTxtActual();
             }
             case POSIBLE_RUMMY,POSIBLE_ESCALERA,POSIBLE_COMBINACION_CARTAS_IGUALES -> {
-                vistaConsola.mostrarSeleccionCartas();//cambiar
+                vistaConsola.mostrarSeleccionCartas();
+                vistaConsola.print("15-Volver Atras");
                 vistaConsola.guardarTxtActual();
             }
         }

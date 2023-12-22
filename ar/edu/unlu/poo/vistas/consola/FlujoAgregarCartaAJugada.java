@@ -54,6 +54,7 @@ public class FlujoAgregarCartaAJugada extends Flujo{
             posicionesSeleccionadas.add(numero - 1);
         } else if (numero == 0) {
             controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
+            posicionesSeleccionadas.clear();
             return vistaConsola.flujoActual();//comprobar si esta bien
         }else {
             vistaConsola.errorRangoNumerico();

@@ -559,12 +559,14 @@
                       </component>
                     </children>
                   </grid>
-                  <scrollpane id="7f077" binding="panelJugadas">
+                  <grid id="7da8e" binding="panelJugadas" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                     <constraints border-constraint="Center"/>
-                    <properties/>
+                    <properties>
+                      <background color="-16509616"/>
+                    </properties>
                     <border type="none"/>
                     <children/>
-                  </scrollpane>
+                  </grid>
                 </children>
               </grid>
             </children>
