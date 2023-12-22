@@ -11,7 +11,7 @@ public class FlujoPartidaCerrada extends Flujo{
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        if (controlador.getModoJuego().equals("EXPRES")) {
+        if (controlador.getModoJuego().equals("EXPRES") || !controlador.juegoIniciado()) {
             return vistaConsola.mostrarOpcionesNuevaPartida(txtIngresado, this);
         }else {
             controlador.resultadoRonda();//esto cambia el flujo a fin de ronda
@@ -22,7 +22,7 @@ public class FlujoPartidaCerrada extends Flujo{
     @Override
     public void mostrarSiguienteTexto() {
         vistaConsola.limpiarPantalla();
-        if (controlador.getModoJuego().equals("EXPRES")){
+        if (controlador.getModoJuego().equals("EXPRES") || !controlador.juegoIniciado()){
             vistaConsola.print("La partida fue cerrada ya que no se pueden  hacer combinaciones o añadir cartas ");
             if (!controlador.getEstadoCompetitivo()){
                 vistaConsola.print("No se ganaron ni puntos ni fichas apostadas porque el competitivo esta desactivado.");
