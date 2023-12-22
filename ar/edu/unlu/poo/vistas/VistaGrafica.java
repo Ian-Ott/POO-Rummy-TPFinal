@@ -1127,11 +1127,14 @@ public class VistaGrafica implements IVista{
             if (listaCheckJugada.size() != jugadasEnMesa.getListaJugada().size()) {
                 panelJugadas.removeAll();
                 for (int i = 0; i < jugadasEnMesa.getListaJugada().size(); i++) {
-                    if (i % 3 == 0) {
-                        panelActual = new JPanel(new FlowLayout());
-                        panelActual.setBackground(new Color(4, 21, 80));
+                    //if (i % 3 == 0) {
+                        panelActual = new JPanel();
+                        BoxLayout layoutPanelActual = new BoxLayout(panelActual,BoxLayout.Y_AXIS);
+                        panelActual.setLayout(layoutPanelActual);
+                        panelActual.setPreferredSize(new Dimension(85, 117));
+                    panelActual.setBackground(new Color(4, 21, 80));
                         panelJugadas.add(panelActual);
-                    }
+                    //}
                     listaActual = new JList<>();
                     listaActual.setBackground(new Color(4, 21, 80));
                     listaModeloActual = new DefaultListModel<>();
@@ -1143,6 +1146,7 @@ public class VistaGrafica implements IVista{
                     panelScrollActual.setPreferredSize(new Dimension(85, 105));
                     checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
                     checkJugadaActual.setBackground(new Color(4, 21, 80));
+                    checkJugadaActual.setForeground(new Color(253,255,254));
                     listaCheckJugada.add(checkJugadaActual);
                     panelActual.add(checkJugadaActual);
                     panelScrollActual.setViewportView(listaActual);
