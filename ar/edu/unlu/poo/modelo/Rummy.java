@@ -128,6 +128,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     private void devolverCartasAMesa() {
+        //devuelvo las cartas de jugadores y de las jugadas a la pila de cartas boca arriba
         Carta cartaAux;
         for (int i = 0; i < jugadores.size();i++){
             if (!jugadores.get(i).getCartasEnMano().isEmpty()){
@@ -137,6 +138,15 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 }
             }
         }
+        ArrayList<Carta> jugadaActual;
+        for (int i = 0; i < mesaDeJuego.getListaJugada().size(); i++) {
+            jugadaActual = mesaDeJuego.buscarJugada(i);
+            while (!jugadaActual.isEmpty()){
+                cartaAux = jugadaActual.remove(0);
+                mazoDeJuego.agregarCartaBocaArriba(cartaAux);
+            }
+        }
+        mesaDeJuego.getListaJugada().clear();
     }
 
     private void elegirJugadorMano() throws RemoteException {
