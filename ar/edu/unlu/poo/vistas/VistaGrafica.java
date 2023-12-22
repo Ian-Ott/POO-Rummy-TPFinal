@@ -60,7 +60,7 @@ public class VistaGrafica implements IVista{
     private JPanel panelPrincipal;
     private JPanel panelVacio;
     private JPanel panelAbajo;
-    private JPanel panelJugadas;
+    private JScrollPane panelJugadas;
     private JPanel panelOpcionesMesa;
     private JPanel panelApuesta;
     private JSpinner spinnerApuesta;
@@ -164,6 +164,8 @@ public class VistaGrafica implements IVista{
         mostrarResultadosBusqueda(moddelo.getCartasJugador("pepito"));*/
                 frame.setVisible(true);
                 tabbedPane.remove(panelPartida);
+                tabbedPane.remove(panelOpcionesMesa);
+                panelOpcionesMesa.setName("Opciones de Mesa");
                 iniciarPartidaButton.setVisible(false);
                 panelUsuario.setVisible(true);
                 listaCheckJugada = new ArrayList<>();
@@ -253,7 +255,7 @@ public class VistaGrafica implements IVista{
                             int indiceSeleccionado = cartas.getSelectedIndex();
                             if (indiceSeleccionado != -1 && !cartasSeleccionadasPosicion.contains(indiceSeleccionado)) {
                                 System.out.println("seleccionado : " + indiceSeleccionado);
-                                String mensajeActual = "|-Se selecciono la carta " + (indiceSeleccionado + 1);
+                                String mensajeActual = " Se selecciono la carta " + (indiceSeleccionado + 1);
                                 mostrarMensajeAsistente(mensajeActual);
                                 cartasSeleccionadasPosicion.add(indiceSeleccionado);
                             }
@@ -724,27 +726,33 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void pantallaEspera() {
+        System.out.println(modoChat);
         if (!modoChat) {
             if (controlador.getNombreJugador() == null) {
                 obtenerNombre();
+                System.out.println("paso por nombre");
                 apostarButton.setVisible(false);
                 spinnerApuesta.setVisible(false);
-            } else if (controlador.esAnfitrion()) {
+            } else if (controlador.esAnfitrion()){
                 apostarButton.setVisible(true);
                 spinnerApuesta.setVisible(true);
+                activarOpcionesMesa();
+                tabbedPane.add(panelOpcionesMesa,1);
+                tabbedPane.setIconAt(1, new ImageIcon("ar/edu/unlu/poo/images/opcionesMesaIcon.jpg"));
                 //esto sucede solo si se esta iniciando una nueva partida en el mismo servidor
-                iniciarPartidaButton.setVisible(true);
-            } else {
-                apostarButton.setVisible(true);
-                spinnerApuesta.setVisible(true);
-            }
-            panelInicio.setVisible(true);
-            if (controlador.esAnfitrion()) {
                 if (controlador.partidaCargada()) {
                     mostrarEsperaCargarPartidaAnfitrion();
+                }else {
+                    mostrarEsperaAnfitrion();
                 }
-                mostrarEsperaAnfitrion();
+                comprobarApuesta();
+                iniciarPartidaButton.setVisible(true);
             } else {
+                desactivarOpcionesMesa();
+                apostarButton.setVisible(true);
+                spinnerApuesta.setVisible(true);
+                tabbedPane.add(panelOpcionesMesa,1);
+                tabbedPane.setIconAt(1, new ImageIcon("ar/edu/unlu/poo/images/opcionesMesaIcon.jpg"));
                 if (controlador.partidaCargada()) {
                     mostrarEsperaCargarPartida();
                 } else {
@@ -752,9 +760,28 @@ public class VistaGrafica implements IVista{
                 }
                 comprobarApuesta();
             }
+            panelInicio.setVisible(true);
         }else {
             mostrarNuevoMensaje("Se esta esperando a que se inicie la partida");
         }
+    }
+
+    private void desactivarOpcionesMesa() {
+        seleccionTiempo.setVisible(false);
+        partidaCompetitivaCheck.setVisible(false);
+        modoExpresCheckBox.setVisible(false);
+        modoPorPuntosCheckBox.setVisible(false);
+        checkBoxChat.setVisible(false);
+        txtOpcionMesa.setText("No podes modificar las opciones de mesa por no ser anfitrion.");
+    }
+
+    private void activarOpcionesMesa() {
+        seleccionTiempo.setVisible(true);
+        partidaCompetitivaCheck.setVisible(true);
+        modoExpresCheckBox.setVisible(true);
+        modoPorPuntosCheckBox.setVisible(true);
+        checkBoxChat.setVisible(true);
+        txtOpcionMesa.setText("Seleccione las opciones de Mesa que quiera cambiar");
     }
 
     private void mostrarEspera() {
@@ -778,12 +805,12 @@ public class VistaGrafica implements IVista{
                 "\nCantidad de jugadores:" + controlador.cantJugadores() +
                 "\nCuando este la cantidad necesaria presione el boton para iniciar.");
         actualizarBarra();
-        mostrarMensajeAsistente("Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida podes iniciar la partida apretando el boton del mismo nombre." +
+        mostrarMensajeAsistente("Bienvenido al Rummy " + controlador.getNombreJugador() + "!!! Una vez que haya 2 jugadores o mas en la partida \npodes iniciar la partida apretando el boton del mismo nombre." +
                                 "\nAdemas, si quieres apostar podes hacerlo con minimo 250 fichas.");
 
-        mostrarMensajeAsistente("Tambien tenes disponible las opciones de mesa que te permiten cambiar el tiempo por cada turno, cambiar el modo de juego (ya sea expres o por puntos), activar o desactivar las partidas competitivas y por ultimo podes activar el chec el cual se puede unir una vez este iniciada la partida.\" +\n" +
+        mostrarMensajeAsistente("Tambien tenes disponible las opciones de mesa que te permiten cambiar el tiempo por cada turno, \ncambiar el modo de juego (ya sea expres o por puntos), activar o desactivar las partidas competitivas \ny por ultimo podes activar el check el cual se puede unir una vez este iniciada la partida." +
                                 "\nQue disfrutes el juego!!!");
-        comprobarApuesta();
+        //comprobarApuesta();
     }
 
     private void mostrarEsperaCargarPartida() {
@@ -851,21 +878,6 @@ public class VistaGrafica implements IVista{
             if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
                 activarPartida();
             }
-            if (!controlador.esAnfitrion()) {
-                seleccionTiempo.setVisible(false);
-                partidaCompetitivaCheck.setVisible(false);
-                modoExpresCheckBox.setVisible(false);
-                modoPorPuntosCheckBox.setVisible(false);
-                checkBoxChat.setVisible(false);
-                txtOpcionMesa.setText("No podes modificar las opciones de mesa por no ser anfitrion.");
-            } else {
-                seleccionTiempo.setVisible(true);
-                partidaCompetitivaCheck.setVisible(true);
-                modoExpresCheckBox.setVisible(true);
-                modoPorPuntosCheckBox.setVisible(true);
-                checkBoxChat.setVisible(true);
-                txtOpcionMesa.setText("Seleccione las opciones de Mesa que quiera cambiar");
-            }
             agregarCartaAJugadaButton.setEnabled(false);
             terminarTurnoButton.setEnabled(false);
             seleccionJugada.setEnabled(false);
@@ -880,7 +892,7 @@ public class VistaGrafica implements IVista{
                 } else if (controlador.esAnfitrion()) {
                     guardarPartidaButton.setEnabled(true);
                 }
-                txtTurno.setText("Bienvenido al | modo" + controlador.getModoJuego() + " | , " + controlador.getNombreJugador() + ". Es su turno.");
+                txtTurno.setText("Bienvenido al | modo " + controlador.getModoJuego() + " | , " + controlador.getNombreJugador() + ". Es su turno.");
                 mazoButton.setEnabled(true);
                 cartaBocaArribaButton.setEnabled(true);
                 mostrarMensajeAsistente("Ahora mismo es tu turno. Para comenzar debes decidir si agarrar una carta del mazo o la carta que esta boca arriba al lado del mazo.");
@@ -900,10 +912,10 @@ public class VistaGrafica implements IVista{
             } else {
                 esperarTurno();
             }
-            txtTurno.setText(txtTurno.getText() + "Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
+            txtTurno.setText(txtTurno.getText() + ". Tus fichas: " + controlador.cantFichas() + " Tu apuesta: " + controlador.getcantidadApostada() +
                     "\nFichas en el bote de apuestas: " + controlador.getcantidadFichasBote() + ". Jugadores Restantes en la partida: " + controlador.getCantDisponibles());
             if (controlador.getModoJuego().equals("JUEGOAPUNTOS")) {
-                txtTurno.setText("Tus puntos de partida: " + controlador.getpuntosJugador());
+                txtTurno.setText(txtTurno.getText() + ". Tus puntos de partida: " + controlador.getpuntosJugador());
             }
         }
     }
@@ -1057,10 +1069,10 @@ public class VistaGrafica implements IVista{
     public void continuarTurnoActual() {
         if (!modoChat) {
             if (controlador.esTurnoJugador()) {
-                mostrarMensajeAsistente("Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada o incluso termnar tu turno." +
+                mostrarMensajeAsistente("Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada \no incluso termnar tu turno." +
                         "\nA continuacion te dejo algunos tips sobre cada una:" +
-                        "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una y una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada. Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
-                        "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas y luego ponerle un tilde presonando la casilla de la jugada que necesites" +
+                        "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una \ny una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada.\n Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
+                        "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas \ny luego ponerle un tilde presonando la casilla de la jugada que necesites" +
                         "\n-Para terminar el turno debes seleccionar una unica carta y presonar el boton con el mismo nombre." +
                         "\n-En el caso que hayas seleccionado mal tus cartas puedes seleccionar el boton cancelar seleccion para deseleccionarlas");
                 cartasSeleccionadasPosicion.clear();
@@ -1256,14 +1268,14 @@ public class VistaGrafica implements IVista{
         //controlador.comprobarAnfitrion();
         if (controlador.esAnfitrion()) {
             mostrarMensajeAsistente("Si deseas volver a jugar una nueva partida ve al menu de inicio y presiona nueva partida. " +
-                    "En caso contrario, espero tengas un buen dia!! :D");
+                    "\nEn caso contrario, espero tengas un buen dia!! :D");
             txtInfoInicio.setText(txtInfoInicio.getText() + "\n¿Desea Iniciar una nueva partida?");
             iniciarNuevaPartidaButton.setVisible(true);
             salirButton.setVisible(true);
             iniciarPartidaButton.setVisible(false);
         }else {
             mostrarMensajeAsistente("Espera a que el anfitrion decida si quiere una nueva partida. " +
-                    "En caso que abandone el juego esta la posibilidad de que uno del resto de jugadores se convierta en el nuevo anfitrion.");
+                    "\nEn caso que abandone el juego esta la posibilidad de que uno del resto de jugadores se convierta en el nuevo anfitrion.");
         }
         actualizarBarra();
     }
@@ -1281,6 +1293,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void obtenerNombre() {
         if (!modoChat) {
+            System.out.println("llego aca");
             mostrarMensajeAsistente("Solo escribe tu nombre e inicia sesion");
             panelUsuario.setVisible(true);
             txtNombre.setEnabled(true);
@@ -1304,7 +1317,7 @@ public class VistaGrafica implements IVista{
     public void mostrarTablaPosiciones(ArrayList<IJugador> jugadores) {
         if (!modoChat) {
             mostrarMensajeAsistente("Puedes visualizar la tabla de posiciones en el panel del mismo nombre. " +
-                    "En caso que no aparezcas es porque no alcanzaste el top de jugadores :(");
+                    "\nEn caso que no aparezcas es porque no alcanzaste el top de jugadores :(");
         }
         panelTablaPosiciones.setName("Tabla De Posiciones");
         tabbedPane.add(panelTablaPosiciones);
@@ -1316,8 +1329,8 @@ public class VistaGrafica implements IVista{
             if (i < jugadores.size()){
                 jugadorAux = jugadores.get(i);
                 txtnombreJugadorTablaPosiciones.setText(txtnombreJugadorTablaPosiciones.getText() +
-                       i + "- " + jugadorAux.getNombre() +  "\n");
-                txtPuntosJugadorTablaPosiciones.setText(txtPuntosJugadorTablaPosiciones.getText() + jugadorAux.getPuntosTotalesXP() + "\n");
+                        (i + 1) + "- " + jugadorAux.getNombre() +  "\n");
+                txtPuntosJugadorTablaPosiciones.setText(txtPuntosJugadorTablaPosiciones.getText()+ "\t" + jugadorAux.getPuntosTotalesXP() + "\n");
             }
         }
     }
@@ -1394,7 +1407,7 @@ public class VistaGrafica implements IVista{
 
     @Override
     public void mostrarErrorCartasInsuficientes() {
-        mostrarMensajeAsistente("Error: Faltan cartas para armar la jugada");
+        mostrarMensajeAsistente("Error: Faltan cartas para continuar.");
     }
 
     @Override

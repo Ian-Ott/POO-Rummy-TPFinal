@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class FlujoAgregarJugada extends Flujo{
     public FlujoAgregarJugada(VistaConsola consola, Controlador controlador) {
         super(consola, controlador);
+        vistaConsola.limpiarPantalla();
         mostrarSiguienteTexto();
     }
 
@@ -19,15 +20,17 @@ public class FlujoAgregarJugada extends Flujo{
     private EstadosPosibles estadoActual = EstadosPosibles.SELECCION_TIPO_JUGADA;
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        vistaConsola.limpiarPantalla();
         switch (estadoActual){
             case SELECCION_TIPO_JUGADA -> {
                 if (txtIngresado.equals("1")) {
                     estadoActual = EstadosPosibles.POSIBLE_RUMMY;
+                    mostrarSiguienteTexto();
                 } else if (txtIngresado.equals("2")) {
                     estadoActual = EstadosPosibles.POSIBLE_ESCALERA;
+                    mostrarSiguienteTexto();
                 } else if (txtIngresado.equals("3")) {
                     estadoActual = EstadosPosibles.POSIBLE_COMBINACION_CARTAS_IGUALES;
+                    mostrarSiguienteTexto();
                 }else {
                     vistaConsola.opcionIncorrecta();
                 }
@@ -41,15 +44,17 @@ public class FlujoAgregarJugada extends Flujo{
 
     private Flujo agregarPosicionCarta(String txtIngresado) {
         int posicion = Integer.parseInt(txtIngresado);
-        if (posicion <= controlador.getJugadasSize() && posicion > 0){
+        if (posicion <= controlador.getCartasSize() && posicion > 0){
+            vistaConsola.print("Posicion " + posicion + " seleccionada!!!");
             posicionesSeleccionadas.add(posicion - 1);
+            //mostrarSiguienteTexto();
         } else if (posicion == 0) {
             switch (estadoActual) {
                 case POSIBLE_RUMMY ->  controlador.armarRummy(posicionesSeleccionadas);
                 case POSIBLE_ESCALERA -> controlador.armarEscalera(posicionesSeleccionadas);
                 case POSIBLE_COMBINACION_CARTAS_IGUALES -> controlador.armarCombinacionIguales(posicionesSeleccionadas);
             }
-            return vistaConsola.flujoActual();//revisar
+            return vistaConsola.flujoActual();
         }else {
             vistaConsola.errorRangoNumerico();
         }
@@ -58,6 +63,7 @@ public class FlujoAgregarJugada extends Flujo{
 
     @Override
     public void mostrarSiguienteTexto() {
+        vistaConsola.limpiarPantalla();
         switch (estadoActual){
             case SELECCION_TIPO_JUGADA -> {
                 vistaConsola.print("Seleccione el tipo de jugada que quiere hacer:");

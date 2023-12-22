@@ -46,7 +46,7 @@ public class Tapete implements Serializable, ITapete {
         return listaJugada;
     }
 
-    public void verificarRummy(ArrayList<Carta> cartasSeleccionadas, Jugador jugadorActual) throws JugadorHizoRummy, NoEsJugada, NoPuedeHacerRummy, FaltanCartasParaJugada {
+    public void verificarRummy(ArrayList<Carta> cartasSeleccionadas, Jugador jugadorActual) throws JugadorHizoRummy, NoEsJugada, NoPuedeHacerRummy, FaltanCartas {
         if (!tieneJugada(jugadorActual) && !agregoJugada(jugadorActual)) {
                 if (esRummy(cartasSeleccionadas)) {
                     jugadorActual.setHizoRummy(true);
@@ -61,7 +61,7 @@ public class Tapete implements Serializable, ITapete {
         }
     }
 
-    public void verificarEscalera(ArrayList<Carta> cartasSeleccionadas, Jugador jugadorActual) throws EsJugadaValida, NoEsJugada, FaltanCartasParaJugada {
+    public void verificarEscalera(ArrayList<Carta> cartasSeleccionadas, Jugador jugadorActual) throws EsJugadaValida, NoEsJugada, FaltanCartas {
         boolean estaLLena = false;
             //solo acomoda los valores en el caso de que esten el as al principio y la k al final
             acomodarValoresExtremos(cartasSeleccionadas);

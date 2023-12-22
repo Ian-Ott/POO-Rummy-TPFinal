@@ -50,6 +50,7 @@ public class FlujoInicioTurno extends Flujo{
         }
         vistaConsola.print("3-Guardar Partida");
         vistaConsola.print("Carta disponible en la pila de descartes:" + obtenerCartaDescarte());
+        vistaConsola.print("----------------------------------------------------------");
         vistaConsola.mostrarCartas();
         vistaConsola.guardarTxtActual();
         vistaConsola.cambiarEstadoConsola(true);

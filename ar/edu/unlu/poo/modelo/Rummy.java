@@ -395,7 +395,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     @Override
-    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada, NoPuedeHacerRummy {
+    public void comprobarRummy(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartas, NoEsJugada, NoPuedeHacerRummy {
         Jugador jugadorActual = buscarJugador(nombreJugador);
         if (posicionesSeleccionadas.size() == jugadorActual.getCartasEnMano().size()) {
             ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
@@ -406,14 +406,14 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 finalizarPartida(nombreJugador);
             }
         }else {
-            throw new FaltanCartasParaJugada();
+            throw new FaltanCartas();
         }
     }
 
     @Override
-    public void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada{
+    public void comprobarCombinacion(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartas, NoEsJugada{
         Jugador jugadorActual = buscarJugador(nombreJugador);
-        if (posicionesSeleccionadas.size() == jugadorActual.getCartasEnMano().size()) {
+        if (posicionesSeleccionadas.size() >= 3) {
             ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
             obtenerCartasPorPosicion(posicionesSeleccionadas, jugadorActual, cartasSeleccionadas);
             try{
@@ -422,7 +422,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 notificarObservadores("jugada agregada");
             }
         }else {
-            throw new FaltanCartasParaJugada();
+            throw new FaltanCartas();
         }
     }
 
@@ -447,7 +447,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
     }
 
     @Override
-    public void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartasParaJugada, NoEsJugada{
+    public void comprobarEscalera(ArrayList<Integer> posicionesSeleccionadas, String nombreJugador) throws RemoteException, FaltanCartas, NoEsJugada{
         Jugador jugadorActual = buscarJugador(nombreJugador);
         if (posicionesSeleccionadas.size() <= jugadorActual.getCartasEnMano().size() && posicionesSeleccionadas.size() >= 3) {
             ArrayList<Carta> cartasSeleccionadas = new ArrayList<>();
@@ -458,7 +458,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 notificarObservadores("jugada agregada");
             }
         }else {
-            throw new FaltanCartasParaJugada();
+            throw new FaltanCartas();
         }
     }
 
@@ -921,7 +921,11 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 finalizarPartida(nombreJugador);
             } else {
                 int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
-                terminarTurno(posicionCarta, nombreJugador);
+                try {
+                    terminarTurno(posicionCarta, nombreJugador);
+                } catch (FaltanCartas e) {
+                    //no llega aca
+                }
             }
         }
     }
@@ -1104,13 +1108,12 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
 
 //sobre fin de turno
     @Override
-    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador)throws RemoteException{
+    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador) throws RemoteException, FaltanCartas {
         Jugador jugadorActual = buscarJugador(nombreJugador);
         if (jugadorActual.getCartasEnMano().isEmpty() && cartaSeleccionada == -1){
             finalizarPartida(nombreJugador);
         }else if (cartaSeleccionada == -1){
-            //excepcion
-            return;
+            throw new FaltanCartas();
         }
         Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
         //le saca la carta que selecciono

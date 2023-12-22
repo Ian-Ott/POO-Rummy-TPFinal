@@ -13,7 +13,7 @@ public class FlujoTerminarTurno extends Flujo{
 
     @Override
     public Flujo procesarEntrada(String txtIngresado) {
-        vistaConsola.limpiarPantalla();
+        //vistaConsola.limpiarPantalla();
         if (vistaConsola.esNumero(txtIngresado)) {
             int posicion = Integer.parseInt(txtIngresado);
             if (posicion <= controlador.getCartasSize() && posicion > 0) {

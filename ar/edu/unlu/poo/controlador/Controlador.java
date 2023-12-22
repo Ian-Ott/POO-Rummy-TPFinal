@@ -242,10 +242,19 @@ public class Controlador implements IControladorRemoto {
     public void terminarTurno(ArrayList<Integer> posicionesSeleccionadas){
         try {
             if (posicionesSeleccionadas.size() == 1){
-                rummy.terminarTurno(posicionesSeleccionadas.get(0),nombreJugador);
+                try {
+                    rummy.terminarTurno(posicionesSeleccionadas.get(0),nombreJugador);
+                } catch (FaltanCartas e) {
+                    //no llega
+                    System.out.println("faltan cartas");
+                }
 
             } else if (posicionesSeleccionadas.isEmpty()) {
-                rummy.terminarTurno(-1,nombreJugador);
+                try {
+                    rummy.terminarTurno(-1,nombreJugador);
+                } catch (FaltanCartas e) {
+                    vista.mostrarErrorCartasInsuficientes();
+                }
             }
         } catch (RemoteException e) {
             vista.mostrarErrorConexion();
@@ -288,10 +297,10 @@ public class Controlador implements IControladorRemoto {
     public void armarRummy(ArrayList<Integer> posicionesSeleccionadas){
         try {
             rummy.comprobarRummy(posicionesSeleccionadas, nombreJugador);
-        } catch (RemoteException | FaltanCartasParaJugada | NoEsJugada | NoPuedeHacerRummy e) {
+        } catch (RemoteException | FaltanCartas | NoEsJugada | NoPuedeHacerRummy e) {
             if (e instanceof RemoteException) {
                 vista.mostrarErrorConexion();
-            } else if (e instanceof  FaltanCartasParaJugada) {
+            } else if (e instanceof FaltanCartas) {
                 vista.mostrarErrorCartasInsuficientes();
             } else if (e instanceof NoEsJugada) {
                 vista.mostrarErrorNoEsJugada();
@@ -304,7 +313,7 @@ public class Controlador implements IControladorRemoto {
     public void armarEscalera(ArrayList<Integer> posicionesSeleccionadas){
         try {
             rummy.comprobarEscalera(posicionesSeleccionadas, nombreJugador);
-        } catch (RemoteException | NoEsJugada | FaltanCartasParaJugada e) {
+        } catch (RemoteException | NoEsJugada | FaltanCartas e) {
             if (e instanceof RemoteException) {
                 vista.mostrarErrorConexion();
             } else if (e instanceof NoEsJugada) {
@@ -318,7 +327,7 @@ public class Controlador implements IControladorRemoto {
     public void armarCombinacionIguales(ArrayList<Integer> posicionesSeleccionadas){
         try {
             rummy.comprobarCombinacion(posicionesSeleccionadas,nombreJugador);
-        } catch (RemoteException | NoEsJugada | FaltanCartasParaJugada e) {
+        } catch (RemoteException | NoEsJugada | FaltanCartas e) {
             if (e instanceof RemoteException) {
                 vista.mostrarErrorConexion();
             } else if (e instanceof NoEsJugada) {

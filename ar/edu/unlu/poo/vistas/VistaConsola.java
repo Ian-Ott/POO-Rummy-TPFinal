@@ -319,12 +319,12 @@ public class VistaConsola implements IVista{
 
     public void mostrarCartas(){
         ArrayList<ICarta> cartasActuales = controlador.obtenerCartas();
-        print("\nTus cartas:");
-        mostrarPosiciones(cartasActuales);
+        print("Tus cartas:");
+        //mostrarPosiciones(cartasActuales);
         print("\n");
         for (int i = 0; i < cartasActuales.size(); i++) {
-            txtAreaMuestra.setText(txtAreaMuestra.getText() + cartasActuales.get(i));
-            if (i == 10 || i == 20){
+            txtAreaMuestra.setText(txtAreaMuestra.getText() + "  " + (i + 1) +"->" + cartasActuales.get(i));
+            if (i == 6){
                 txtAreaMuestra.setText(txtAreaMuestra.getText() + "\n");
             }
         }
@@ -412,12 +412,14 @@ public class VistaConsola implements IVista{
             txtConsola.setEnabled(false);
             txtAreaMuestra.setText(txtAreaMuestra.getText() + "\nEl anfitrion esta decidiendo si iniciar una nueva partida...");
         }
+        txtConsola.setEnabled(true);
     }
 
     @Override
     public void actualizarJugadas(){
         if (!modoChat) {
             jugadasSinVer = true;
+            flujoActual = new FlujoContinuarTurno(this, controlador);
         }else {
             print("Hay nuevas jugadas sin ver!!! escriba el comando /mostrarJugadas para verlas");
         }
@@ -588,11 +590,15 @@ public class VistaConsola implements IVista{
 
     @Override
     public void mostrarErrorCartasInsuficientes() {
-        print("Error: Faltan cartas para armar la jugada");
+        print("Error: Faltan cartas para continuar.");
     }
 
     @Override
     public void mostrarErrorRummyNoDisponible() {
         print("Error: La opcion de rummy no esta disponible porque ya hizo una jugada anteriormente.");
+    }
+
+    public void jugadaYaVista() {
+        jugadasSinVer = false;
     }
 }
