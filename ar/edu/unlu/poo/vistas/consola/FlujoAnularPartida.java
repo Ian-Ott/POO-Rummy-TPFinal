@@ -32,6 +32,7 @@ public class FlujoAnularPartida extends Flujo{
         if (!tomoDecision) {
             vistaConsola.print("Se solicito anular la partida.");
             vistaConsola.print("¿Usted desea anular la partida? (Y/N)");
+            vistaConsola.cambiarEstadoConsola(true);
         }else {
             vistaConsola.cambiarEstadoConsola(false);
         }

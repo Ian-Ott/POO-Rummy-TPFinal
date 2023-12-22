@@ -149,8 +149,8 @@ public class Controlador implements IControladorRemoto {
             return rummy.getCartaBocaArriba();
         } catch (RemoteException e) {
             vista.mostrarErrorConexion();
-            //tirar excepcion?
         }
+        //solo devuelve nulo cuando hay error de conexion
         return null;
     }
 
@@ -359,8 +359,7 @@ public class Controlador implements IControladorRemoto {
             vista.mostrarErrorConexion();
 
         }
-        //arreglar
-        return null;
+        return null; //solo devuelve null por tener error de conexion
     }
 
     public int cantCartasOponente(String oponente){

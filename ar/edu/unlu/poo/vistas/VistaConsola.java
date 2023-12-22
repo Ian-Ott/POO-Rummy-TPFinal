@@ -419,7 +419,9 @@ public class VistaConsola implements IVista{
     public void actualizarJugadas(){
         if (!modoChat) {
             jugadasSinVer = true;
-            flujoActual = new FlujoContinuarTurno(this, controlador);
+            if (controlador.esTurnoJugador()) {
+                flujoActual = new FlujoContinuarTurno(this, controlador);
+            }
         }else {
             print("Hay nuevas jugadas sin ver!!! escriba el comando /mostrarJugadas para verlas");
         }

@@ -728,6 +728,8 @@ public class VistaGrafica implements IVista{
     public void pantallaEspera() {
         System.out.println(modoChat);
         if (!modoChat) {
+            panelJugadas.removeAll();
+            listaCheckJugada.clear();
             if (controlador.getNombreJugador() == null) {
                 obtenerNombre();
                 System.out.println("paso por nombre");
@@ -745,6 +747,7 @@ public class VistaGrafica implements IVista{
                 }else {
                     mostrarEsperaAnfitrion();
                 }
+                verificarEstadosOpcionesMesa();
                 comprobarApuesta();
                 iniciarPartidaButton.setVisible(true);
             } else {
@@ -763,6 +766,33 @@ public class VistaGrafica implements IVista{
             panelInicio.setVisible(true);
         }else {
             mostrarNuevoMensaje("Se esta esperando a que se inicie la partida");
+        }
+    }
+
+    private void verificarEstadosOpcionesMesa() {
+        if (controlador.getTiempoPorTurno() == 60){
+            seleccionTiempo.setSelectedIndex(1);
+        } else if (controlador.getTiempoPorTurno() == 120) {
+            seleccionTiempo.setSelectedIndex(2);
+        }else {
+            seleccionTiempo.setSelectedIndex(3);
+        }
+        if (controlador.getEstadoCompetitivo()){
+            partidaCompetitivaCheck.setSelected(true);
+        }else {
+            partidaCompetitivaCheck.setSelected(false);
+        }
+        if (controlador.publicoPermitido()){
+            checkBoxChat.setSelected(true);
+        }else {
+            checkBoxChat.setSelected(false);
+        }
+        if (controlador.getModoJuego().equals("EXPRES")){
+            modoExpresCheckBox.setSelected(true);
+            modoPorPuntosCheckBox.setSelected(false);
+        }else {
+            modoExpresCheckBox.setSelected(false);
+            modoPorPuntosCheckBox.setSelected(true);
         }
     }
 
@@ -1072,8 +1102,8 @@ public class VistaGrafica implements IVista{
                 mostrarMensajeAsistente("Ahora que tomaste una carta puedes proseguir agregando una carta a una jugada, agregar una nueva jugada \no incluso termnar tu turno." +
                         "\nA continuacion te dejo algunos tips sobre cada una:" +
                         "\n-Para agregar una nueva jugada debes seleccionar las cartas que queres agregar solo presionando una por una \ny una vez que eso este listo debes selecconar entre las tres jugadas disponibles que te aparecen en seleccionar jugada.\n Por ultimo solo presiona el boton de agregar la nueva jugada!!!" +
-                        "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas \ny luego ponerle un tilde presonando la casilla de la jugada que necesites" +
-                        "\n-Para terminar el turno debes seleccionar una unica carta y presonar el boton con el mismo nombre." +
+                        "\n-Para agregar una o mas cartas a una jugada que ya esta en mesa solo debes seleccionar las cartas presionandolas \ny luego ponerle un tilde presionando la casilla de la jugada que necesites" +
+                        "\n-Para terminar el turno debes seleccionar una unica carta y presionar el boton con el mismo nombre." +
                         "\n-En el caso que hayas seleccionado mal tus cartas puedes seleccionar el boton cancelar seleccion para deseleccionarlas");
                 cartasSeleccionadasPosicion.clear();
                 actualizarCartas();
@@ -1131,7 +1161,7 @@ public class VistaGrafica implements IVista{
                         panelActual = new JPanel();
                         BoxLayout layoutPanelActual = new BoxLayout(panelActual,BoxLayout.Y_AXIS);
                         panelActual.setLayout(layoutPanelActual);
-                        panelActual.setPreferredSize(new Dimension(85, 117));
+                        panelActual.setPreferredSize(new Dimension(90, 117));
                     panelActual.setBackground(new Color(4, 21, 80));
                         panelJugadas.add(panelActual);
                     //}

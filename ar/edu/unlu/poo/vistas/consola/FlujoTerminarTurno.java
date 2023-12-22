@@ -21,10 +21,10 @@ public class FlujoTerminarTurno extends Flujo{
                 posicionSeleccionada.add(posicion - 1);
                 controlador.terminarTurno(posicionSeleccionada);
                 return vistaConsola.flujoActual();
-            } else if (posicion == 0) {
+            } /*else if (posicion == 0) {
                 controlador.terminarTurno(new ArrayList<>());
                 return vistaConsola.flujoActual();
-            } else {
+            }*/ else {
                 vistaConsola.errorRangoNumerico();
             }
         }else {
@@ -36,7 +36,7 @@ public class FlujoTerminarTurno extends Flujo{
     @Override
     public void mostrarSiguienteTexto() {
         vistaConsola.limpiarPantalla();
-        vistaConsola.print("Para finalizar su turno, seleccione una carta para descartar (en el caso de que no tenga cartas escriba un 0)");
+        vistaConsola.print("Para finalizar su turno, seleccione una carta para descartar");
         vistaConsola.mostrarSeleccionCartas();
     }
 }

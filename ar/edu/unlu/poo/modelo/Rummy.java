@@ -429,7 +429,11 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             try{
                 mesaDeJuego.verificarCombinacion(cartasSeleccionadas, jugadorActual);
             }catch (EsJugadaValida e){
-                notificarObservadores("jugada agregada");
+                if (jugadorActual.getCartasEnMano().isEmpty()) {
+                    finalizarPartida(nombreJugador);
+                }else {
+                    notificarObservadores("jugada agregada");
+                }
             }
         }else {
             throw new FaltanCartas();
@@ -465,7 +469,11 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             try {
                 mesaDeJuego.verificarEscalera(cartasSeleccionadas, jugadorActual);
             }catch (EsJugadaValida e){
-                notificarObservadores("jugada agregada");
+                if (jugadorActual.getCartasEnMano().isEmpty()) {
+                    finalizarPartida(nombreJugador);
+                }else {
+                    notificarObservadores("jugada agregada");
+                }
             }
         }else {
             throw new FaltanCartas();
@@ -691,9 +699,9 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
             contarPuntosTotales();
         }
         if (jugadorActual.getCartasEnMano().isEmpty() && modo.equals(modoDeJuego.JUEGOAPUNTOS) && !quedaUnJugador() && !todosEliminados()){
+            System.out.println("finalizo la ronda!");
             notificarObservadores("fin ronda");
-        }
-        if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
+        }else if (jugadorActual.getCartasEnMano().isEmpty() || quedaUnJugador() || todosEliminados()){
             juegoIniciado = false; //se desactiva el juego iniciado
             if (quedaUnJugador() || todosEliminados()){
                 partidaFinalizada = true;
@@ -931,11 +939,7 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
                 finalizarPartida(nombreJugador);
             } else {
                 int posicionCarta = (int) (random() * (jugadorActual.getCartasEnMano().size()));
-                try {
-                    terminarTurno(posicionCarta, nombreJugador);
-                } catch (FaltanCartas e) {
-                    //no llega aca
-                }
+                terminarTurno(posicionCarta, nombreJugador);
             }
         }
     }
@@ -1118,12 +1122,10 @@ public class Rummy extends ObservableRemoto implements IRummy, Serializable {
 
 //sobre fin de turno
     @Override
-    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador) throws RemoteException, FaltanCartas {
+    public void terminarTurno(Integer cartaSeleccionada, String nombreJugador) throws RemoteException{
         Jugador jugadorActual = buscarJugador(nombreJugador);
         if (jugadorActual.getCartasEnMano().isEmpty() && cartaSeleccionada == -1){
             finalizarPartida(nombreJugador);
-        }else if (cartaSeleccionada == -1){
-            throw new FaltanCartas();
         }
         Carta cartaTirada = jugadorActual.tirarCarta(cartaSeleccionada);
         //le saca la carta que selecciono
