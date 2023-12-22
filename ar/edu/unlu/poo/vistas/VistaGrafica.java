@@ -1040,6 +1040,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void nuevoTurno() {
         if (!modoChat) {
+            tabbedPane.remove(panelFinRonda);
             actualizarCartas();
             iniciarTurno();
         }else {
