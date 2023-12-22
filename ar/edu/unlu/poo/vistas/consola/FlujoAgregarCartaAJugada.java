@@ -52,7 +52,7 @@ public class FlujoAgregarCartaAJugada extends Flujo{
             vistaConsola.print("Carta " + numero + " seleccionada!!");
         } else if (numero == 0) {
             System.out.println("llego antes de agregar carta a jugada");
-            controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada - 1);
+            controlador.agregarCartasAJugada(posicionesSeleccionadas, posicionJugada);
             posicionesSeleccionadas.clear();
             System.out.println("llego a agregar carta jugada");
             return new FlujoContinuarTurno(vistaConsola, controlador);//comprobar si esta bien
