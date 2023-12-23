@@ -1,4 +1,6 @@
-package ar.edu.unlu.poo.modelo;
+package ar.edu.unlu.poo;
+
+import ar.edu.unlu.poo.modelo.Rummy;
 
 import java.io.Serializable;
 import java.time.LocalDate;

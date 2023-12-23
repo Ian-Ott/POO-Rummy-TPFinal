@@ -737,7 +737,7 @@ public class VistaGrafica implements IVista{
     @Override
     public void pantallaEspera() {
         System.out.println(modoChat);
-        if (!modoChat) {
+        if (!modoChat){
             panelJugadas.removeAll();
             listaCheckJugada.clear();
             if (controlador.getNombreJugador() == null) {
@@ -918,8 +918,6 @@ public class VistaGrafica implements IVista{
             if (tabbedPane.getComponentAt(0).equals(panelInicio)) {
                 activarPartida();
             }
-            panelJugadas.removeAll();
-            listaCheckJugada.clear();
             agregarCartaAJugadaButton.setEnabled(false);
             terminarTurnoButton.setEnabled(false);
             seleccionJugada.setEnabled(false);
@@ -1156,8 +1154,8 @@ public class VistaGrafica implements IVista{
     @Override
     public void actualizarJugadas() {
         if (!modoChat) {
+            System.out.println("actualizo jugada");
             cartasSeleccionadasPosicion.clear();
-            listaCheckJugada.clear();
             JList<ImageIcon> listaActual;
             DefaultListModel<ImageIcon> listaModeloActual;
             JCheckBox checkJugadaActual;
@@ -1167,26 +1165,22 @@ public class VistaGrafica implements IVista{
             JScrollPane panelScrollActual = null;
             ITapete jugadasEnMesa = controlador.obtenerJugadas();
             System.out.println("actualizo jugada");
-            JPanel panelActual = new JPanel(new FlowLayout());
-            if (listaCheckJugada.size() != jugadasEnMesa.getListaJugada().size()) {
+            JPanel panelActual;
                 panelJugadas.removeAll();
+                listaCheckJugada.clear();
                 for (int i = 0; i < jugadasEnMesa.getListaJugada().size(); i++) {
-                    //if (i % 3 == 0) {
-                        panelActual = new JPanel();
-                        BoxLayout layoutPanelActual = new BoxLayout(panelActual,BoxLayout.Y_AXIS);
-                        panelActual.setLayout(layoutPanelActual);
-                        panelActual.setPreferredSize(new Dimension(90, 117));
+                    panelActual = new JPanel();
+                    BoxLayout layoutPanelActual = new BoxLayout(panelActual,BoxLayout.Y_AXIS);
+                    panelActual.setLayout(layoutPanelActual);
+                    panelActual.setPreferredSize(new Dimension(90, 117));
                     panelActual.setBackground(new Color(4, 21, 80));
-                        panelJugadas.add(panelActual);
-                    //}
+                    panelJugadas.add(panelActual);
                     listaActual = new JList<>();
                     listaActual.setBackground(new Color(4, 21, 80));
                     listaModeloActual = new DefaultListModel<>();
                     listaActual.setModel(listaModeloActual);
-                    //listaActual.setName("Jugada " + (i + 1));
                     listaActual.setLayoutOrientation(JList.HORIZONTAL_WRAP);
                     panelScrollActual = new JScrollPane(listaActual);
-                    //60 y 60 para jugadas mas grandes
                     panelScrollActual.setPreferredSize(new Dimension(85, 105));
                     checkJugadaActual = new JCheckBox("Jugada " + (i + 1) + ":");
                     checkJugadaActual.setBackground(new Color(4, 21, 80));
@@ -1200,7 +1194,6 @@ public class VistaGrafica implements IVista{
                         cartaActual = new ImageIcon(imagenActual);
                         listaModeloActual.addElement(cartaActual);
                     }
-                }
             }
             mostrarMensajeAsistente("Hay nuevas jugadas en la mesa!!!");
         }else {
@@ -1269,6 +1262,8 @@ public class VistaGrafica implements IVista{
         if (!modoChat) {
             mostrarMensajeAsistente("Ahora mismo podes visualizar los resultados en puntos de la ronda actual en el panel resumen de partida mientras se prepara la nueva ronda.");
         }
+        panelJugadas.removeAll();
+        listaCheckJugada.clear();
         panelFinRonda.setName("Resumen de Partida");
         tabbedPane.add(panelFinRonda);
         for (int i = 0; i < jugadores.size(); i++) {

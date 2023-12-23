@@ -1,5 +1,6 @@
 package ar.edu.unlu.poo.modelo;
 
+import ar.edu.unlu.poo.PartidaGuardada;
 import ar.edu.unlu.poo.Serializacion.services.Serializador;
 import ar.edu.unlu.poo.exceptions.*;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
